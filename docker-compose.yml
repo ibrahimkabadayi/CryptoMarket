@@ -1,0 +1,36 @@
+services:
+  identity.api:
+    image: ${DOCKER_REGISTRY-}identityapi
+    build:
+      context: .
+      dockerfile: Identity.API/Dockerfile
+
+  market.api:
+    image: ${DOCKER_REGISTRY-}marketapi
+    build:
+      context: .
+      dockerfile: Market.API/Dockerfile
+
+  postgres.db:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Password123*
+      - POSTGRES_DB=IdentityDb
+    ports:
+      - "5432:5432"
+    restart: always
+
+  my-mongodb:
+     image: mongo:latest
+     container_name: mongo_db
+     environment:
+      - MONGO_INITDB_DATABASE=MarketDb
+      - MONGO_INITDB_ROOT_USERNAME=mongouser
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+     ports:
+       - "27017:27017"
+     restart: always
+ 
+  
