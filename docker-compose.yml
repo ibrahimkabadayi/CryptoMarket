@@ -26,11 +26,21 @@ services:
      image: mongo:latest
      container_name: mongo_db
      environment:
-      - MONGO_INITDB_DATABASE=MarketDb
-      - MONGO_INITDB_ROOT_USERNAME=mongouser
-      - MONGO_INITDB_ROOT_PASSWORD=admin
+       - MONGO_INITDB_DATABASE=MarketDb
+       - MONGO_INITDB_ROOT_USERNAME=mongouser
+       - MONGO_INITDB_ROOT_PASSWORD=admin
      ports:
        - "27017:27017"
      restart: always
- 
+
+  redis:
+     image: redis:6.2-alpine
+     restart: always
+     ports:
+       - "6379:6379"
+     container_name: redis_db
+     environment:
+       - REDIS_DATABASE=0
+       - REDIS_USERNAME=redisuser   
+       - REDIS_PASSWORD=admin
   
