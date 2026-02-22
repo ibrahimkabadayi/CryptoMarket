@@ -18,8 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Application\DTOs\" />
+    <Folder Include="Application\Interfaces\" />
+    <Folder Include="Application\Mappings\" />
+    <Folder Include="Application\Services\" />
     <Folder Include="Controllers\" />
-    <Folder Include="Application\" />
   </ItemGroup>
 
 </Project>
