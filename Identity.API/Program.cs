@@ -1,6 +1,7 @@
 using Identity.API.Application;
 using Identity.API.Infrastructure;
 using Identity.API.Infrastructure.Context;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Identity.API;
@@ -25,6 +26,18 @@ public abstract class Program
 
         builder.Services.AddApplicationServices(builder.Configuration);
         builder.Services.AddInfrastructureServices(builder.Configuration);
+
+        builder.Services.AddMassTransit(configuration =>
+        {
+            configuration.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host("localhost", "/", h =>
+                {
+                    h.Username("guest");
+                    h.Password("guest");
+                });
+            });
+        });
 
         var app = builder.Build();
 
