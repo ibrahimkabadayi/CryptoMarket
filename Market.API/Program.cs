@@ -1,3 +1,5 @@
+using Market.API.Consumers;
+using MassTransit;
 
 namespace Market.API;
 
@@ -12,6 +14,25 @@ public class Program
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
+
+        builder.Services.AddMassTransit(x =>
+        {
+            x.AddConsumer<UserCreatedConsumer>();
+
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host("localhost", "/", h => {
+                    h.Username("guest");
+                    h.Password("guest");
+                });
+
+                cfg.ReceiveEndpoint("market-user-created-queue", e =>
+                {
+                    e.ConfigureConsumer<UserCreatedConsumer>(context);
+                });
+            });
+        });
+
 
         var app = builder.Build();
 
