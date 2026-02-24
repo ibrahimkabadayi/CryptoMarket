@@ -1,3 +1,5 @@
+using Identity.API.Application;
+using Identity.API.Infrastructure;
 using Identity.API.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +22,9 @@ public abstract class Program
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
-            
+
+        builder.Services.AddApplicationServices(builder.Configuration);
+        builder.Services.AddInfrastructureServices(builder.Configuration);
 
         var app = builder.Build();
 
