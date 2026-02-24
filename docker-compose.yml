@@ -43,4 +43,12 @@ services:
        - REDIS_DATABASE=0
        - REDIS_USERNAME=redisuser   
        - REDIS_PASSWORD=admin
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+       - "5672:5672"
+       - "15672:15672"
+
   
