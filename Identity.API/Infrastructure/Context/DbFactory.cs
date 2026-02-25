@@ -17,8 +17,6 @@ public class DbFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
 
         optionBuilder.UseNpgsql(connectionString);
 
-        Console.WriteLine("Postqre database has been connected!");
-
         return new ApplicationDbContext(optionBuilder.Options);
     }
 }

@@ -10,11 +10,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.CreatedDate)
-            .IsRequired()
-            .HasColumnType("datetime");
-        
-        builder.Property(x => x.UpdatedDate)
-            .HasColumnType("datetime");
+            .IsRequired();
+
+        builder.Property(x => x.UpdatedDate);
+
+        Console.WriteLine(builder.Property(x => x.UpdatedDate).GetType().Name);
 
         builder.Property(x => x.Email)
             .IsRequired()

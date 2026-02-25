@@ -17,8 +17,6 @@ public static class DependencyInjection
 
         services.AddScoped<IUserRepository, UserRepository>();
 
-        Console.WriteLine("\n\n---------Dependency Injection for Infra has been loaded!------------\n\n");
-
         return services;
     }
 }

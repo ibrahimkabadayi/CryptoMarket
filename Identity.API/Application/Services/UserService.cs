@@ -14,17 +14,29 @@ public class UserService(IUserRepository userRepository, IMapper mapper, IPublis
     private readonly IMapper _mapper = mapper;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
-    public async Task AddUserAsync(UserDto user)
+    public async Task AddUserAsync(string userName, string email, string password)
     {
         try
         {
-            var addUser = _mapper.Map<User>(user);
+            var userExists = await _userRepository.FindFirstAsync(x => x.Email == email);
+            if (userExists != null) return;
+
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
+
+            var addUser = new User
+            {
+                Name = userName,
+                Email = email,
+                PasswordHash = passwordHash
+            };
+
             await _userRepository.AddAsync(addUser);
 
-            await _publishEndpoint.Publish(new UserCreatedEvent { Email = user.Email, UserName = addUser.Name, UserId = addUser.Id });
+            await _publishEndpoint.Publish(new UserCreatedEvent { Email = email, UserName = userName, UserId = addUser.Id });
         }
         catch (Exception ex) 
         {
+            Console.Beep();
             Console.WriteLine(ex.Message);
         }
     }

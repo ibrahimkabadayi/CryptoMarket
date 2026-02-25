@@ -10,12 +10,10 @@ public class ApplicationDbContext : DbContext
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
-        Console.WriteLine("\n \n \n ------------Database Connected!------------\n \n \n ");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new UserConfiguration());
-        Console.WriteLine("\n \n \n ------------Database Connected!------------\n \n \n ");
     }
 }
