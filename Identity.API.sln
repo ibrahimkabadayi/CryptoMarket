@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Market.API", "Market.API\Ma
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{81DDED9D-158B-E303-5F62-77A2896D2A5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Messages", "..\Shared.Messages\Shared.Messages.csproj", "{50612E47-C448-499C-BEAD-E9CE5C51075C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Messages", "Shared.Messages\Shared.Messages.csproj", "{2A03E161-E63A-77AA-30B4-460DEDE3C87F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{50612E47-C448-499C-BEAD-E9CE5C51075C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{50612E47-C448-499C-BEAD-E9CE5C51075C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{50612E47-C448-499C-BEAD-E9CE5C51075C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{50612E47-C448-499C-BEAD-E9CE5C51075C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A03E161-E63A-77AA-30B4-460DEDE3C87F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A03E161-E63A-77AA-30B4-460DEDE3C87F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A03E161-E63A-77AA-30B4-460DEDE3C87F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A03E161-E63A-77AA-30B4-460DEDE3C87F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
