@@ -15,13 +15,16 @@ public class Program
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
+        var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+
         builder.Services.AddMassTransit(x =>
         {
             x.AddConsumer<UserCreatedConsumer>();
+            x.AddConsumer<UserAlreadyRegistiredConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("localhost", "/", h => {
+                cfg.Host(rabbitHost, "/", h => {
                     h.Username("guest");
                     h.Password("guest");
                 });
@@ -29,6 +32,7 @@ public class Program
                 cfg.ReceiveEndpoint("market-user-created-queue", e =>
                 {
                     e.ConfigureConsumer<UserCreatedConsumer>(context);
+                    e.ConfigureConsumer<UserAlreadyRegistiredConsumer>(context);
                 });
             });
         });

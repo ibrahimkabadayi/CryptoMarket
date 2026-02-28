@@ -1,0 +1,8 @@
+POST https://localhost:7081/Home/RegisterUser
+Content-Type: application/json
+
+{
+  "UserName": "testuser",
+  "Email": "test@example.com",
+  "Password": "MySecretPassword123!"
+}

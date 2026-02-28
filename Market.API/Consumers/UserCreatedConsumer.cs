@@ -9,8 +9,8 @@ public class UserCreatedConsumer : IConsumer<UserCreatedEvent>
     {
         var message = context.Message;
 
-        Console.WriteLine($"\nNew User Added! ID: {message.UserId}, Email: {message.Email}");
-        Console.WriteLine("Creating an empty basket for new user...");
+        Console.WriteLine($"\n----New User Added! ID: {message.UserId}, Email: {message.Email}----");
+        Console.WriteLine("----Creating an empty basket for new user...----");
         
         await Task.CompletedTask;
     }

@@ -14,12 +14,16 @@ public class UserService(IUserRepository userRepository, IMapper mapper, IPublis
     private readonly IMapper _mapper = mapper;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
-    public async Task AddUserAsync(string userName, string email, string password)
+    public async Task<string> AddUserAsync(string userName, string email, string password)
     {
         try
         {
             var userExists = await _userRepository.FindFirstAsync(x => x.Email == email);
-            if (userExists != null) return;
+            if (userExists != null) 
+            {
+                await _publishEndpoint.Publish(new UserAlreadyRegistiredEvent { UserEmail = userExists.Email, UserName = userExists.Name });
+                return "This user is already registired.";
+            } 
 
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
 
@@ -33,11 +37,13 @@ public class UserService(IUserRepository userRepository, IMapper mapper, IPublis
             await _userRepository.AddAsync(addUser);
 
             await _publishEndpoint.Publish(new UserCreatedEvent { Email = email, UserName = userName, UserId = addUser.Id });
+            return "User Added";
         }
         catch (Exception ex) 
         {
             Console.Beep();
             Console.WriteLine(ex.Message);
+            return "Repository Error: " + ex.Message;
         }
     }
 

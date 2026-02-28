@@ -4,12 +4,24 @@ services:
     build:
       context: .
       dockerfile: Identity.API/Dockerfile
+    restart: always
+    environment:
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy 
 
   market.api:
     image: ${DOCKER_REGISTRY-}marketapi
     build:
       context: .
       dockerfile: Market.API/Dockerfile
+    restart: always
+    environment:
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
   postgres.db:
     image: postgres:latest
@@ -21,8 +33,6 @@ services:
     ports:
       - "5432:5432"
     restart: always
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
 
   my-mongodb:
      image: mongo:latest
@@ -34,6 +44,8 @@ services:
      ports:
        - "27017:27017"
      restart: always
+     volumes:
+       - mongo_data:/data/db
 
   redis:
      image: redis:6.2-alpine
@@ -45,14 +57,24 @@ services:
        - REDIS_DATABASE=0
        - REDIS_USERNAME=redisuser   
        - REDIS_PASSWORD=admin
+     volumes:
+       - redis_data:/data
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-       - "5672:5672"
-       - "15672:15672"
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 15s
+      retries: 5
 
 volumes:
-  postgres_data:
-    driver: local
+  mongo_data:
+  redis_data:
+  rabbitmq_data:

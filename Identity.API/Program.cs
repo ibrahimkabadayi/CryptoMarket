@@ -15,7 +15,7 @@ public abstract class Program
         // Add services to the container.
         var connectionString = builder.Configuration.GetConnectionString("Default Connection");
 
-        Console.WriteLine("\n-----------"+connectionString+"-----------------\n");
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
@@ -27,11 +27,13 @@ public abstract class Program
         builder.Services.AddApplicationServices(builder.Configuration);
         builder.Services.AddInfrastructureServices(builder.Configuration);
 
+        var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+
         builder.Services.AddMassTransit(configuration =>
         {
             configuration.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host("localhost", "/", h =>
+                cfg.Host(rabbitHost, "/", h =>
                 {
                     h.Username("guest");
                     h.Password("guest");

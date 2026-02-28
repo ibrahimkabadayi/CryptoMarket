@@ -17,13 +17,9 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
 
-        Console.WriteLine("\n----"+connectionString+"------");
-
         services.AddAutoMapper(cfg => cfg.AddProfile<UserMapping>());
 
         services.AddScoped<IUserService, UserService>();
-
-        Console.WriteLine("\n\n---------Dependency Injection for Application has been loaded!------------\n\n");
 
         return services;
     }

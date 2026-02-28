@@ -5,6 +5,6 @@ namespace Identity.API.Application.Interfaces
     public interface IUserService
     {
         Task<UserDto> GetUserByIdAsync(Guid id);
-        Task AddUserAsync(string userName, string email, string password);
+        Task<string> AddUserAsync(string userName, string email, string password);
     }
 }
