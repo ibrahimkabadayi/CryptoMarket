@@ -30,4 +30,8 @@
     <Folder Include="Application\Services\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Shared.Messages\Shared.Messages.csproj" />
+  </ItemGroup>
+
 </Project>
