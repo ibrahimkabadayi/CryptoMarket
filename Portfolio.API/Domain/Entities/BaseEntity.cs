@@ -1,4 +1,4 @@
-﻿namespace Market.API.Domain.Entities;
+﻿namespace Notifications.API.Domain.Entities;
 
 public abstract class BaseEntity
 {

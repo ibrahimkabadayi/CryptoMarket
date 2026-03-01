@@ -1,4 +1,4 @@
-﻿namespace Market.API.Application.DTOs;
+﻿namespace Notifications.API.Application.DTOs;
 
 public abstract class BaseDto
 {

@@ -1,4 +1,4 @@
-﻿namespace Market.API.Application;
+﻿namespace Notifications.API.Application;
 
 public class DependencyInjection
 {

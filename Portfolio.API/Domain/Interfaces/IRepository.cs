@@ -1,4 +1,4 @@
-﻿namespace Market.API.Domain.Interfaces;
+﻿namespace Notifications.API.Domain.Interfaces;
 
 public interface IRepository
 {
