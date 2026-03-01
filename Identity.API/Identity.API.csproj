@@ -26,8 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Application\Interfaces\" />
-    <Folder Include="Application\Services\" />
+    <Folder Include="Consumers\" />
   </ItemGroup>
 
   <ItemGroup>

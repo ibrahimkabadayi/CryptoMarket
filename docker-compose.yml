@@ -23,6 +23,37 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  notifications.api:
+    image: ${DOCKER_REGISTRY-}notificationsapi
+    build:
+      context: .
+      dockerfile: Notifications.API/Dockerfile
+    restart: always
+    environment:
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  portfolio.api:
+    image: ${DOCKER_REGISTRY-}portfolioapi
+    build:
+      context: .
+      dockerfile: Portfolio.API/Dockerfile
+    restart: always
+    environment:
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  api.gateway:
+    image: ${DOCKER_REGISTRY-}apigateway
+    build:
+      context: .
+      dockerfile: API.Gateway/Dockerfile
+    restart: always
+
   postgres.db:
     image: postgres:latest
     container_name: postgres_db
