@@ -13,7 +13,7 @@ public abstract class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        var connectionString = builder.Configuration.GetConnectionString("Default Connection");
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
@@ -48,8 +48,6 @@ public abstract class Program
         {
             app.MapOpenApi();
         }
-
-        app.UseHttpsRedirection();
 
         app.UseAuthorization();
 
