@@ -1,10 +1,9 @@
 ﻿using Identity.API.Application.DTOs;
 
-namespace Identity.API.Application.Interfaces
+namespace Identity.API.Application.Interfaces;
+
+public interface IUserService
 {
-    public interface IUserService
-    {
-        Task<UserDto> GetUserByIdAsync(Guid id);
-        Task<string> AddUserAsync(string userName, string email, string password);
-    }
+    Task<UserDto> GetUserByIdAsync(Guid id);
+    Task<string> AddUserAsync(string userName, string email, string password);
 }

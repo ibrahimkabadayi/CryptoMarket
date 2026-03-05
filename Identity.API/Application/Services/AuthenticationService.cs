@@ -1,41 +1,51 @@
-﻿using System.Security.Claims;
-using Identity.API.Application.DTOs;
-using Identity.API.Application.Interfaces;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Identity.API.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Identity.API.Application.Services;
 
-public class AuthenticationService(IHttpContextAccessor httpContextAccessor) : Interfaces.IAuthenticationService
+public class AuthenticationService(UserManager<AppUser> userManager, IConfiguration configuration) : Interfaces.IAuthenticationService
 {
-    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
-
-    public async Task LoginAsync(UserDto user, HttpContext context)
+    public async Task<string?> LoginAsync(string email, string password)
     {
-        var claims = new List<Claim>
-        {
-            new (ClaimTypes.Name, user.Name),
-            new (ClaimTypes.Email, user.Email),
-            new (ClaimTypes.NameIdentifier, user.Id.ToString()),
-        };
+        var user = await userManager.FindByEmailAsync(email);
+        if (user == null) return null;
 
-        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var isPasswordValid = await userManager.CheckPasswordAsync(user, password);
+        if (!isPasswordValid) return null;
 
-        var authProperties = new AuthenticationProperties
-        {
-            IsPersistent = false,
-            ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30)
-        };
-
-        await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+        return GenerateJwtToken(user);
     }
 
-    public async Task LogoutAsync()
+    private string GenerateJwtToken(AppUser user)
     {
-        var context = _httpContextAccessor.HttpContext;
-        if (context != null)
+        var jwtSettings = configuration.GetSection("Jwt");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
+
+        var claims = new List<Claim>
         {
-            await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        }
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Email, user.Email!),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["ExpireMinutes"]!)),
+            Issuer = jwtSettings["Issuer"],
+            Audience = jwtSettings["Audience"],
+            SigningCredentials = creds
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+
+        return tokenHandler.WriteToken(token);
     }
 }

@@ -4,9 +4,6 @@ using Identity.API.Infrastructure.Context;
 
 namespace Identity.API.Infrastructure.Repositories;
 
-public class UserRepository : Repository<User>, IUserRepository
+public class UserRepository(ApplicationDbContext context) : Repository<AppUser>(context), IUserRepository
 {
-    public UserRepository(ApplicationDbContext context) : base(context)
-    {
-    }
 }

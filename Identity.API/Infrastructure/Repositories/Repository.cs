@@ -5,17 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Identity.API.Infrastructure.Repositories;
 
-public class Repository<T> : IRepository<T> where T : class
+public class Repository<T>(ApplicationDbContext context) : IRepository<T> where T : class
 {
-    private readonly ApplicationDbContext _context;
-    private readonly DbSet<T> _dbSet;
+    private readonly ApplicationDbContext _context = context;
+    private readonly DbSet<T> _dbSet = context.Set<T>();
 
-    public Repository(ApplicationDbContext context)
-    {
-        _context = context;
-        _dbSet = context.Set<T>();
-    }
-    
     public async Task<T?> GetByIdAsync(Guid id)
     {
         var entity = await _dbSet.FindAsync(id);

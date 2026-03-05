@@ -4,6 +4,5 @@ namespace Identity.API.Application.Interfaces;
 
 public interface IAuthenticationService
 {
-    public Task LoginAsync(UserDto user, HttpContext context);
-    public Task LogoutAsync();
+    public Task<string?> LoginAsync(string email, string password);
 }

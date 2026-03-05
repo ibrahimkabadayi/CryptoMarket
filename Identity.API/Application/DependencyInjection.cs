@@ -1,7 +1,6 @@
 ﻿using Identity.API.Application.Mappings;
 using Identity.API.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
-using AutoMapper;
 using Identity.API.Application.Interfaces;
 using Identity.API.Application.Services;
 
@@ -13,13 +12,14 @@ public static class DependencyInjection
          this IServiceCollection services,
          IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Default Connection");
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
 
         services.AddAutoMapper(cfg => cfg.AddProfile<UserMapping>());
 
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
 
         return services;
     }

@@ -4,46 +4,41 @@ using Identity.API.Application.Interfaces;
 using Identity.API.Domain.Entities;
 using Identity.API.Domain.Interfaces;
 using MassTransit;
+using Microsoft.AspNetCore.Identity;
 using Shared.Messages;
 
 namespace Identity.API.Application.Services;
 
-public class UserService(IUserRepository userRepository, IMapper mapper, IPublishEndpoint publishEndpoint) : IUserService
+public class UserService(IUserRepository userRepository, IMapper mapper, IPublishEndpoint publishEndpoint, IAuthenticationService authenticationService, UserManager<AppUser> userManager) : IUserService
 {
-    private readonly IUserRepository _userRepository = userRepository;
-    private readonly IMapper _mapper = mapper;
-    private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
-
     public async Task<string> AddUserAsync(string userName, string email, string password)
     {
         try
         {
-            var userExists = await _userRepository.FindFirstAsync(x => x.Email == email);
-            if (userExists != null) 
+            var addUser = new AppUser
             {
-                await _publishEndpoint.Publish(new UserAlreadyRegistiredEvent { UserEmail = userExists.Email, UserName = userExists.Name });
-                return "This user is already registired.";
-            } 
-
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
-
-            var addUser = new User
-            {
-                Name = userName,
-                Email = email,
-                PasswordHash = passwordHash
+                UserName = userName,
+                Email = email
             };
 
-            await _userRepository.AddAsync(addUser);
+            var result = await userManager.CreateAsync(addUser, password);
 
-            await _publishEndpoint.Publish(new UserCreatedEvent { Email = email, UserName = userName, UserId = addUser.Id });
-            return "User Added";
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return "Register Unsuccessfull: " + errors;
+            }
+
+            await publishEndpoint.Publish(new UserCreatedEvent { Email = email, UserName = userName, UserId = addUser.Id });
+
+            var jwtToken = await authenticationService.LoginAsync(addUser.Email, password);
+
+            return jwtToken ?? "Kayıt başarılı ama token üretilemedi.";
         }
         catch (Exception ex) 
         {
-            Console.Beep();
             Console.WriteLine(ex.Message);
-            return "Repository Error: " + ex.Message;
+            return "Server Error: " + ex.Message;
         }
     }
 
@@ -51,8 +46,8 @@ public class UserService(IUserRepository userRepository, IMapper mapper, IPublis
     {
         try
         {
-            var user = await _userRepository.GetByIdAsync(id);
-            return _mapper.Map<UserDto>(user);
+            var user = await userRepository.GetByIdAsync(id);
+            return mapper.Map<UserDto>(user);
         }
         catch(Exception ex) 
         {

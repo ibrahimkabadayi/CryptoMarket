@@ -1,4 +1,6 @@
-﻿using Identity.API.Domain.Interfaces;
+﻿using System;
+using Identity.API.Domain.Entities;
+using Identity.API.Domain.Interfaces;
 using Identity.API.Infrastructure.Context;
 using Identity.API.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +13,18 @@ public static class DependencyInjection
          this IServiceCollection services,
          IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Default Connection");
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
+
+        services.AddIdentity<AppUser, AppRole>(options =>
+        {
+            options.Password.RequireDigit = true;
+            options.Password.RequiredLength = 6;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+        })
+        .AddEntityFrameworkStores<ApplicationDbContext>();
 
         services.AddScoped<IUserRepository, UserRepository>();
 
