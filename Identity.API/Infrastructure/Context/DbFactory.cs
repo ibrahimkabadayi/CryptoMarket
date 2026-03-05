@@ -13,7 +13,7 @@ public class DbFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
             .Build();
 
         var optionBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-        var connectionString = configuration.GetConnectionString("Default Connection");
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
 
         optionBuilder.UseNpgsql(connectionString);
 
