@@ -1,0 +1,10 @@
+﻿namespace Portfolio.API.Domain.Entities;
+
+public class Asset : BaseEntity
+{
+    public Guid WalletId { get; set; }
+    public required Wallet Wallet { get; set; }
+    public string Symbol { get; set; } = string.Empty;
+    public double AverageBuyPrice { get; set; }
+    public double Quantity { get; set; }
+}
