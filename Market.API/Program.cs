@@ -20,7 +20,6 @@ public class Program
         builder.Services.AddMassTransit(x =>
         {
             x.AddConsumer<UserCreatedConsumer>();
-            x.AddConsumer<UserAlreadyRegistiredConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -32,7 +31,6 @@ public class Program
                 cfg.ReceiveEndpoint("market-user-created-queue", e =>
                 {
                     e.ConfigureConsumer<UserCreatedConsumer>(context);
-                    e.ConfigureConsumer<UserAlreadyRegistiredConsumer>(context);
                 });
             });
         });
