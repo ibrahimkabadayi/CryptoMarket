@@ -33,7 +33,7 @@ public class UserService(IUserRepository userRepository, IMapper mapper, IPublis
 
             var jwtToken = await authenticationService.LoginAsync(addUser.Email, password);
 
-            return jwtToken ?? "Kayıt başarılı ama token üretilemedi.";
+            return jwtToken ?? "Register is successfull but could not create token.";
         }
         catch (Exception ex) 
         {
