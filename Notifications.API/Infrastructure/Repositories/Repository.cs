@@ -1,4 +1,4 @@
-﻿namespace Market.API.Infrastructure.Repositories;
+﻿namespace Notifications.API.Infrastructure.Repositories;
 
 public class Repository
 {
