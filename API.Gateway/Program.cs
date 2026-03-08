@@ -1,4 +1,3 @@
-
 namespace API.Gateway;
 
 public class Program
