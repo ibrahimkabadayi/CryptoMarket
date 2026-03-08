@@ -6,9 +6,9 @@ namespace Portfolio.API.Infrastructure.Context;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
-    DbSet<Wallet> Wallets { get; set; }
-    DbSet<Transaction> Assets { get; set; }
-    DbSet<Transaction> Transacitions { get; set; }
+    public DbSet<Wallet> Wallets { get; set; }
+    public DbSet<Transaction> Assets { get; set; }
+    public DbSet<Transaction> Transacitions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

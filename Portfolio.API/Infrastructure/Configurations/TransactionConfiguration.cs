@@ -17,7 +17,7 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.Property(x => x.Amount)
             .IsRequired();
 
-        builder.Property(x => x.CoinId)
+        builder.Property(x => x.AssetId)
             .IsRequired();
 
         builder.Property(x => x.WalletId)

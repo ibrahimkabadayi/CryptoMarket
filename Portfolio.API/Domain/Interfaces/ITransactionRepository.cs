@@ -2,6 +2,6 @@
 
 namespace Portfolio.API.Domain.Interfaces;
 
-public interface ITransacitonRepository : IRepository<Transaction>
+public interface ITransactionRepository : IRepository<Transaction>
 {
 }

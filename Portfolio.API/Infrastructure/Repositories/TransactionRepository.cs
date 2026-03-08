@@ -4,6 +4,6 @@ using Portfolio.API.Infrastructure.Context;
 
 namespace Portfolio.API.Infrastructure.Repositories;
 
-public class TransactionRepository(ApplicationDbContext context) : Repository<Transaction>(context), ITransacitonRepository
+public class TransactionRepository(ApplicationDbContext context) : Repository<Transaction>(context), ITransactionRepository
 {
 }
