@@ -1,5 +1,6 @@
 using MassTransit;
 using Notifications.API.Application;
+using Notifications.API.Consumers;
 using Notifications.API.Infrastructure;
 
 namespace Notifications.API;
@@ -23,12 +24,19 @@ public class Program
 
         builder.Services.AddMassTransit(configuration =>
         {
+            configuration.AddConsumer<AssetTransferConsumer>();
+
             configuration.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host(rabbitHost, "/", h =>
                 {
                     h.Username("guest");
                     h.Password("guest");
+                });
+
+                cfg.ReceiveEndpoint("notification-asset-transfared-queue", e =>
+                {
+                    e.ConfigureConsumer<AssetTransferConsumer>(context);
                 });
             });
         });

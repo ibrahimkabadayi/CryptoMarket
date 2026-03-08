@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Notifications.API.Application.Interfaces;
+using Notifications.API.Application.Services;
 using Notifications.API.Infrastructure.Context;
 
 namespace Notifications.API.Application;
@@ -15,7 +17,7 @@ public static class DependencyInjection
 
         //services.AddAutoMapper(cfg => cfg.AddProfile<UserMapping>());
 
-        //services.AddScoped<IUserService, UserService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         return services;
     }
