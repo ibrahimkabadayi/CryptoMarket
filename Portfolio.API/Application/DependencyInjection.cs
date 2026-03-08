@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Portfolio.API.Application.Interfaces;
+using Portfolio.API.Application.Mappings;
 using Portfolio.API.Application.Services;
 using Portfolio.API.Infrastructure.Context;
 
@@ -15,7 +16,9 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
 
-        //services.AddAutoMapper(cfg => cfg.AddProfile<UserMapping>());
+        services.AddAutoMapper(cfg => cfg.AddProfile<WalletMapping>());
+        services.AddAutoMapper(cfg => cfg.AddProfile<AssetMapping>());
+        services.AddAutoMapper(cfg => cfg.AddProfile<TransactionMapping>());
 
         services.AddScoped<IAssetService, AssetService>();
         services.AddScoped<IWalletService, WalletService>();
