@@ -1,17 +1,16 @@
 ﻿using Market.API.Domain.Entities;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace Market.API.Infrastructure.Context;
 
-public class MarketContext : IMarketContext
+public class MarketDbContext
 {
-    private readonly IMongoDatabase _database;
+    public IMongoDatabase Database { get; }
 
-    public MarketContext(IMongoClient mongoClient, IConfiguration configuration)
+    public MarketDbContext(IOptions<MongoDbSettings> settings)
     {
-        var databaseName = configuration.GetValue<string>("DatabaseSettings:DatabaseName");
-        _database = mongoClient.GetDatabase(databaseName);
+        var client = new MongoClient(settings.Value.ConnectionString);
+        Database = client.GetDatabase(settings.Value.DatabaseName);
     }
-
-    public IMongoCollection<Basket> Baskets => _database.GetCollection<Basket>("Baskets");
 }

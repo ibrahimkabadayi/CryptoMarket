@@ -1,8 +1,11 @@
-﻿namespace Market.API.Domain.Entities;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
-public abstract class BaseEntity
+namespace Market.API.Domain.Entities;
+
+public class BaseEntity
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
-    public DateTime? UpdatedDate { get; set; }
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; } = string.Empty;
 }

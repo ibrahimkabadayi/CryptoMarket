@@ -1,5 +1,20 @@
-﻿namespace Market.API.Application;
+﻿using Market.API.Application.Interfaces;
+using Market.API.Application.Services;
 
-public class DependencyInjection
+namespace Market.API.Application;
+
+public static class DependencyInjection
 {
+    public static IServiceCollection AddApplicationServices() { 
+        IServiceCollection services = new ServiceCollection();
+
+        //services.AddAutoMapper(cfg => cfg.AddProfile<UserMapping>());
+
+        services.AddScoped<ICoinService, CoinService>();
+        services.AddScoped<IMarketNewsService, MarketNewsService>();
+        services.AddScoped<IPriceAlertService, PriceAlertService>();
+        services.AddScoped<IPriceHistoryService, PriceHistoryService>();
+
+        throw new NotImplementedException();
+    }
 }

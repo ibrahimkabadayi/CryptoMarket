@@ -13,7 +13,9 @@ public static class DependencyInjection
             return new MongoClient(connectionString);
         });
 
-        services.AddScoped<IMarketContext, MarketContext>();
+        services.Configure<MongoDbSettings>(configuration.GetSection("MongoDbSettings"));
+
+        services.AddSingleton<MarketDbContext>();
 
         return services;
     }

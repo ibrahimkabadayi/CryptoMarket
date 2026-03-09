@@ -1,4 +1,5 @@
 using Market.API.Consumers;
+using Market.API.Infrastructure;
 using MassTransit;
 
 namespace Market.API;
@@ -14,6 +15,9 @@ public class Program
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
+
+        //builder.Services.AddApplicationServices(builder.Configuration);
+        builder.Services.AddInfrastructureServices(builder.Configuration);
 
         var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
 

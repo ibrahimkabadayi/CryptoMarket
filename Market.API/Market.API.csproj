@@ -14,13 +14,10 @@
     <PackageReference Include="MassTransit.RabbitMQ" Version="9.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.13" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
-    <PackageReference Include="MongoDB.Driver" Version="3.6.0" />
+    <PackageReference Include="MongoDB.Driver" Version="3.7.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Application\Interfaces\" />
-    <Folder Include="Application\Mappings\" />
-    <Folder Include="Application\Services\" />
     <Folder Include="Models\" />
   </ItemGroup>
 
