@@ -34,6 +34,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+    ports:
+      - "6000:8080"
 
   portfolio.api:
     image: ${DOCKER_REGISTRY-}portfolioapi
@@ -46,6 +48,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+    ports:
+      - "7000:8080"
 
   api.gateway:
     image: ${DOCKER_REGISTRY-}apigateway

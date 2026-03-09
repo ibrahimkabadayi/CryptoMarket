@@ -14,6 +14,9 @@ public class WalletService(IWalletRepository walletRepository, IAssetRepository 
     {
         var wallet = await walletRepository.GetWalletWithAssetsAsync(WalletId);
 
+        if (wallet.FiatBalance < CurrentPrice * Amount)
+            return "Error: Not Enough Money!";
+
         var walletAssets = wallet.Assets;
 
         walletAssets ??= [];
@@ -40,6 +43,7 @@ public class WalletService(IWalletRepository walletRepository, IAssetRepository 
         }
 
         wallet.UpdatedDate = DateTime.UtcNow;
+        wallet.FiatBalance -= Amount * CurrentPrice;
         await walletRepository.UpdateAsync(wallet);
         await transactionService.CreateTransactionRecordAsync(WalletId, Symbol, Amount, CurrentPrice, TransactionType.Buy);
 
@@ -69,6 +73,7 @@ public class WalletService(IWalletRepository walletRepository, IAssetRepository 
             if (wallet == null) return "Error: Could not find wallet";
 
             wallet.FiatBalance += Amount;
+            wallet.Value += Amount;
             wallet.UpdatedDate = DateTime.UtcNow;
 
             await walletRepository.UpdateAsync(wallet);
@@ -90,9 +95,12 @@ public class WalletService(IWalletRepository walletRepository, IAssetRepository 
             if (wallet == null) return "Error: Could not find wallet";
 
             wallet.FiatBalance += Amount;
+            wallet.Value += Amount;
             wallet.UpdatedDate = DateTime.UtcNow;
 
             await walletRepository.UpdateAsync(wallet);
+
+            await transactionService.CreateTransactionRecordAsync(wallet.Id, string.Empty, 100, null, TransactionType.Deposit);
 
             return "Success";
         }
@@ -112,7 +120,7 @@ public class WalletService(IWalletRepository walletRepository, IAssetRepository 
         var targetWallet = await walletRepository.GetWalletWithAssetsAsync(dto.TargetWalletAddress);
         if (targetWallet is null) return "Error: Wrong address for target wallet.";
 
-        var asset = await assetRepository.GetByIdAsync(dto.AssetId);
+        var asset = sourceWallet.Assets.First(x => x.Symbol.Equals(dto.Symbol));
         if (asset is null) return "Error: Could not found asset in the wallet.";
         if (asset.Quantity < dto.AssetAmount)
             return "Error: Transfer amount is bigger than asset quantity in the wallet.";
@@ -135,18 +143,19 @@ public class WalletService(IWalletRepository walletRepository, IAssetRepository 
 
             await assetRepository.AddAsync(newAsset);
 
-            targetWallet.Assets!.Add(newAsset);
-            targetWallet.UpdatedDate = DateTime.UtcNow;
-            targetWallet.Value += newAsset.Quantity * newAsset.AverageBuyPrice;
-
-            await walletRepository.UpdateAsync(targetWallet);
+            targetWallet.Assets!.Add(newAsset);                    
         };
 
         await transactionService.CreateTransactionRecordAsync(targetWallet.Id, asset.Symbol, dto.AssetAmount, asset.AverageBuyPrice, TransactionType.Transfer);
 
         sourceWallet.Value -= asset.Quantity * asset.AverageBuyPrice;
         sourceWallet.UpdatedDate = DateTime.UtcNow;
-        
+
+        targetWallet.UpdatedDate = DateTime.UtcNow;
+        targetWallet.Value += asset.Quantity * asset.AverageBuyPrice;
+
+        await walletRepository.UpdateAsync(targetWallet);
+
         asset.Quantity -= dto.AssetAmount;
         asset.UpdatedDate = DateTime.UtcNow;
 

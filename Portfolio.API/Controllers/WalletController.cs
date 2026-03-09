@@ -37,7 +37,11 @@ public class WalletController(IWalletService walletService) : ControllerBase
         try
         {
             var result = await walletService.BuyAsset(request.WalletId, request.Symbol, request.BuyingPrice, request.Amount);
-            return Ok(new { Message = result });
+
+            if (result.StartsWith("Success"))
+                return Ok(new { Message = result });
+            else
+                return BadRequest(new { Message = result });
         }
         catch (Exception ex)
         {
@@ -52,7 +56,7 @@ public class WalletController(IWalletService walletService) : ControllerBase
         { 
             FromWalletId = request.FromWalletId,
             AssetAmount = request.AssetAmount,
-            AssetId = request.AssetId,
+            Symbol = request.Symbol,
             TargetWalletAddress = request.TargetWalletAddress
         };
 
