@@ -9,6 +9,6 @@ public class AssetTransferConsumer : IConsumer<AssetTransferEvent>
     {
         var message = context.Message;
         Console.WriteLine(message.Message);
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 }
