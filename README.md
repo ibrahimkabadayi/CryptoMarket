@@ -1,52 +1,81 @@
-#  CryptoMarket - Microservices Trading Platform
+# Crypto Market Microservices
 
-[![.NET](https://img.shields.io/badge/.NET-9.0-purple.svg)](https://dotnet.microsoft.com/)
-[![Docker](https://img.shields.io/badge/Docker-Supported-blue.svg)](https://www.docker.com/)
-[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-Event%20Driven-FF6600.svg)](https://www.rabbitmq.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+A robust real-time cryptocurrency market application built with a modern microservices architecture, featuring secure authentication, market data management, portfolio tracking, and real-time notifications.
 
-A modern, highly scalable, and event-driven microservices architecture simulating a cryptocurrency and asset trading platform. Built with **ASP.NET Core 9**, this project demonstrates enterprise-level backend engineering practices including Clean Architecture, asynchronous inter-service communication, and containerization.
+## 🏗 Architecture Overview
 
-##  Architecture & Tech Stack
+The project is designed using **Microservices Architecture** with a focus on scalability, decoupling, and high availability. It utilizes an **API Gateway** as the single entry point and asynchronous messaging for inter-service communication.
 
-This platform is composed of loosely coupled, independent microservices communicating via an API Gateway and an Event Bus.
+### 🧩 Services Breakdown
 
-* **API Gateway:** YARP (Yet Another Reverse Proxy)
-* **Message Broker:** RabbitMQ (via MassTransit) for pub/sub event-driven communication.
-* **Databases:** * **PostgreSQL:** Relational data management for Identity and Portfolio services (via Entity Framework Core).
-    * **MongoDB:** NoSQL document storage for high-frequency Market data (Generic Repository pattern).
-    * **Redis:** In-memory caching for real-time market prices *(In progress)*.
-* **Containerization:** Docker & Docker Compose.
-* **Security:** JWT (JSON Web Token) Authentication.
+-   **API Gateway**: Built with **YARP (Yet Another Reverse Proxy)**. It routes incoming requests to the appropriate microservices, providing a unified entry point.
+-   **Identity.API**: Handles user authentication, registration, and authorization using **ASP.NET Core Identity** and **PostgreSQL**. It publishes events when new users are created.
+-   **Market.API**: Manages cryptocurrency market data (coins, prices). It uses **MongoDB** for high-performance document storage.
+-   **Portfolio.API**: Tracks user wallets and asset balances. It consumes events from `Identity.API` to initialize wallets and manages asset transfers via **PostgreSQL**.
+-   **Notifications.API**: Processes and sends notifications (e.g., asset transfer confirmations). It consumes events from the message bus.
+-   **Shared.Messages**: A common library containing shared event records used for **MassTransit** messaging.
 
-##  Microservices Overview
+### 📡 Inter-service Communication
 
-| Service | Port (Internal) | Database | Description |
-| :--- | :--- | :--- | :--- |
-| **API.Gateway** | `5000` | - | The single entry point for all client requests. Handles routing to internal microservices. |
-| **Identity.API** | `8080` | PostgreSQL | Manages user authentication, registration, and JWT generation. Publishes `UserCreatedEvent`. |
-| **Portfolio.API** | `8080` | PostgreSQL | Manages user wallets, fiat balances, and asset transactions. Consumes events to auto-generate Ethereum-style wallet addresses for new users. |
-| **Market.API** | `8080` | MongoDB | Stores cryptocurrency/precious metal details, real-time prices, and historical data. |
-| **Notifications.API**| `8080` | - | *(Upcoming)* Real-time user notifications using SignalR WebSockets. |
+Services communicate asynchronously using **MassTransit** over **RabbitMQ**:
+-   `UserCreatedEvent`: Published by `Identity.API` when a user registers; consumed by `Portfolio.API` to create an initial wallet.
+-   `AssetTransferEvent`: Consumed by `Notifications.API` to trigger user notifications.
 
-##  Event-Driven Flow Example
+## 🛠 Technology Stack
 
-The system utilizes **MassTransit** to ensure eventual consistency without tight coupling. 
-For example, the User Registration flow:
-1. Client sends a `POST /api/Auth/register` request through the **API Gateway**.
-2. **Identity.API** saves the user to PostgreSQL and publishes a `UserCreatedEvent` to RabbitMQ.
-3. Both **Portfolio.API** and **Market.API** consume this event independently.
-4. **Portfolio.API** automatically generates a unique `0x...` wallet address and creates a zero-balance database record for the new user.
+-   **Runtime**: .NET 9.0
+-   **API Gateway**: YARP
+-   **Databases**: 
+    -   **PostgreSQL** (Identity, Portfolio)
+    -   **MongoDB** (Market)
+    -   **Redis** (Distributed Caching)
+-   **Messaging**: MassTransit with RabbitMQ
+-   **Containerization**: Docker & Docker Compose
+-   **CI/CD**: GitHub Actions
 
-##  Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
-* [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running.
-* .NET 9 SDK (for local development/migrations).
+
+-   [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+-   [Docker Desktop](https://www.docker.com/products/docker-desktop)
+-   An IDE (Rider, Visual Studio, or VS Code)
 
 ### Installation & Running
 
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/yourusername/CryptoMarket.git](https://github.com/yourusername/CryptoMarket.git)
-   cd CryptoMarket
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/Identity.API.git
+    cd Identity.API
+    ```
+
+2.  **Run with Docker Compose:**
+    The easiest way to start the entire infrastructure is using Docker Compose:
+    ```bash
+    docker-compose up -d
+    ```
+    This will spin up all microservices along with PostgreSQL, MongoDB, Redis, and RabbitMQ.
+
+3.  **Accessing the services:**
+    -   **API Gateway**: `http://localhost:5000`
+    -   **RabbitMQ Management**: `http://localhost:15672` (Guest/Guest)
+    -   **PostgreSQL**: `localhost:5432`
+    -   **MongoDB**: `localhost:27107`
+
+## 🛣 API Routes (via Gateway)
+
+| Service | Path Prefix | Description |
+| :--- | :--- | :--- |
+| **Identity** | `/api/Auth/` | Registration, Login, User Management |
+| **Market** | `/api/market/` | Coin listings and market data |
+| **Portfolio** | `/api/Wallet/` | User balances and transfers |
+| **Notifications** | `/api/notification/` | User notification history |
+
+## 🧪 Development
+
+### Running Migrations
+For services using PostgreSQL (Identity and Portfolio), ensure migrations are applied:
+```bash
+dotnet ef database update --project Identity.API
+dotnet ef database update --project Portfolio.API
+```
