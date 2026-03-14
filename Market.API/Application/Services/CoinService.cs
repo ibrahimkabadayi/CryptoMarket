@@ -4,12 +4,11 @@ using Market.API.Application.Interfaces;
 using Market.API.Domain.Entities;
 using Market.API.Domain.Interfaces;
 using MassTransit;
-using Microsoft.Extensions.Caching.Distributed;
 using Shared.Messages;
 
 namespace Market.API.Application.Services;
 
-public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublishEndpoint publishEndpoint, IDistributedCache cache) : ICoinService
+public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublishEndpoint publishEndpoint, IRedisCacheService cacheService) : ICoinService
 {
     public async Task<string> AddCoin(string Name, string Symbol, double Price, double MarketCap)
     {
@@ -47,7 +46,18 @@ public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublis
 
     public async Task<List<CoinDto>> GetAllCoins()
     {
+        var coinsKey = "market:coins";
+
+        var coins = await cacheService.GetAsync<List<Coin>>(coinsKey);
+
+        if (coins is not null)
+        {
+            return mapper.Map<List<CoinDto>>(coins);
+        }
+
         var allCoins = await coinRepository.GetAllAsync();
+
+        await cacheService.SetAsync(coinsKey, allCoins, TimeSpan.FromSeconds(5));
 
         return mapper.Map<List<CoinDto>>(allCoins);
     }

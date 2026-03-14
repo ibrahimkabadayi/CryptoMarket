@@ -1,23 +1,31 @@
-﻿
+﻿using Market.API.Application.Interfaces;
+using Market.API.Domain.Entities;
 using Market.API.Domain.Interfaces;
 
 namespace Market.API.Infrastructure.BackgroundServices;
 
 public class PriceSimulationBackgroundService(IServiceScopeFactory scopeFactory,
-    ILogger<PriceSimulationBackgroundService> logger) : BackgroundService
+    ILogger<PriceSimulationBackgroundService> logger, IRedisCacheService cacheService) : BackgroundService
 {
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("Piyasa Simülasyon Motoru çalışmaya başladı...");
+        logger.LogInformation("Simulation has started...");
+
+        using var scope = scopeFactory.CreateScope();
+        var coinRepository = scope.ServiceProvider.GetRequiredService<ICoinRepository>();
+
+        var cacheKey = "market:coins";
+        var coins = await cacheService.GetAsync<List<Coin>>(cacheKey);
+
+        if (coins == null || coins.Any())
+        {
+            coins = await coinRepository.GetAllAsync();
+        }
 
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                using var scope = scopeFactory.CreateScope();
-                var coinRepository = scope.ServiceProvider.GetRequiredService<ICoinRepository>();
-
-                var coins = await coinRepository.GetAllAsync();
                 var random = new Random();
 
                 foreach (var coin in coins)
@@ -28,17 +36,17 @@ public class PriceSimulationBackgroundService(IServiceScopeFactory scopeFactory,
                     coin.CurrentPrice += priceChange;
                     coin.LastUpdated = DateTime.UtcNow;
 
-                    await coinRepository.UpdateAsync(coin.Id, coin);
-
                     logger.LogInformation($"{coin.Symbol} yeni fiyatı: {coin.CurrentPrice:C2}");
                 }
+
+                await cacheService.SetAsync(cacheKey, coins);
             }
             catch (Exception ex)
             {
-                logger.LogError($"Simülasyon sırasında hata: {ex.Message}");
+                logger.LogError($"Error during simulation: {ex.Message}");
             }
 
-            await Task.Delay(5000, stoppingToken);
+            await Task.Delay(1000, stoppingToken);
         }
     }
 }

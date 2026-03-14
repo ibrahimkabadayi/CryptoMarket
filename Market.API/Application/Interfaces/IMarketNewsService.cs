@@ -1,6 +1,5 @@
-﻿namespace Market.API.Application.Interfaces
+﻿namespace Market.API.Application.Interfaces;
+
+public interface IMarketNewsService
 {
-    public interface IMarketNewsService
-    {
-    }
 }
