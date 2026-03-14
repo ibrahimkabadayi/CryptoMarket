@@ -2,11 +2,11 @@
 
 A robust real-time cryptocurrency market application built with a modern microservices architecture, featuring secure authentication, market data management, portfolio tracking, and real-time notifications.
 
-## 🏗 Architecture Overview
+##  Architecture Overview
 
 The project is designed using **Microservices Architecture** with a focus on scalability, decoupling, and high availability. It utilizes an **API Gateway** as the single entry point and asynchronous messaging for inter-service communication.
 
-### 🧩 Services Breakdown
+###  Services Breakdown
 
 -   **API Gateway**: Built with **YARP (Yet Another Reverse Proxy)**. It routes incoming requests to the appropriate microservices, providing a unified entry point.
 -   **Identity.API**: Handles user authentication, registration, and authorization using **ASP.NET Core Identity** and **PostgreSQL**. It publishes events when new users are created.
@@ -15,13 +15,13 @@ The project is designed using **Microservices Architecture** with a focus on sca
 -   **Notifications.API**: Processes and sends notifications (e.g., asset transfer confirmations). It consumes events from the message bus.
 -   **Shared.Messages**: A common library containing shared event records used for **MassTransit** messaging.
 
-### 📡 Inter-service Communication
+###  Inter-service Communication
 
 Services communicate asynchronously using **MassTransit** over **RabbitMQ**:
 -   `UserCreatedEvent`: Published by `Identity.API` when a user registers; consumed by `Portfolio.API` to create an initial wallet.
 -   `AssetTransferEvent`: Consumed by `Notifications.API` to trigger user notifications.
 
-## 🛠 Technology Stack
+##  Technology Stack
 
 -   **Runtime**: .NET 9.0
 -   **API Gateway**: YARP
@@ -33,7 +33,7 @@ Services communicate asynchronously using **MassTransit** over **RabbitMQ**:
 -   **Containerization**: Docker & Docker Compose
 -   **CI/CD**: GitHub Actions
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -62,7 +62,7 @@ Services communicate asynchronously using **MassTransit** over **RabbitMQ**:
     -   **PostgreSQL**: `localhost:5432`
     -   **MongoDB**: `localhost:27107`
 
-## 🛣 API Routes (via Gateway)
+##  API Routes (via Gateway)
 
 | Service | Path Prefix | Description |
 | :--- | :--- | :--- |
@@ -71,7 +71,7 @@ Services communicate asynchronously using **MassTransit** over **RabbitMQ**:
 | **Portfolio** | `/api/Wallet/` | User balances and transfers |
 | **Notifications** | `/api/notification/` | User notification history |
 
-## 🧪 Development
+##  Development
 
 ### Running Migrations
 For services using PostgreSQL (Identity and Portfolio), ensure migrations are applied:
