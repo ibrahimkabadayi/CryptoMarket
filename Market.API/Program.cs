@@ -1,3 +1,4 @@
+using Market.API.Application;
 using Market.API.Consumers;
 using Market.API.Infrastructure;
 using MassTransit;
@@ -16,8 +17,14 @@ public class Program
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
-        //builder.Services.AddApplicationServices(builder.Configuration);
+        builder.Services.AddApplicationServices();
         builder.Services.AddInfrastructureServices(builder.Configuration);
+
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = "redis_db:6379";
+            options.InstanceName = "MarketDb_";
+        });
 
         var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
 
@@ -47,8 +54,6 @@ public class Program
         {
             app.MapOpenApi();
         }
-
-        app.UseHttpsRedirection();
 
         app.UseAuthorization();
 
