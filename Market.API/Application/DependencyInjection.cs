@@ -12,7 +12,6 @@ public static class DependencyInjection
 
         services.AddScoped<ICoinService, CoinService>();
         services.AddScoped<IMarketNewsService, MarketNewsService>();
-        services.AddScoped<IPriceAlertService, PriceAlertService>();
         services.AddScoped<IPriceHistoryService, PriceHistoryService>();
 
         throw new NotImplementedException();
