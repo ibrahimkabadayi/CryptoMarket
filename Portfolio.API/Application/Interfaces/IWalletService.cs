@@ -9,4 +9,5 @@ public interface IWalletService
     Task<string> DepositMoney(string WalletAddress, double Amount);
     Task<string> TransferAsset(TransferAssetDto dto);
     Task<string> BuyAsset(Guid WalletId, string Symbol, double CurrentPrice, double Amount);
+    Task<Guid> GetWalletIdByUserId(Guid userId);
 }

@@ -9,6 +9,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<Transaction> Assets { get; set; }
     public DbSet<Transaction> Transacitions { get; set; }
+    public DbSet<LimitOrder> LimitOrders { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

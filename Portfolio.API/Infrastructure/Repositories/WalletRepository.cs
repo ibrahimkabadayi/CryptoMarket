@@ -7,6 +7,12 @@ namespace Portfolio.API.Infrastructure.Repositories;
 
 public class WalletRepository(ApplicationDbContext context) : Repository<Wallet>(context), IWalletRepository
 {
+    public async Task<Guid> GetWalletIdByUserId(Guid userId)
+    {
+        var wallet =  await context.Wallets.FirstAsync(x => x.UserId == userId);
+        return wallet.Id;
+    }
+
     public async Task<Wallet> GetWalletWithAssetsAsync(Guid WalletId)
     {
         return await context.Wallets

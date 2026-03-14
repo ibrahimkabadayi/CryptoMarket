@@ -19,10 +19,12 @@ public static class DependencyInjection
         services.AddAutoMapper(cfg => cfg.AddProfile<WalletMapping>());
         services.AddAutoMapper(cfg => cfg.AddProfile<AssetMapping>());
         services.AddAutoMapper(cfg => cfg.AddProfile<TransactionMapping>());
+        services.AddAutoMapper(cfg => cfg.AddProfile<LimitOrderMapping>());
 
         services.AddScoped<IAssetService, AssetService>();
         services.AddScoped<IWalletService, WalletService>();
         services.AddScoped<ITransactionService, TransactionService>();
+        services.AddScoped<ILimitOrderService, LimitOrderService>();
 
         return services;
     }

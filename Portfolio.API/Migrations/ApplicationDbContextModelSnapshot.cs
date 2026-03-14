@@ -55,6 +55,39 @@ namespace Portfolio.API.Migrations
                     b.ToTable("Asset");
                 });
 
+            modelBuilder.Entity("Portfolio.API.Domain.Entities.LimitOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("Amount")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<double>("LimitPrice")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("OrderType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("WalletId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LimitOrders");
+                });
+
             modelBuilder.Entity("Portfolio.API.Domain.Entities.Transaction", b =>
                 {
                     b.Property<Guid>("Id")

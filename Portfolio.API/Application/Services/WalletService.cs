@@ -50,6 +50,11 @@ public class WalletService(IWalletRepository walletRepository, IAssetRepository 
         return "Success: Asset purchase is successfull";
     }
 
+    public async Task<Guid> GetWalletIdByUserId(Guid userId)
+    {
+        return await walletRepository.GetWalletIdByUserId(userId);
+    }
+
     public async Task<string> CreateWallet(Guid UserId)
     {
         var generatedAddress = "0x" + Guid.NewGuid().ToString("N");
