@@ -4,4 +4,5 @@ namespace Market.API.Domain.Interfaces;
 
 public interface ICoinRepository : IRepository<Coin>
 {
+    Task<Coin> GetCoinAsync(string Symbol);
 }
