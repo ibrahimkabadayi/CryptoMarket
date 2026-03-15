@@ -9,6 +9,9 @@ public class LimitOrderMapping : Profile
     public LimitOrderMapping()
     {
         CreateMap<LimitOrderDto, LimitOrder>();
-        CreateMap<LimitOrder, LimitOrderDto>();
+
+        CreateMap<LimitOrder, LimitOrderDto>()
+            .ForMember(dest => dest.Wallet,
+            opt => opt.MapFrom(src => src.Wallet));
     }
 }

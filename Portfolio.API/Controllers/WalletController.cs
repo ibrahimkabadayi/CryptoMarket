@@ -67,4 +67,10 @@ public class WalletController(IWalletService walletService) : ControllerBase
         else       
             return BadRequest(result);       
     }
+
+    [HttpPost("create_limit_order")]
+    public async Task<IActionResult> CreateLimitOrder([FromBody] CreateLimitOrderRequest request)
+    {
+
+    }
 }

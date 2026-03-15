@@ -10,6 +10,6 @@ public record BuyCoinEvent
 {
     public Guid UserId { get; set; }
     public string Symbol { get; set; } = string.Empty;
-    public double BuyPrice { get; set; }
-    public double BuyAmount { get; set; }
+    public decimal BuyPrice { get; set; }
+    public decimal BuyAmount { get; set; }
 }

@@ -2,6 +2,6 @@
 
 public enum LimitOrderType
 {
-    Buy,
-    Sell
+    Buy = 1,
+    Sell = 2
 }
