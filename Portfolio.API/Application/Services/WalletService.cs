@@ -8,7 +8,14 @@ using Shared.Messages;
 
 namespace Portfolio.API.Application.Services;
 
-public class WalletService(IWalletRepository walletRepository, IAssetRepository assetRepository, ITransactionService transactionService, IPublishEndpoint publishEndpoint, IAssetService assetService) : IWalletService
+public class WalletService
+    (
+        IWalletRepository walletRepository,
+        IAssetRepository assetRepository,
+        ITransactionService transactionService,
+        IPublishEndpoint publishEndpoint,
+        IAssetService assetService
+    ) : IWalletService
 {
     public async Task<string> BuyAsset(Guid WalletId, string Symbol, decimal CurrentPrice, decimal Amount)
     {
@@ -186,5 +193,24 @@ public class WalletService(IWalletRepository walletRepository, IAssetRepository 
         await walletRepository.UpdateAsync(sourceWallet);
 
         return "Success: Transaction completed!";
+    }
+
+    public async Task WithdrawMoney(Guid WalletId, decimal Amount)
+    {
+        var wallet = await walletRepository.GetByIdAsync(WalletId);
+        if (wallet == null)
+        {
+            return;
+        }
+
+        wallet.FiatBalance -= Amount;
+        wallet.Value -= Amount;
+
+        await walletRepository.UpdateAsync(wallet);
+    }
+
+    public Task<string> SellAsset(Guid WalletId, string Symbol, decimal Amount)
+    {
+        throw new NotImplementedException();
     }
 }

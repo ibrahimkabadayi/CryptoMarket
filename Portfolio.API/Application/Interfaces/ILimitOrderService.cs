@@ -8,4 +8,6 @@ public interface ILimitOrderService
     Task<string> UpdateLimitOrderAsync(Guid limitOrderId, decimal? Amount, decimal? TargetPrice);
     Task DeleteLimitOrderAsync(Guid limitOrderId);
     Task<string> ApplyLimitOrder(LimitOrderDto limitOrder);
+    Task<LimitOrderDto> GetLimitOrder(Guid id);
+    Task<List<LimitOrderDto>> GetAllLimitOrders();
 }

@@ -88,6 +88,18 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         await limitOrderRepository.DeleteAsync(limitOrderId);
     }
 
+    public async Task<LimitOrderDto> GetLimitOrder(Guid id)
+    {
+        var limitOrder = await limitOrderRepository.GetByIdAsync(id);
+        return mapper.Map<LimitOrderDto>(limitOrder);
+    }
+
+    public async Task<List<LimitOrderDto>> GetAllLimitOrders()
+    {
+        var limitOrders = await limitOrderRepository.GetAllAsync();
+        return mapper.Map<List<LimitOrderDto>>(limitOrders);
+    }
+
     public async Task<string> UpdateLimitOrderAsync(Guid limitOrderId, decimal? Amount, decimal? TargetPrice)
     {
         var limitOrder = await limitOrderRepository.GetByIdAsync(limitOrderId);

@@ -68,9 +68,17 @@ public class WalletController(IWalletService walletService) : ControllerBase
             return BadRequest(result);       
     }
 
-    [HttpPost("create_limit_order")]
-    public async Task<IActionResult> CreateLimitOrder([FromBody] CreateLimitOrderRequest request)
+    [HttpPost("withdraw_money")]
+    public async Task<IActionResult> WithdrawMoney([FromBody] WithdrawMoneyRequest request)
     {
+        await walletService.WithdrawMoney(request.WalletId, request.Amount);
+        return Ok();
+    }
 
+    [HttpPost("sell_asset")]
+    public async Task<IActionResult> SellAsset([FromBody] SellAssetRequest request)
+    {
+        //var result = await walletService.SellAsset();
+        throw new NotImplementedException();
     }
 }

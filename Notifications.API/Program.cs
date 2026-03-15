@@ -11,10 +11,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
-
         builder.Services.AddControllers();
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
         builder.Services.AddApplicationServices(builder.Configuration);
@@ -25,6 +22,7 @@ public class Program
         builder.Services.AddMassTransit(configuration =>
         {
             configuration.AddConsumer<AssetTransferConsumer>();
+            configuration.AddConsumer<LimitOrderConsumer>();
 
             configuration.UsingRabbitMq((context, cfg) =>
             {
@@ -37,18 +35,17 @@ public class Program
                 cfg.ReceiveEndpoint("notification-asset-transfared-queue", e =>
                 {
                     e.ConfigureConsumer<AssetTransferConsumer>(context);
+                    e.ConfigureConsumer<LimitOrderConsumer>(context);
                 });
             });
         });
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
         }
-
 
         app.UseAuthorization();
 
