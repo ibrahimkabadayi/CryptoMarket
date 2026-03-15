@@ -8,7 +8,7 @@ namespace Portfolio.API.Application.Services;
 
 public class TransactionService(ITransactionRepository transactionRepository) : ITransactionService
 {
-    public async Task CreateTransactionRecordAsync(Guid walletId, string symbol, double amount, double? price, TransactionType type)
+    public async Task CreateTransactionRecordAsync(Guid walletId, string symbol, decimal amount, decimal? price, TransactionType type)
     {
         Transaction transaction;
 
@@ -18,7 +18,7 @@ public class TransactionService(ITransactionRepository transactionRepository) : 
                 WalletId = walletId,
                 Symbol = symbol,
                 Amount = amount,
-                PriceAtTransaction = (double)price,
+                PriceAtTransaction = (decimal)price,
                 TransactionType = type
             };
         else
