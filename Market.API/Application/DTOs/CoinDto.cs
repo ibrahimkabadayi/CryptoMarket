@@ -4,6 +4,6 @@ public class CoinDto
 {
     public string Name { get; set; } = string.Empty;
     public string Symbol { get; set; } = string.Empty;
-    public double CurrentPrice { get; set; }
-    public double MarketCap { get; set; }
+    public decimal CurrentPrice { get; set; }
+    public decimal MarketCap { get; set; }
 }

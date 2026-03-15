@@ -10,7 +10,7 @@ namespace Market.API.Application.Services;
 
 public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublishEndpoint publishEndpoint, IRedisCacheService cacheService) : ICoinService
 {
-    public async Task<string> AddCoin(string Name, string Symbol, double Price, double MarketCap)
+    public async Task<string> AddCoin(string Name, string Symbol, decimal Price, decimal MarketCap)
     {
         try
         {

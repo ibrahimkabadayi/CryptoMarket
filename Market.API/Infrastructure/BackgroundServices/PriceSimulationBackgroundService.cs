@@ -30,8 +30,8 @@ public class PriceSimulationBackgroundService(IServiceScopeFactory scopeFactory,
 
                 foreach (var coin in coins)
                 {
-                    double fluctuationPercentage = (random.NextDouble() * 2) - 1;
-                    double priceChange = coin.CurrentPrice * (fluctuationPercentage / 100);
+                    decimal fluctuationPercentage = ((decimal)random.NextDouble() * 2) - 1;
+                    decimal priceChange = coin.CurrentPrice * (fluctuationPercentage / 100);
 
                     coin.CurrentPrice += priceChange;
                     coin.LastUpdated = DateTime.UtcNow;
