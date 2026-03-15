@@ -5,9 +5,9 @@ namespace Portfolio.API.Application.Interfaces;
 public interface IWalletService
 {
     Task<string> CreateWallet(Guid UserId);
-    Task<string> DepositMoney(Guid WalletId, double Amount);
-    Task<string> DepositMoney(string WalletAddress, double Amount);
+    Task<string> DepositMoney(Guid WalletId, decimal Amount);
+    Task<string> DepositMoney(string WalletAddress, decimal Amount);
     Task<string> TransferAsset(TransferAssetDto dto);
-    Task<string> BuyAsset(Guid WalletId, string Symbol, double CurrentPrice, double Amount);
+    Task<string> BuyAsset(Guid WalletId, string Symbol, decimal CurrentPrice, decimal Amount);
     Task<Guid> GetWalletIdByUserId(Guid userId);
 }

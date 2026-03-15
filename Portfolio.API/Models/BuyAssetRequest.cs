@@ -4,6 +4,6 @@ public class BuyAssetRequest
 {
     public Guid WalletId { get; set; }
     public string Symbol { get; set; } = string.Empty;
-    public double BuyingPrice { get; set; }
-    public double Amount { get; set; }
+    public decimal BuyingPrice { get; set; }
+    public decimal Amount { get; set; }
 }

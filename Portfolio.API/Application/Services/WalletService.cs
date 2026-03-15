@@ -10,7 +10,7 @@ namespace Portfolio.API.Application.Services;
 
 public class WalletService(IWalletRepository walletRepository, IAssetRepository assetRepository, ITransactionService transactionService, IPublishEndpoint publishEndpoint, IAssetService assetService) : IWalletService
 {
-    public async Task<string> BuyAsset(Guid WalletId, string Symbol, double CurrentPrice, double Amount)
+    public async Task<string> BuyAsset(Guid WalletId, string Symbol, decimal CurrentPrice, decimal Amount)
     {
         var wallet = await walletRepository.GetWalletWithAssetsAsync(WalletId);
 
@@ -70,7 +70,7 @@ public class WalletService(IWalletRepository walletRepository, IAssetRepository 
         return generatedAddress;
     }
 
-    public async Task<string> DepositMoney(Guid WalletId, double Amount)
+    public async Task<string> DepositMoney(Guid WalletId, decimal Amount)
     {
         try
         {
@@ -92,7 +92,7 @@ public class WalletService(IWalletRepository walletRepository, IAssetRepository 
         }
     }
 
-    public async Task<string> DepositMoney(string WalletAddress, double Amount)
+    public async Task<string> DepositMoney(string WalletAddress, decimal Amount)
     {
         try
         {

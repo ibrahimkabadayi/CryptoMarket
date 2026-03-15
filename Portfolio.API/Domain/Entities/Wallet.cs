@@ -6,6 +6,6 @@ public class Wallet : BaseEntity
     public string Address { get; set; } = string.Empty;
     public List<Asset> Assets { get; set; } = [];
     public List<Transaction> Transactions { get; set; } = [];
-    public double FiatBalance { get; set; } = 0;
-    public double Value { get; set; } = 0;
+    public decimal FiatBalance { get; set; } = 0;
+    public decimal Value { get; set; } = 0;
 }

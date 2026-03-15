@@ -8,7 +8,7 @@ public class Transaction : BaseEntity
     public Wallet Wallet { get; set; }
     public Guid AssetId { get; set; }
     public string Symbol { get; set; } = string.Empty;
-    public double Amount { get; set; }
-    public double PriceAtTransaction { get; set; }
+    public decimal Amount { get; set; }
+    public decimal PriceAtTransaction { get; set; }
     public TransactionType TransactionType { get; set; }
 }

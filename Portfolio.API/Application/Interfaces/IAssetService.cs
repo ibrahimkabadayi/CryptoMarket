@@ -4,5 +4,5 @@ namespace Portfolio.API.Application.Interfaces;
 
 public interface IAssetService
 {
-    Task<Asset> AddAssetToWalletThatHasThatAsset(Asset asset, double buyingPrice, double quantity);
+    Task<Asset> AddAssetToWalletThatHasThatAsset(Asset asset, decimal buyingPrice, decimal quantity);
 }

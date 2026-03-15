@@ -6,7 +6,7 @@ namespace Portfolio.API.Application.Services;
 
 public class AssetService(IAssetRepository assetRepository) : IAssetService
 {
-    public async Task<Asset> AddAssetToWalletThatHasThatAsset(Asset asset, double buyingPrice, double quantity)
+    public async Task<Asset> AddAssetToWalletThatHasThatAsset(Asset asset, decimal buyingPrice, decimal quantity)
     {
         var currentAssetValue = asset.Quantity * asset.AverageBuyPrice;
         currentAssetValue += buyingPrice * quantity;

@@ -4,5 +4,5 @@ namespace Portfolio.API.Application.Interfaces;
 
 public interface ITransactionService
 {
-    Task CreateTransactionRecordAsync(Guid walletId, string symbol, double amount, double? price, TransactionType type);
+    Task CreateTransactionRecordAsync(Guid walletId, string symbol, decimal amount, decimal? price, TransactionType type);
 }
