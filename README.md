@@ -2,9 +2,53 @@
 
 A robust real-time cryptocurrency market application built with a modern microservices architecture, featuring secure authentication, market data management, portfolio tracking, and real-time notifications.
 
-##  Architecture Overview
+## Architecture Overview
 
 The project is designed using **Microservices Architecture** with a focus on scalability, decoupling, and high availability. It utilizes an **API Gateway** as the single entry point and asynchronous messaging for inter-service communication.
+
+```mermaid
+  graph TB
+    subgraph clients["Client Layer"]
+        W["Web UI"]
+        M["Mobile UI"]
+    end
+
+    W & M --> GW["API Gateway"]
+
+    GW --> RMQ
+
+    subgraph backend["Microservices Layer"]
+        RMQ[["RabbitMQ"]]
+
+        RMQ <--> ID["Identity Service"]
+        RMQ <--> NO["Notification Service"]
+        RMQ <--> MK["Market Service"]
+        RMQ <--> PF["Portfolio Service"]
+    end
+
+    ID  --> PG1[("PostgreSQL")]
+    NO  --> PG2[("PostgreSQL")]
+    MK  --> MG[("MongoDB")]
+    MK  --> RD1[("Redis")]
+    PF  --> PG3[("PostgreSQL")]
+    PF  --> RD2[("Redis")]
+
+    classDef ui       fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a,rx:8
+    classDef gw       fill:#fef9c3,stroke:#eab308,color:#713f12
+    classDef bus      fill:#ede9fe,stroke:#7c3aed,color:#3b0764
+    classDef svc      fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef postgres fill:#fff7ed,stroke:#ea580c,color:#7c2d12
+    classDef mongo    fill:#fef2f2,stroke:#dc2626,color:#7f1d1d
+    classDef redis    fill:#fdf4ff,stroke:#a21caf,color:#581c87
+
+    class W,M ui
+    class GW gw
+    class RMQ bus
+    class ID,NO,MK,PF svc
+    class PG1,PG2,PG3 postgres
+    class MG mongo
+    class RD1,RD2 redis
+```
 
 ###  Services Breakdown
 
