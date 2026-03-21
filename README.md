@@ -65,6 +65,55 @@ Services communicate asynchronously using **MassTransit** over **RabbitMQ**:
 -   `UserCreatedEvent`: Published by `Identity.API` when a user registers; consumed by `Portfolio.API` to create an initial wallet.
 -   `AssetTransferEvent`: Consumed by `Notifications.API` to trigger user notifications.
 
+#### Real-time Trading Engine & Limit Order Flow
+
+To prevent database bottlenecks during high-frequency price updates, the system utilizes a hybrid approach combining RabbitMQ streams and Redis in-memory caching.
+
+```mermaid
+graph LR
+    subgraph Market API [Market.API Bounded Context]
+        direction TB
+        MarketMongo[(MongoDB<br/>MarketDb)]
+        MarketRedis[(Redis<br/>Coin Cache)]
+        PriceSim[PriceSimulation<br/>BackgroundService]
+
+        MarketMongo -->|1. Reads Coins| PriceSim
+        PriceSim -->|2. Updates Price| MarketRedis
+    end
+
+    subgraph Message Broker
+        RMQ>RabbitMQ<br/>Event Bus]
+    end
+
+    PriceSim -->|3. Publish: CoinPriceEvent| RMQ
+
+    subgraph Portfolio API
+        direction TB
+        PortPgSQL[(PostgreSQL<br/>PortfolioDb)]
+        PortRedis[(Redis<br/>Limit Order Cache)]
+        OrderSvc[LimitOrderController<br/>API Service]
+        Consumer[PriceEventConsumer<br/>BackgroundService]
+
+        OrderSvc -->|A. Save Order & Lock Funds| PortPgSQL
+        OrderSvc -->|B. Cache Target Price| PortRedis
+
+        Consumer -->|C. Check Target Price| PortRedis
+        Consumer -->|D. Execute Trade & Update Balance| PortPgSQL
+    end
+
+    RMQ -->|4. Consume: CoinPriceEvent| Consumer
+    
+    classDef database fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef service fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef broker fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    
+    class MarketMongo,MarketRedis,PortPgSQL,PortRedis database;
+    class PriceSim,OrderSvc,Consumer service;
+    class RMQ broker;
+```
+
+As illustrated above, `Market.API` continuously streams price events via RabbitMQ. `Portfolio.API` consumes these events and evaluates them against active limit orders stored in a local Redis cache, ensuring PostgreSQL is only queried when a trade execution is strictly required.
+
 ##  Technology Stack
 
 -   **Runtime**: .NET 9.0
