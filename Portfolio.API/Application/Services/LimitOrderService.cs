@@ -9,9 +9,9 @@ using Shared.Messages;
 
 namespace Portfolio.API.Application.Services;
 
-public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWalletService walletService, IPublishEndpoint publishEndpoint, IMapper mapper) : ILimitOrderService
+public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWalletService walletService, IPublishEndpoint publishEndpoint, IMapper mapper, ICacheService cacheService) : ILimitOrderService
 {
-    public async Task<string> ApplyLimitOrder(LimitOrderDto limitOrder)
+    public async Task<string> ApplyLimitOrder(ApplyLimitOrderDto limitOrder, decimal price)
     {
         if (limitOrder == null)
         {
@@ -22,16 +22,16 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         {
             try
             {
-                await walletService.BuyAsset(limitOrder.WalletId, limitOrder.Symbol, limitOrder.TargetPrice, limitOrder.Amount);
+                await walletService.BuyAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount);
 
-                await publishEndpoint.Publish(new LimitOrderOccuredEvent 
-                { 
-                    Amount = limitOrder.Amount,
-                    Symbol = limitOrder.Symbol,
-                    Price = limitOrder.TargetPrice,
-                    UserId = limitOrder.UserId,
-                    Ordertype = "Buy"
-                });                
+              //  await publishEndpoint.Publish(new LimitOrderOccuredEvent 
+               // { 
+                //    Amount = limitOrder.Amount,
+                 //   Symbol = limitOrder.Symbol,
+                  //  Price = price,
+                   // UserId = limitOrder.UserId,
+                   // Ordertype = "Buy"
+               // });                
             }
             catch (Exception ex)
             {
@@ -40,28 +40,19 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         }
         else
         {
-
-            throw new NotImplementedException();
-
-            //await walletService.SellAsset();
-            //
+            await walletService.SellAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount);
+            
             //await publishEndpoint.Publish(new LimitOrderOccuredEvent
             //{
-            //  Amount = limitOrder.Amount,
-            //  Symbol = limitOrder.Symbol,
-            //  Price = limitOrder.TargetPrice,
-            //  UserId = limitOrder.UserId,
-            //  Ordertype = "Sell"
+            //    Amount = limitOrder.Amount,
+            //    Symbol = limitOrder.Symbol,
+            //    Price = price,
+            //    UserId = limitOrder.UserId,
+            //    Ordertype = "Sell"
             //});
         }
 
-        limitOrder.OrderStatus = LimitOrderStatus.Filled;
-        limitOrder.CompletedAt = DateTime.UtcNow;
-        limitOrder.UpdatedDate = DateTime.UtcNow;
-
-        var entity = mapper.Map<LimitOrder>(limitOrder);
-
-        await limitOrderRepository.UpdateAsync(entity);
+        await limitOrderRepository.UpdateAsync(limitOrder.Id, LimitOrderStatus.Filled);
 
         return "Success: Limit order applied";
     }
@@ -81,6 +72,9 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         };
 
         await limitOrderRepository.AddAsync(limitOrder);
+
+        var key = $"{orderDto.Symbol}Orders";
+        await cacheService.RemoveAsync(key);
     }
 
     public async Task DeleteLimitOrderAsync(Guid limitOrderId)
@@ -128,5 +122,23 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         await limitOrderRepository.UpdateAsync(limitOrder);
 
         return "Success: Limit Order Updated";
+    }
+
+    public async Task<List<LimitOrder>> GetLimitOrdersBySymbol(string symbol)
+    {
+        var key = $"{symbol}Orders";
+
+        var limitOrders = await cacheService.GetAsync<List<LimitOrder>>(key);
+
+        if (limitOrders is not null)
+        {
+            return limitOrders;
+        }
+
+        limitOrders = await limitOrderRepository.FindAsync(x => x.Symbol == symbol);
+
+        await cacheService.SetAsync(key, limitOrders, TimeSpan.FromSeconds(5));
+
+        return limitOrders;
     }
 }
