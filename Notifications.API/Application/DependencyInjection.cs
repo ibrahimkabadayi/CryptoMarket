@@ -18,6 +18,7 @@ public static class DependencyInjection
         //services.AddAutoMapper(cfg => cfg.AddProfile<UserMapping>());
 
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IPriceAlertService, PriceAlertService>();
 
         return services;
     }

@@ -1,5 +1,15 @@
-﻿namespace Notifications.API.Application.Mappings;
+﻿using AutoMapper;
+using Notifications.API.Application.DTOs;
+using Notifications.API.Domain.Entities;
 
-public class PriceAlertMapping
+namespace Notifications.API.Application.Mappings;
+
+public class PriceAlertMapping : Profile 
 {
+    public PriceAlertMapping()
+    {
+        CreateMap<PriceAlert, PriceAlertDto>();
+
+        CreateMap<PriceAlertDto, PriceAlert>();
+    }
 }
