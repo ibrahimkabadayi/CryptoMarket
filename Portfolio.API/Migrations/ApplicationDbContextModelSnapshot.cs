@@ -28,14 +28,14 @@ namespace Portfolio.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<double>("AverageBuyPrice")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("AverageBuyPrice")
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double>("Quantity")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Symbol")
                         .IsRequired()
@@ -61,14 +61,17 @@ namespace Portfolio.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double>("LimitPrice")
-                        .HasColumnType("double precision");
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("integer");
 
                     b.Property<int>("OrderType")
                         .HasColumnType("integer");
@@ -77,13 +80,21 @@ namespace Portfolio.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<decimal>("TargetPrice")
+                        .HasColumnType("numeric");
+
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("WalletId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("WalletId");
 
                     b.ToTable("LimitOrders");
                 });
@@ -94,8 +105,8 @@ namespace Portfolio.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<double>("Amount")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
 
                     b.Property<Guid>("AssetId")
                         .HasColumnType("uuid");
@@ -103,8 +114,8 @@ namespace Portfolio.API.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double>("PriceAtTransaction")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("PriceAtTransaction")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Symbol")
                         .IsRequired()
@@ -140,10 +151,10 @@ namespace Portfolio.API.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double>("FiatBalance")
+                    b.Property<decimal>("FiatBalance")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("double precision")
-                        .HasDefaultValue(0.0);
+                        .HasColumnType("numeric")
+                        .HasDefaultValue(0m);
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("timestamp with time zone");
@@ -151,8 +162,8 @@ namespace Portfolio.API.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<double>("Value")
-                        .HasColumnType("double precision");
+                    b.Property<decimal>("Value")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
@@ -165,6 +176,17 @@ namespace Portfolio.API.Migrations
                         .WithMany("Assets")
                         .HasForeignKey("WalletId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Wallet");
+                });
+
+            modelBuilder.Entity("Portfolio.API.Domain.Entities.LimitOrder", b =>
+                {
+                    b.HasOne("Portfolio.API.Domain.Entities.Wallet", "Wallet")
+                        .WithMany()
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Wallet");
