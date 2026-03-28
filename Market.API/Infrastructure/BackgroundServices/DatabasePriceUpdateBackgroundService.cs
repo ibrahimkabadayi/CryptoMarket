@@ -29,7 +29,7 @@ public class DatabasePriceUpdateBackgroundService(IServiceScopeFactory scopeFact
                 foreach (Coin coin in coins)
                 {
                     await coinRepository.UpdateAsync(coin.Id, coin);
-                    logger.LogInformation("Coins collection updated.");
+                    //logger.LogInformation("Coins collection updated.");
                 }
             }
             catch(Exception ex)
@@ -37,7 +37,7 @@ public class DatabasePriceUpdateBackgroundService(IServiceScopeFactory scopeFact
                 logger.LogError("Error: " + ex.Message);
             }          
 
-            await Task.Delay(10000, stoppingToken);
+            await Task.Delay(1000, stoppingToken);
         }
     }
 }

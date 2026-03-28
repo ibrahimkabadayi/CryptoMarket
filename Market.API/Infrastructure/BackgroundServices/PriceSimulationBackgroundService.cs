@@ -1,6 +1,8 @@
 ﻿using Market.API.Application.Interfaces;
 using Market.API.Domain.Entities;
 using Market.API.Domain.Interfaces;
+using MassTransit;
+using Shared.Messages;
 
 namespace Market.API.Infrastructure.BackgroundServices;
 
@@ -13,6 +15,7 @@ public class PriceSimulationBackgroundService(IServiceScopeFactory scopeFactory,
 
         using var scope = scopeFactory.CreateScope();
         var coinRepository = scope.ServiceProvider.GetRequiredService<ICoinRepository>();
+        var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
 
         var cacheKey = "market:coins";
         var coins = await cacheService.GetAsync<List<Coin>>(cacheKey);
@@ -36,7 +39,9 @@ public class PriceSimulationBackgroundService(IServiceScopeFactory scopeFactory,
                     coin.CurrentPrice += priceChange;
                     coin.LastUpdated = DateTime.UtcNow;
 
-                    logger.LogInformation($"{coin.Symbol} yeni fiyatı: {coin.CurrentPrice:C2}");
+                    //logger.LogInformation($"{coin.Symbol} yeni fiyatı: {coin.CurrentPrice:C2}");
+
+                    await publishEndpoint.Publish(new CoinPriceEvent { Price = coin.CurrentPrice, Symbol = coin.Symbol}, stoppingToken);
                 }
 
                 await cacheService.SetAsync(cacheKey, coins);
@@ -46,7 +51,7 @@ public class PriceSimulationBackgroundService(IServiceScopeFactory scopeFactory,
                 logger.LogError($"Error during simulation: {ex.Message}");
             }
 
-            await Task.Delay(1000, stoppingToken);
+            await Task.Delay(100, stoppingToken);
         }
     }
 }
