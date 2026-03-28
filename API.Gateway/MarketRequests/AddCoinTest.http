@@ -1,0 +1,9 @@
+POST http://localhost:5000/api/Market/add_coin
+Content-Type: application/json
+
+{
+  "Name": "LiteCoin",
+  "Symbol": "LTC",
+  "Price": 80,
+  "MarketCap": 89000000
+}

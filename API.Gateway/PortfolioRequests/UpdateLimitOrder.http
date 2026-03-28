@@ -1,0 +1,8 @@
+PATCH http://localhost:5000/api/LimitOrder/update_limit_order
+Content-Type: application/json
+
+{
+    "Id": "2177e8e6-ce3e-43fe-8537-d634de671508",
+    "Amount": 0.00001,
+    "TargetPrice": 80000
+}

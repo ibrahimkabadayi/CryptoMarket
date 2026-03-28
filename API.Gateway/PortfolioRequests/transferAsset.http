@@ -1,0 +1,9 @@
+POST http://localhost:5000/api/Wallet/transfer_asset
+Content-Type: application/json
+
+{
+  "FromWalletId": "c409d509-af18-4527-8030-38ca09395c31",
+  "TargetWalletAddress": "0xca38b004f85141d1b11602d44f1367e1",
+  "Symbol": "BTC",
+  "AssetAmount": "0.08"
+}

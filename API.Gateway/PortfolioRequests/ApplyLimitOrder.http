@@ -1,0 +1,11 @@
+POST http://localhost:5000/api/LimitOrder/create_limit_order
+Content-Type: application/json
+
+{
+    "WalletId": "887f497a-7233-4083-80df-1607b0f2ce38",
+    "UserId": "019d170a-ff1a-72c2-b5b4-d291e8008f1b",
+    "Symbol": "BTC",
+    "TargetPrice": "21000",
+    "Amount": 0.0001,
+    "OrderType": 1
+}
