@@ -11,14 +11,16 @@ namespace Identity.API.Application.Services;
 
 public class UserService(IUserRepository userRepository, IMapper mapper, IPublishEndpoint publishEndpoint, IAuthenticationService authenticationService, UserManager<AppUser> userManager) : IUserService
 {
-    public async Task<string> AddUserAsync(string userName, string email, string password)
+    public async Task<string> AddUserAsync(string userName, string firstName, string lastName, string email, string password)
     {
         try
         {
             var addUser = new AppUser
             {
                 UserName = userName,
-                Email = email
+                Email = email,
+                FirstName = firstName,
+                LastName = lastName,
             };
 
             var result = await userManager.CreateAsync(addUser, password);

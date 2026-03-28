@@ -12,7 +12,7 @@ public class AuthController(IUserService userService, IAuthenticationService aut
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
     {
-        var result = await userService.AddUserAsync(request.UserName, request.Email, request.Password);
+        var result = await userService.AddUserAsync(request.UserName, request.FirstName, request.LastName, request.Email, request.Password);
 
         if (result != null && result.StartsWith("eyJ"))
         {
