@@ -22,7 +22,7 @@ public class Program
         builder.Services.AddMassTransit(configuration =>
         {
             configuration.AddConsumer<AssetTransferConsumer>();
-            configuration.AddConsumer<LimitOrderConsumer>();
+            //configuration.AddConsumer<LimitOrderConsumer>();
 
             configuration.UsingRabbitMq((context, cfg) =>
             {
@@ -35,7 +35,7 @@ public class Program
                 cfg.ReceiveEndpoint("notification-asset-transfared-queue", e =>
                 {
                     e.ConfigureConsumer<AssetTransferConsumer>(context);
-                    e.ConfigureConsumer<LimitOrderConsumer>(context);
+                   // e.ConfigureConsumer<LimitOrderConsumer>(context);
                 });
             });
         });
@@ -48,7 +48,6 @@ public class Program
         }
 
         app.UseAuthorization();
-
 
         app.MapControllers();
 

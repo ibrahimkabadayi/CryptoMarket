@@ -10,6 +10,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy 
+      postgres.db:
+        condition: service_started
 
   market.api:
     image: ${DOCKER_REGISTRY-}marketapi
@@ -22,6 +24,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      my-mongodb:
+        condition: service_started
 
   notifications.api:
     image: ${DOCKER_REGISTRY-}notificationsapi
@@ -34,8 +38,10 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      postgres.db:
+        condition: service_started
     ports:
-      - "6000:8080"
+        - "6000:8080"     
 
   portfolio.api:
     image: ${DOCKER_REGISTRY-}portfolioapi
@@ -48,8 +54,10 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      postgres.db:
+        condition: service_started
     ports:
-      - "7000:8080"
+       - "7000:8080"
 
   api.gateway:
     image: ${DOCKER_REGISTRY-}apigateway
@@ -70,19 +78,17 @@ services:
     ports:
       - "5432:5432"
     restart: always
+    volumes:
+       - postgres_data:/var/lib/postgresql/data
 
   my-mongodb:
-     image: mongo:latest
-     container_name: mongo_db
-     environment:
-       - MONGO_INITDB_DATABASE=MarketDb
-       - MONGO_INITDB_ROOT_USERNAME=mongouser
-       - MONGO_INITDB_ROOT_PASSWORD=admin
-     ports:
-       - "27017:27017"
-     restart: always
-     volumes:
-       - mongo_data:/data/db
+    image: mongo:latest
+    container_name: mongo_db
+    ports:
+      - "27017:27017"
+    restart: always
+    volumes:
+      - mongo_data:/data/db
 
   redis:
      image: redis:6.2-alpine
@@ -115,3 +121,4 @@ volumes:
   mongo_data:
   redis_data:
   rabbitmq_data:
+  postgres_data:  
