@@ -2,9 +2,53 @@
 
 A robust real-time cryptocurrency market application built with a modern microservices architecture, featuring secure authentication, market data management, portfolio tracking, and real-time notifications.
 
-##  Architecture Overview
+## Architecture Overview
 
 The project is designed using **Microservices Architecture** with a focus on scalability, decoupling, and high availability. It utilizes an **API Gateway** as the single entry point and asynchronous messaging for inter-service communication.
+
+```mermaid
+  graph TB
+    subgraph clients["Client Layer"]
+        W["Web UI"]
+        M["Mobile UI"]
+    end
+
+    W & M --> GW["API Gateway"]
+
+    GW --> RMQ
+
+    subgraph backend["Microservices Layer"]
+        RMQ[["RabbitMQ"]]
+
+        RMQ <--> ID["Identity Service"]
+        RMQ <--> NO["Notification Service"]
+        RMQ <--> MK["Market Service"]
+        RMQ <--> PF["Portfolio Service"]
+    end
+
+    ID  --> PG1[("PostgreSQL")]
+    NO  --> PG2[("PostgreSQL")]
+    MK  --> MG[("MongoDB")]
+    MK  --> RD1[("Redis")]
+    PF  --> PG3[("PostgreSQL")]
+    PF  --> RD2[("Redis")]
+
+    classDef ui       fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a,rx:8
+    classDef gw       fill:#fef9c3,stroke:#eab308,color:#713f12
+    classDef bus      fill:#ede9fe,stroke:#7c3aed,color:#3b0764
+    classDef svc      fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef postgres fill:#fff7ed,stroke:#ea580c,color:#7c2d12
+    classDef mongo    fill:#fef2f2,stroke:#dc2626,color:#7f1d1d
+    classDef redis    fill:#fdf4ff,stroke:#a21caf,color:#581c87
+
+    class W,M ui
+    class GW gw
+    class RMQ bus
+    class ID,NO,MK,PF svc
+    class PG1,PG2,PG3 postgres
+    class MG mongo
+    class RD1,RD2 redis
+```
 
 ###  Services Breakdown
 
@@ -20,6 +64,55 @@ The project is designed using **Microservices Architecture** with a focus on sca
 Services communicate asynchronously using **MassTransit** over **RabbitMQ**:
 -   `UserCreatedEvent`: Published by `Identity.API` when a user registers; consumed by `Portfolio.API` to create an initial wallet.
 -   `AssetTransferEvent`: Consumed by `Notifications.API` to trigger user notifications.
+
+#### Real-time Trading Engine & Limit Order Flow
+
+To prevent database bottlenecks during high-frequency price updates, the system utilizes a hybrid approach combining RabbitMQ streams and Redis in-memory caching.
+
+```mermaid
+graph LR
+    subgraph Market API [Market.API Bounded Context]
+        direction TB
+        MarketMongo[(MongoDB<br/>MarketDb)]
+        MarketRedis[(Redis<br/>Coin Cache)]
+        PriceSim[PriceSimulation<br/>BackgroundService]
+
+        MarketMongo -->|1. Reads Coins| PriceSim
+        PriceSim -->|2. Updates Price| MarketRedis
+    end
+
+    subgraph Message Broker
+        RMQ>RabbitMQ<br/>Event Bus]
+    end
+
+    PriceSim -->|3. Publish: CoinPriceEvent| RMQ
+
+    subgraph Portfolio API
+        direction TB
+        PortPgSQL[(PostgreSQL<br/>PortfolioDb)]
+        PortRedis[(Redis<br/>Limit Order Cache)]
+        OrderSvc[LimitOrderController<br/>API Service]
+        Consumer[PriceEventConsumer<br/>BackgroundService]
+
+        OrderSvc -->|A. Save Order & Lock Funds| PortPgSQL
+        OrderSvc -->|B. Cache Target Price| PortRedis
+
+        Consumer -->|C. Check Target Price| PortRedis
+        Consumer -->|D. Execute Trade & Update Balance| PortPgSQL
+    end
+
+    RMQ -->|4. Consume: CoinPriceEvent| Consumer
+    
+    classDef database fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef service fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef broker fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    
+    class MarketMongo,MarketRedis,PortPgSQL,PortRedis database;
+    class PriceSim,OrderSvc,Consumer service;
+    class RMQ broker;
+```
+
+As illustrated above, `Market.API` continuously streams price events via RabbitMQ. `Portfolio.API` consumes these events and evaluates them against active limit orders stored in a local Redis cache, ensuring PostgreSQL is only queried when a trade execution is strictly required.
 
 ##  Technology Stack
 
