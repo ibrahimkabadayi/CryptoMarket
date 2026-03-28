@@ -1,6 +1,8 @@
 ﻿
+using Notifications.API.Domain.Entities;
+
 namespace Notifications.API.Domain.Interfaces;
 
-public interface IPriceAlertRepository
+public interface IPriceAlertRepository : IRepository<PriceAlert>
 {
 }
