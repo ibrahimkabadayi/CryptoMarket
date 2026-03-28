@@ -10,6 +10,6 @@ public interface IWalletService
     Task WithdrawMoney(Guid WalletId, decimal Amount);
     Task<string> TransferAsset(TransferAssetDto dto);
     Task<string> BuyAsset(Guid WalletId, string Symbol, decimal CurrentPrice, decimal Amount);
-    Task<string> SellAsset(Guid WalletId, string Symbol, decimal Amount);
+    Task<string> SellAsset(Guid WalletId, string Symbol, decimal price, decimal Amount);
     Task<Guid> GetWalletIdByUserId(Guid userId);
 }

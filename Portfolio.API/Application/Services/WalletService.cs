@@ -209,8 +209,26 @@ public class WalletService
         await walletRepository.UpdateAsync(wallet);
     }
 
-    public Task<string> SellAsset(Guid WalletId, string Symbol, decimal Amount)
+    public async Task<string> SellAsset(Guid WalletId, string Symbol, decimal Price, decimal Amount)
     {
-        throw new NotImplementedException();
+        var wallet = await walletRepository.GetWalletWithAssetsAsync(WalletId);
+        if (wallet is null) return "Error: Wallet does not exist";
+      
+        var asset = wallet.Assets.FirstOrDefault(x => x.Symbol == Symbol);
+        asset!.Quantity -= Amount;
+        asset.UpdatedDate = DateTime.UtcNow;
+
+        if (asset.Quantity == 0)
+            wallet.Assets.Remove(asset);
+
+        wallet.FiatBalance += Price * Amount;
+        wallet.UpdatedDate = DateTime.UtcNow;
+
+        await walletRepository.UpdateAsync(wallet);
+        await assetRepository.UpdateAsync(asset);
+
+        await transactionService.CreateTransactionRecordAsync(WalletId, Symbol, Amount, Price, TransactionType.Sell);
+
+        return "Success!";
     }
 }
