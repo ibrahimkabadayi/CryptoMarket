@@ -2,6 +2,7 @@
 using MassTransit;
 using Portfolio.API.Application.DTOs;
 using Portfolio.API.Application.Interfaces;
+using Portfolio.API.Application.Services;
 using Portfolio.API.Domain.Entities;
 using Portfolio.API.Domain.Enums;
 using Shared.Messages;
@@ -25,21 +26,43 @@ public class CoinPriceConsumer(ILimitOrderService limitOrderService, ICacheServi
 
             if (order.OrderType == LimitOrderType.Buy && order.TargetPrice <= message.Price && order.OrderStatus == LimitOrderStatus.Pending) 
             {
-                var dto = mapper.Map<ApplyLimitOrderDto>(order);
-                await limitOrderService.ApplyLimitOrder(dto, message.Price);
+                order.OrderStatus = LimitOrderStatus.Proccesing;
+
+                var dtosToCache = mapper.Map<List<LimitOrderCacheDto>>(limitOrders);
+                await cacheService.SetAsync(key, dtosToCache, TimeSpan.FromSeconds(5));
+
                 Console.WriteLine($"Found one: Applying buy order at {message.Price}");
 
-                order.OrderStatus = LimitOrderStatus.Filled;
-                await cacheService.SetAsync(key, limitOrders);
+                var dto = mapper.Map<ApplyLimitOrderDto>(order);
+                var result = await limitOrderService.ApplyLimitOrder(dto, message.Price);
+
+                if (!result.StartsWith("Success"))
+                {
+                    Console.WriteLine($"[HATA BAŞARISIZ EMİR]: {result}");
+                    order.OrderStatus = LimitOrderStatus.Pending;
+                    dtosToCache = mapper.Map<List<LimitOrderCacheDto>>(limitOrders);
+                    await cacheService.SetAsync(key, dtosToCache, TimeSpan.FromSeconds(5));
+                }
             }
             else if (order.OrderType == LimitOrderType.Sell && order.TargetPrice >= message.Price && order.OrderStatus == LimitOrderStatus.Pending)
             {
-                var dto = mapper.Map<ApplyLimitOrderDto>(order);
-                await limitOrderService.ApplyLimitOrder(dto, message.Price);
+                order.OrderStatus = LimitOrderStatus.Proccesing;
+
+                var dtosToCache = mapper.Map<List<LimitOrderCacheDto>>(limitOrders);
+                await cacheService.SetAsync(key, dtosToCache, TimeSpan.FromSeconds(5));
+
                 Console.WriteLine($"Found one: Applying sell order at {message.Price}");
 
-                order.OrderStatus = LimitOrderStatus.Filled;
-                await cacheService.SetAsync(key, limitOrders);
+                var dto = mapper.Map<ApplyLimitOrderDto>(order);
+                var result = await limitOrderService.ApplyLimitOrder(dto, message.Price);
+
+                if (!result.StartsWith("Success"))
+                {
+                    Console.WriteLine($"[HATA BAŞARISIZ EMİR]: {result}");
+                    order.OrderStatus = LimitOrderStatus.Pending;
+                    dtosToCache = mapper.Map<List<LimitOrderCacheDto>>(limitOrders);
+                    await cacheService.SetAsync(key, dtosToCache, TimeSpan.FromSeconds(5));
+                }
             }
         }
     }

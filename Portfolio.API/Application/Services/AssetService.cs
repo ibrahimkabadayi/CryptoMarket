@@ -8,12 +8,13 @@ public class AssetService(IAssetRepository assetRepository) : IAssetService
 {
     public async Task<Asset> AddAssetToWalletThatHasThatAsset(Asset asset, decimal buyingPrice, decimal quantity)
     {
-        var currentAssetValue = asset.Quantity * asset.AverageBuyPrice;
-        currentAssetValue += buyingPrice * quantity;
+        var currentAssetValue = (asset.Quantity * asset.AverageBuyPrice) + (buyingPrice * quantity);
 
-        var newAveragePrice = currentAssetValue / quantity;
+        var totalQuantity = asset.Quantity + quantity;
+        var newAveragePrice = currentAssetValue / totalQuantity;
+
         asset.AverageBuyPrice = newAveragePrice;
-        asset.Quantity += quantity;
+        asset.Quantity = totalQuantity;
         asset.UpdatedDate = DateTime.UtcNow;
 
         await assetRepository.UpdateAsync(asset);

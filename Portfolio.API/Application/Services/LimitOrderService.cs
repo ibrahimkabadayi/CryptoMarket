@@ -17,12 +17,17 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         {
             return "Error: Limit order is corrupted";
         }
+
+        price = Math.Round(price, 4);
+
+        Console.WriteLine($"WalletId: {limitOrder.WalletId}\nSymbol:{limitOrder.Symbol}\nCurrentPrice:{price}");
         
         if(limitOrder.OrderType == LimitOrderType.Buy)
         {
             try
             {
-                await walletService.BuyAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount);
+                var result = await walletService.BuyAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount);
+                Console.WriteLine(result);
 
               //  await publishEndpoint.Publish(new LimitOrderOccuredEvent 
                // { 
@@ -35,6 +40,7 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return "Error: " + ex.Message;
             }
         }
