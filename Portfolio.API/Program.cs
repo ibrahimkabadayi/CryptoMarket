@@ -34,6 +34,7 @@ public class Program
         builder.Services.AddMassTransit(configuration =>
         {
             configuration.AddConsumer<UserCreatedConsumer>();
+            configuration.AddConsumer<CoinPriceConsumer>();
 
             configuration.UsingRabbitMq((context, cfg) =>
             {
@@ -46,6 +47,7 @@ public class Program
                 cfg.ReceiveEndpoint("portfolio-user-created-queue", e =>
                 {
                     e.ConfigureConsumer<UserCreatedConsumer>(context);
+                    e.ConfigureConsumer<CoinPriceConsumer>(context);
                 });
             });
         });
