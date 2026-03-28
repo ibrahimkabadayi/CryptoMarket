@@ -1,2 +1,0 @@
-GET http://localhost:5000/api/Market/get_all_coins
-Content-Type: application/json

@@ -1,9 +1,0 @@
-POST http://localhost:5000/api/Wallet/buy_asset
-Content-Type: application/json
-
-{
-  "WalletId": "c409d509-af18-4527-8030-38ca09395c31",
-  "Symbol": "BTC",
-  "BuyingPrice": "200",
-  "Amount": 0.2
-}

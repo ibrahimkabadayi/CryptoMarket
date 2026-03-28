@@ -1,7 +1,0 @@
-POST http://localhost:5000/api/Wallet/deposit_id
-Content-Type: application/json
-
-{
-  "WalletId": "9d575e90-49a3-4c3d-95b9-723dd8e7651b",
-  "Amount": 100
-}

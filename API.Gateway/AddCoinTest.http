@@ -1,9 +1,0 @@
-POST http://localhost:5000/api/Market/add_coin
-Content-Type: application/json
-
-{
-    "Name": "Bitcoin",
-    "Symbol": "BTC",
-    "Price": 70000,
-    "MarketCap": 30000000
-}
