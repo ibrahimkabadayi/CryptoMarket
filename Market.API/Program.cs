@@ -15,6 +15,11 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddOpenApi();
 
+        builder.Services.AddBybit(options =>
+        {
+           // options.Proxy = new ApiProxy("proxy_host", 1080); // SOCKS5/HTTP proxy
+        });
+
         builder.Services.AddApplicationServices();
         builder.Services.AddInfrastructureServices(builder.Configuration);
 

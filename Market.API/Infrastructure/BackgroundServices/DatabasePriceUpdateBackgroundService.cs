@@ -5,11 +5,11 @@ using Market.API.Domain.Interfaces;
 
 namespace Market.API.Infrastructure.BackgroundServices;
 
-public class DatabasePriceUpdateBackgroundService(IServiceScopeFactory scopeFactory, IRedisCacheService cacheService, ILogger<PriceSimulationBackgroundService> logger) : BackgroundService
+public class DatabasePriceUpdateBackgroundService(IServiceScopeFactory scopeFactory, IRedisCacheService cacheService, ILogger<DatabasePriceUpdateBackgroundService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("Continious database update machine for coins started");
+        logger.LogInformation("Continuous database update machine for coins started");
 
         using var scope = scopeFactory.CreateScope();
         var coinRepository = scope.ServiceProvider.GetRequiredService<ICoinRepository>();
@@ -29,7 +29,6 @@ public class DatabasePriceUpdateBackgroundService(IServiceScopeFactory scopeFact
                 foreach (Coin coin in coins)
                 {
                     await coinRepository.UpdateAsync(coin.Id, coin);
-                    //logger.LogInformation("Coins collection updated.");
                 }
             }
             catch(Exception ex)
