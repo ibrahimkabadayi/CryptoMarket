@@ -9,7 +9,7 @@ public class DbFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
     {
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile("appsettings.json", optional:false)
             .Build();
 
         var optionBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();

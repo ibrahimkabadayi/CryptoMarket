@@ -1,14 +1,20 @@
 ﻿using MassTransit;
+using Notifications.API.Application.Interfaces;
 using Shared.Messages;
 
 namespace Notifications.API.Consumers;
 
-public class AssetTransferConsumer : IConsumer<AssetTransferEvent>
+public class AssetTransferConsumer(INotificationService notificationService) : IConsumer<AssetTransferEvent>
 {
-    public Task Consume(ConsumeContext<AssetTransferEvent> context)
+    public async Task Consume(ConsumeContext<AssetTransferEvent> context)
     {
         var message = context.Message;
-        Console.WriteLine(message.Message);
-        return Task.CompletedTask;
+
+        await notificationService.CreateNotificationAsync(
+            message.SourceWalletUserId,
+            "Transfer Successfull!",
+            $"You have successfully trasfered {message.Quantity} {message.Symbol}",
+            Domain.Enums.NotificationType.AssetTransfer
+        );
     }
 }

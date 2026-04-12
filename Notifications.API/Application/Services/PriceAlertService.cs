@@ -1,7 +1,47 @@
-﻿using Notifications.API.Application.Interfaces;
+﻿using AutoMapper;
+using Notifications.API.Application.DTOs;
+using Notifications.API.Application.Interfaces;
+using Notifications.API.Domain.Entities;
+using Notifications.API.Domain.Interfaces;
 
 namespace Notifications.API.Application.Services;
 
-public class PriceAlertService : IPriceAlertService
+public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapper mapper) : IPriceAlertService
 {
+    public async Task CreateAlertAsync(Guid userId, string symbol, decimal targetPrice, bool isAbove)
+    {
+        var alert = new PriceAlert(userId, symbol, targetPrice, isAbove);
+
+        await priceAlertRepository.AddAsync(alert);
+    }
+
+    public async Task<IEnumerable<PriceAlertDto>> GetActiveAlertsByUserAsync(Guid userId)
+    {
+        var alerts = await priceAlertRepository.FindAsync(a => a.UserId == userId && a.IsActive);
+        var orderedAlerts = alerts.OrderByDescending(a => a.CreatedAt).ToList();
+
+        return mapper.Map<IEnumerable<PriceAlertDto>>(orderedAlerts);
+    }
+
+    public async Task<IEnumerable<PriceAlertDto>> GetAllAlertsByUserAsync(Guid userId)
+    {
+        var alerts = await priceAlertRepository.FindAsync(a => a.UserId == userId);
+        var orderedAlerts = alerts.OrderByDescending(a => a.CreatedAt).ToList();
+
+        return mapper.Map<IEnumerable<PriceAlertDto>>(orderedAlerts);
+    }
+
+    public async Task DeactivateAlertAsync(Guid alertId, Guid userId)
+    {
+        var alert = await priceAlertRepository.GetByIdAsync(alertId);
+
+        if (alert == null || alert.UserId != userId)
+        {
+            throw new Exception("Alarm bulunamadı veya yetkisiz erişim işlemi.");
+        }
+
+        alert.Deactivate();
+
+        await priceAlertRepository.UpdateAsync(alert);
+    }
 }

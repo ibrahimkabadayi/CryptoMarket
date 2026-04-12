@@ -11,11 +11,9 @@ public static class DependencyInjection
          this IServiceCollection services,
          IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Default Connection");
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
        services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
-
-        //services.AddAutoMapper(cfg => cfg.AddProfile<UserMapping>());
 
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IPriceAlertService, PriceAlertService>();
