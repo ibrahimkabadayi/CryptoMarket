@@ -130,14 +130,17 @@ public class WalletService
             return "Error: Could not find source wallet.";
 
         var targetWallet = await walletRepository.GetWalletWithAssetsAsync(dto.TargetWalletAddress);
-        if (targetWallet is null) return "Error: Wrong address for target wallet.";
+        if (targetWallet is null)
+            return "Error: Wrong address for target wallet.";
 
-        var asset = sourceWallet.Assets.First(x => x.Symbol.Equals(dto.Symbol));
-        if (asset is null) return "Error: Could not found asset in the wallet.";
+        var asset = sourceWallet.Assets.FirstOrDefault(x => x.Symbol.Equals(dto.Symbol));
+        if (asset is null)
+            return "Error: Could not find asset in the wallet.";
+
         if (asset.Quantity < dto.AssetAmount)
             return "Error: Transfer amount is bigger than asset quantity in the wallet.";
 
-        if(targetWallet.Assets is not null && targetWallet.Assets.Any(x => x.Symbol.Equals(asset.Symbol)))
+        if (targetWallet.Assets is not null && targetWallet.Assets.Any(x => x.Symbol.Equals(asset.Symbol)))
         {
             var assetInTargetWallet = targetWallet.Assets.First(x => x.Symbol.Equals(asset.Symbol));
             assetInTargetWallet.Quantity += dto.AssetAmount;
@@ -145,49 +148,44 @@ public class WalletService
         }
         else
         {
-            var newAsset = new Asset 
+            var newAsset = new Asset
             {
                 Symbol = asset.Symbol,
                 Quantity = dto.AssetAmount,
                 WalletId = targetWallet.Id,
-                AverageBuyPrice = asset.AverageBuyPrice,                
+                AverageBuyPrice = asset.AverageBuyPrice,
             };
-
             await assetRepository.AddAsync(newAsset);
-
-            targetWallet.Assets!.Add(newAsset);                    
-        };
-
-        await transactionService.CreateTransactionRecordAsync(targetWallet.Id, asset.Symbol, dto.AssetAmount, asset.AverageBuyPrice, TransactionType.Transfer);
+            targetWallet.Assets!.Add(newAsset);
+        }
 
         sourceWallet.Value -= asset.Quantity * asset.AverageBuyPrice;
         sourceWallet.UpdatedDate = DateTime.UtcNow;
 
+        targetWallet.Value += dto.AssetAmount * asset.AverageBuyPrice;
         targetWallet.UpdatedDate = DateTime.UtcNow;
-        targetWallet.Value += asset.Quantity * asset.AverageBuyPrice;
-
         await walletRepository.UpdateAsync(targetWallet);
 
         asset.Quantity -= dto.AssetAmount;
         asset.UpdatedDate = DateTime.UtcNow;
-
-        
         await assetRepository.UpdateAsync(asset);
 
-        await publishEndpoint.Publish(new AssetTransferEvent 
-        { 
-            Message = $"{asset.Symbol} transaction from {sourceWallet.Address} to {dto.TargetWalletAddress} with amount of {dto.AssetAmount} is successfull", 
+        await transactionService.CreateTransactionRecordAsync(sourceWallet.Id, asset.Symbol, dto.AssetAmount, asset.AverageBuyPrice, TransactionType.Transfer);
+        await transactionService.CreateTransactionRecordAsync(targetWallet.Id, asset.Symbol, dto.AssetAmount, asset.AverageBuyPrice, TransactionType.Transfer);
+
+        await publishEndpoint.Publish(new AssetTransferEvent
+        {
+            Message = $"{asset.Symbol} transaction from {sourceWallet.Address} to {dto.TargetWalletAddress} with amount of {dto.AssetAmount} is successfull",
             Quantity = dto.AssetAmount,
             Symbol = asset.Symbol,
             SourceWalletUserId = sourceWallet.UserId,
             TargetWalletUserId = targetWallet.UserId
         });
 
-        await transactionService.CreateTransactionRecordAsync(sourceWallet.Id, asset.Symbol, dto.AssetAmount, asset.AverageBuyPrice, TransactionType.Transfer);
-
         if (asset.Quantity == 0)
         {
             sourceWallet.Assets.Remove(asset);
+            await assetRepository.DeleteAsync(asset.Id);
         }
 
         await walletRepository.UpdateAsync(sourceWallet);

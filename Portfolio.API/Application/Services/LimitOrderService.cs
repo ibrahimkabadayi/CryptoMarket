@@ -29,14 +29,14 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
                 var result = await walletService.BuyAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount);
                 Console.WriteLine(result);
 
-              //  await publishEndpoint.Publish(new LimitOrderOccuredEvent 
-               // { 
+                //await publishEndpoint.Publish(new LimitOrderOccuredEvent
+                //{
                 //    Amount = limitOrder.Amount,
-                 //   Symbol = limitOrder.Symbol,
-                  //  Price = price,
-                   // UserId = limitOrder.UserId,
-                   // Ordertype = "Buy"
-               // });                
+                //    Symbol = limitOrder.Symbol,
+                //    Price = price,
+                //    UserId = limitOrder.UserId,
+                //    Ordertype = "Buy"
+                //});
             }
             catch (Exception ex)
             {
@@ -47,7 +47,7 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         else
         {
             await walletService.SellAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount);
-            
+
             //await publishEndpoint.Publish(new LimitOrderOccuredEvent
             //{
             //    Amount = limitOrder.Amount,
