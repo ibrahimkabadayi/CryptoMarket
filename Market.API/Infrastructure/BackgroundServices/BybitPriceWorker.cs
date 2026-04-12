@@ -1,55 +1,100 @@
-﻿using Bybit.Net.Interfaces.Clients;
-using CryptoExchange.Net.Interfaces.Clients;
+﻿using System.Text.Json.Serialization;
+using Bybit.Net.Interfaces.Clients;
 using MassTransit;
 using Shared.Messages;
 
 namespace Market.API.Infrastructure.BackgroundServices;
 
-public class BybitPriceWorker(
-    IBybitSocketClient socketClient,
-    IServiceScopeFactory scopeFactory,
-    ILogger<BybitPriceWorker> logger) : BackgroundService
+public class BybitPriceWorker : BackgroundService
 {
-    
-    protected async override Task ExecuteAsync(CancellationToken stoppingToken)
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<BybitPriceWorker> _logger;
+
+    private readonly Dictionary<string, decimal> _realPrices = new()
     {
-        logger.LogInformation("Bybit WebSocket bağlantısı başlatılıyor...");
+        ["BTCUSDT"] = 70000m,
+        ["ETHUSDT"] = 1800m,
+        ["SOLUSDT"] = 130m
+    };
 
-        using var scope = scopeFactory.CreateScope();
-        var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
+    public BybitPriceWorker(IHttpClientFactory httpClientFactory, ILogger<BybitPriceWorker> logger)
+    {
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
+    }
 
-        var symbolsToListen = new[] { "BTCUSDT", "SOLUSDT", "LINKUSDT" };
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        await Task.WhenAll(
+            FetchRealPricesLoop(stoppingToken),
+            SimulatePricesLoop(stoppingToken)
+        );
+    }
 
-        var subscribeResult = await socketClient.V5SpotApi.SubscribeToTickerUpdatesAsync(
-            symbolsToListen,
-            async data =>
+    private async Task FetchRealPricesLoop(CancellationToken ct)
+    {
+        var client = _httpClientFactory.CreateClient("bybit");
+
+        while (!ct.IsCancellationRequested)
+        {
+            try
             {
-                var symbol = data.Data.Symbol.Replace("USDT", "");
-                var currentPrice = data.Data.LastPrice;
-                var safePrice = Math.Round(currentPrice, 4);
-
-                await publishEndpoint.Publish(new CoinPriceEvent
+                foreach (var symbol in _realPrices.Keys.ToList())
                 {
-                    Symbol = symbol,
-                    Price = safePrice
-                }, stoppingToken);
+                    var response = await client.GetFromJsonAsync<BybitResponse>(
+                        $"v5/market/tickers?category=spot&symbol={symbol}", ct);
 
-                logger.LogInformation($"[BYBIT] {symbol} Fiyatı: {safePrice}");
-            });
+                    if (response?.RetCode == 0)
+                    {
+                        var price = decimal.Parse(
+                            response.Result.List[0].LastPrice,
+                            System.Globalization.CultureInfo.InvariantCulture);
 
-        if (!subscribeResult.Success)
-        {
-            logger.LogError($"Bybit bağlantısı koptu veya kurulamadı: {subscribeResult.Error}");
-        }
-        else
-        {
-            logger.LogInformation("Bybit WebSocket bağlantısı BAŞARILI! Canlı veriler akıyor...");
-        }
+                        _realPrices[symbol] = price;
+                        _logger.LogInformation("{Symbol}: {Price}", symbol, price);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Bybit fiyat çekme hatası");
+            }
 
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            await Task.Delay(1000, stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(2), ct);
         }
     }
-    
+
+    private async Task SimulatePricesLoop(CancellationToken ct)
+    {
+        var rng = new Random();
+
+        while (!ct.IsCancellationRequested)
+        {
+            foreach (var (symbol, basePrice) in _realPrices)
+            {
+                var fluctuation = (decimal)(rng.NextDouble() * 0.001 - 0.0005);
+                var simulatedPrice = Math.Round(basePrice * (1 + fluctuation), 2);
+
+                _logger.LogInformation("[Sim] {Symbol}: {Price}", symbol, simulatedPrice);
+                // buraya hub push logiğini ekle
+            }
+
+            await Task.Delay(100, ct);
+        }
+    }
 }
+
+// Response modelleri
+public record BybitResponse(
+    [property: JsonPropertyName("retCode")] int RetCode,
+    [property: JsonPropertyName("result")] BybitResult Result
+);
+
+public record BybitResult(
+    [property: JsonPropertyName("list")] List<BybitTicker> List
+);
+
+public record BybitTicker(
+    [property: JsonPropertyName("symbol")] string Symbol,
+    [property: JsonPropertyName("lastPrice")] string LastPrice
+);

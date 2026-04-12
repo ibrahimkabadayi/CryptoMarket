@@ -11,7 +11,9 @@ services:
       rabbitmq:
         condition: service_healthy 
       postgres.db:
-        condition: service_started
+        condition: service_started 
+    ports:
+        - "8001:8080"
 
   market.api:
     image: ${DOCKER_REGISTRY-}marketapi
@@ -26,6 +28,8 @@ services:
         condition: service_healthy
       my-mongodb:
         condition: service_started
+    ports:
+        - "8002:8080"
 
   notifications.api:
     image: ${DOCKER_REGISTRY-}notificationsapi
@@ -41,7 +45,7 @@ services:
       postgres.db:
         condition: service_started
     ports:
-        - "6000:8080"     
+        - "6000:8080"   
 
   portfolio.api:
     image: ${DOCKER_REGISTRY-}portfolioapi
