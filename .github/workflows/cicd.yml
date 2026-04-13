@@ -21,7 +21,7 @@ jobs:
         dotnet-version: '9.0.x' # Projen .NET 9 olduğu için bu sürümü seçiyoruz
 
     - name: Restore Dependencies
-      run: dotnet restore CryptoMarket.sln # Çözüm dosyasındaki tüm paketleri indirir
+      run: dotnet restore Identity.API.sln # Çözüm dosyasındaki tüm paketleri indirir
 
     - name: Build Solution
       run: dotnet build --no-restore --configuration Release
