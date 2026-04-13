@@ -11,8 +11,7 @@ namespace Notifications.API.Consumers
     public class CoinPriceConsumer(
         IPriceAlertService priceAlertService,
         INotificationService notificationService,
-        ICacheService cacheService,
-        IMapper mapper) : IConsumer<CoinPriceEvent>
+        ICacheService cacheService) : IConsumer<CoinPriceEvent>
     {
         public async Task Consume(ConsumeContext<CoinPriceEvent> context)
         {

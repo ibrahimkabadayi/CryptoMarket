@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Notifications.API.Application.DTOs;
 using Notifications.API.Application.Interfaces;
 using Notifications.API.Application.Services;
 using Notifications.API.Infrastructure.Context;
@@ -17,6 +18,10 @@ public static class DependencyInjection
 
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IPriceAlertService, PriceAlertService>();
+
+        services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+
+        services.AddTransient<IEmailService, EmailService>();
 
         return services;
     }

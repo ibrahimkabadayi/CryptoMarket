@@ -3,17 +3,19 @@ using Notifications.API.Application.DTOs;
 using Notifications.API.Application.Interfaces;
 using Notifications.API.Domain.Entities;
 using Notifications.API.Domain.Interfaces;
-using Notifications.API.Infrastructure.Repositories;
 
 namespace Notifications.API.Application.Services;
 
-public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapper mapper) : IPriceAlertService
+public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapper mapper, ICacheService cacheService) : IPriceAlertService
 {
     public async Task CreateAlertAsync(Guid userId, string symbol, decimal targetPrice, bool isAbove)
     {
         var alert = new PriceAlert(userId, symbol, targetPrice, isAbove);
 
         await priceAlertRepository.AddAsync(alert);
+
+        var key = alert.Symbol + "Alerts";
+        await cacheService.RemoveAsync(key);
     }
 
     public async Task<IEnumerable<PriceAlertDto>> GetActiveAlertsByUserAsync(Guid userId)
@@ -43,12 +45,15 @@ public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapp
 
         alert.Deactivate();
 
+        var key = alert.Symbol + "Alerts";
+        await cacheService.RemoveAsync(key);
+
         await priceAlertRepository.UpdateAsync(alert);
     }
 
     public async Task<List<PriceAlert>> GetActiveAlertsBySymbolAsync(string symbol)
     {
         var alerts = await priceAlertRepository.FindAsync(a => a.IsActive && a.Symbol == symbol);
-        return alerts.ToList();
+        return [.. alerts];
     }
 }
