@@ -2,9 +2,9 @@ name: CryptoMarket CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   # 1. ADIM: Kodun derlenmesi ve test edilmesi (Continuous Integration)
