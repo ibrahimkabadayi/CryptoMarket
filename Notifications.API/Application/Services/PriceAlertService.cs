@@ -3,6 +3,7 @@ using Notifications.API.Application.DTOs;
 using Notifications.API.Application.Interfaces;
 using Notifications.API.Domain.Entities;
 using Notifications.API.Domain.Interfaces;
+using Notifications.API.Infrastructure.Repositories;
 
 namespace Notifications.API.Application.Services;
 
@@ -43,5 +44,11 @@ public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapp
         alert.Deactivate();
 
         await priceAlertRepository.UpdateAsync(alert);
+    }
+
+    public async Task<List<PriceAlert>> GetActiveAlertsBySymbolAsync(string symbol)
+    {
+        var alerts = await priceAlertRepository.FindAsync(a => a.IsActive && a.Symbol == symbol);
+        return alerts.ToList();
     }
 }
