@@ -23,7 +23,7 @@ public class Program
         {
             configuration.AddConsumer<AssetTransferConsumer>();
             configuration.AddConsumer<LimitOrderConsumer>();
-            configuration.AddConsumer<CoinPriceEventConsumer>();
+            configuration.AddConsumer<CoinPriceConsumer>();
 
             configuration.UsingRabbitMq((context, cfg) =>
             {
@@ -37,7 +37,7 @@ public class Program
                 {
                     e.ConfigureConsumer<AssetTransferConsumer>(context);
                     e.ConfigureConsumer<LimitOrderConsumer>(context);
-                    e.ConfigureConsumer<CoinPriceEventConsumer>(context);
+                    e.ConfigureConsumer<CoinPriceConsumer>(context);
                 });
             });
         });
