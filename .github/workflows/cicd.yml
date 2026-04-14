@@ -24,7 +24,7 @@ jobs:
       run: dotnet restore Identity.API.sln # Çözüm dosyasındaki tüm paketleri indirir
 
     - name: Build Solution
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build Identity.API.sln --no-restore --configuration Release
       
     # İleride Unit Test eklersen bu yorum satırlarını kaldırabilirsin
     # - name: Run Tests
