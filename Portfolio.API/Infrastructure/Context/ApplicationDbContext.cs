@@ -10,6 +10,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Transaction> Assets { get; set; }
     public DbSet<Transaction> Transacitions { get; set; }
     public DbSet<LimitOrder> LimitOrders { get; set; }
+    public DbSet<TreasuryBalance> TreasuryBalances { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -19,5 +20,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.ApplyConfiguration(new WalletConfiguration());
         modelBuilder.ApplyConfiguration(new TransactionConfiguration());
         modelBuilder.ApplyConfiguration(new LimitOrderConfiguration());
+        modelBuilder.ApplyConfiguration(new TreasuryBalanceConfiguration());
     }
 }
