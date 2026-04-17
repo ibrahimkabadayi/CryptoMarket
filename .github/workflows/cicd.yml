@@ -38,9 +38,19 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master' 
     
     strategy:
-      # Matrix sayesinde aşağıdaki adımlar her bir mikroservis için paralel olarak ayrı ayrı çalıştırılır.
+      # Klasör adı (folder) ve imaj adını (image) ayrı ayrı tanımlıyoruz
       matrix:
-        service: [ 'Identity.API', 'Market.API', 'Portfolio.API', 'Notifications.API', 'API.Gateway' ]
+        include:
+          - folder: 'Identity.API'
+            image: 'identity-api'
+          - folder: 'Market.API'
+            image: 'market-api'
+          - folder: 'Portfolio.API'
+            image: 'portfolio-api'
+          - folder: 'Notifications.API'
+            image: 'notifications-api'
+          - folder: 'API.Gateway'
+            image: 'api-gateway'
 
     steps:
     - name: Checkout Repository
@@ -58,9 +68,10 @@ jobs:
     - name: Build and Push Docker Image
       uses: docker/build-push-action@v4
       with:
-        context: . # Tüm projenin ana dizini (Shared.Messages gibi ortak kütüphaneler için gerekli)
-        file: ./${{ matrix.service }}/Dockerfile # Hangi servisin Dockerfile'ı kullanılacak
+        context: . 
+        file: ./${{ matrix.folder }}/Dockerfile # Dosyayı bulmak için büyük/küçük harfli klasör adını kullanıyoruz
         push: true
         tags: |
-          ${{ secrets.DOCKER_USERNAME }}/cryptomarket-${{ matrix.service }}:latest
-          ${{ secrets.DOCKER_USERNAME }}/cryptomarket-${{ matrix.service }}:${{ github.sha }}
+          # İmajı etiketlemek için tamamen küçük harfli imaj adını kullanıyoruz
+          ${{ secrets.DOCKER_USERNAME }}/cryptomarket-${{ matrix.image }}:latest
+          ${{ secrets.DOCKER_USERNAME }}/cryptomarket-${{ matrix.image }}:${{ github.sha }}
