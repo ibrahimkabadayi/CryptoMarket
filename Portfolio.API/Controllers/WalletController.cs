@@ -78,7 +78,14 @@ public class WalletController(IWalletService walletService) : ControllerBase
     [HttpPost("sell_asset")]
     public async Task<IActionResult> SellAsset([FromBody] SellAssetRequest request)
     {
-        //var result = await walletService.SellAsset();
-        throw new NotImplementedException();
+        await walletService.SellAsset(request.WalletId, request.Symbol, request.Price, request.Amount, false);
+        return Ok();
+    }
+
+    [HttpGet("get_dashboard/{userId}")]
+    public async Task<IActionResult> GetDashboard(Guid userId)
+    {
+        var result = await walletService.GetPortfolioDashboardAsync(userId);
+        return Ok(new { result });
     }
 }

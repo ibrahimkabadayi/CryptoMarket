@@ -220,10 +220,10 @@ public class WalletService
     public async Task WithdrawMoney(Guid WalletId, decimal Amount)
     {
         var wallet = await walletRepository.GetByIdAsync(WalletId);
-        if (wallet == null)
-        {
-            return;
-        }
+
+        if (wallet == null) return;
+
+        if (wallet.FiatBalance < Amount) return;
 
         wallet.FiatBalance -= Amount;
         wallet.Value -= Amount;
@@ -276,5 +276,35 @@ public class WalletService
         }
 
         return "Success: Asset sold successfully";
+    }
+
+    public async Task<PortfolioDashboardDto> GetPortfolioDashboardAsync(Guid userId)
+    {
+        var walletId = await walletRepository.GetWalletIdByUserId(userId);
+        if (walletId == Guid.Empty) return null!;
+
+        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId);
+        if (wallet == null) return null!;
+
+        var assetDtos = wallet.Assets?.Select(a => new AssetDashboardDto
+        {
+            Symbol = a.Symbol,
+            Quantity = a.Quantity,
+            AverageBuyPrice = a.AverageBuyPrice
+        }).ToList() ?? [];
+
+        var recentTx = transactionService.GetTenLastTransaction(walletId);
+
+        var dashboard = new PortfolioDashboardDto
+        {
+            WalletId = wallet.Id,
+            Address = wallet.Address,
+            FiatBalance = wallet.FiatBalance,
+            Assets = assetDtos,
+            RecentTransactions = recentTx,
+            TotalInvestedValue = assetDtos.Sum(a => a.InvestedAmount)
+        };
+
+        return dashboard;
     }
 }

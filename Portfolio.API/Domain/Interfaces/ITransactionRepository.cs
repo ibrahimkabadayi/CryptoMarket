@@ -4,4 +4,5 @@ namespace Portfolio.API.Domain.Interfaces;
 
 public interface ITransactionRepository : IRepository<Transaction>
 {
+    List<Transaction> GetFirstTenTransactions(Guid walltId);
 }

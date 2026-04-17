@@ -12,4 +12,5 @@ public interface IWalletService
     Task<string> BuyAsset(Guid WalletId, string Symbol, decimal CurrentPrice, decimal Amount, bool isLimitOrder);
     Task<string> SellAsset(Guid WalletId, string Symbol, decimal price, decimal Amount, bool isLimitOrder);
     Task<Guid> GetWalletIdByUserId(Guid userId);
+    Task<PortfolioDashboardDto> GetPortfolioDashboardAsync(Guid userId);
 }
