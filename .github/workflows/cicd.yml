@@ -51,7 +51,9 @@ jobs:
             image: 'notifications-api'
           - folder: 'API.Gateway'
             image: 'api-gateway'
-
+    env:
+      EmailSettings__Password: ${{ secrets.EMAIL_PASSWORD }}
+      
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
