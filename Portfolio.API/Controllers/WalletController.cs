@@ -36,7 +36,7 @@ public class WalletController(IWalletService walletService) : ControllerBase
     {
         try
         {
-            var result = await walletService.BuyAsset(request.WalletId, request.Symbol, request.BuyingPrice, request.Amount);
+            var result = await walletService.BuyAsset(request.WalletId, request.Symbol, request.BuyingPrice, request.Amount, false);
 
             if (result.StartsWith("Success"))
                 return Ok(new { Message = result });
