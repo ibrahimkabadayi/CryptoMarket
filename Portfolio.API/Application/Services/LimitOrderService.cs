@@ -2,6 +2,7 @@
 using MassTransit;
 using Portfolio.API.Application.DTOs;
 using Portfolio.API.Application.Interfaces;
+using Portfolio.API.Application.Settings;
 using Portfolio.API.Domain.Entities;
 using Portfolio.API.Domain.Enums;
 using Portfolio.API.Domain.Interfaces;
@@ -21,22 +22,23 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         price = Math.Round(price, 4);
 
         Console.WriteLine($"WalletId: {limitOrder.WalletId}\nSymbol:{limitOrder.Symbol}\nCurrentPrice:{price}");
-        
-        if(limitOrder.OrderType == LimitOrderType.Buy)
+
+
+        if (limitOrder.OrderType == LimitOrderType.Buy)
         {
             try
             {
-                var result = await walletService.BuyAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount);
+                var result = await walletService.BuyAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount, true);
                 Console.WriteLine(result);
 
-                //await publishEndpoint.Publish(new LimitOrderOccuredEvent
-                //{
-                //    Amount = limitOrder.Amount,
-                //    Symbol = limitOrder.Symbol,
-                //    Price = price,
-                //    UserId = limitOrder.UserId,
-                //    Ordertype = "Buy"
-                //});
+                await publishEndpoint.Publish(new LimitOrderOccuredEvent
+                {
+                    Amount = limitOrder.Amount,
+                    Symbol = limitOrder.Symbol,
+                    Price = price,
+                    UserId = limitOrder.UserId,
+                    Ordertype = "Buy"
+                });
             }
             catch (Exception ex)
             {
@@ -46,16 +48,16 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         }
         else
         {
-            await walletService.SellAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount);
+            await walletService.SellAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount, true);
 
-            //await publishEndpoint.Publish(new LimitOrderOccuredEvent
-            //{
-            //    Amount = limitOrder.Amount,
-            //    Symbol = limitOrder.Symbol,
-            //    Price = price,
-            //    UserId = limitOrder.UserId,
-            //    Ordertype = "Sell"
-            //});
+            await publishEndpoint.Publish(new LimitOrderOccuredEvent
+            {
+                Amount = limitOrder.Amount,
+                Symbol = limitOrder.Symbol,
+                Price = price,
+                UserId = limitOrder.UserId,
+                Ordertype = "Sell"
+            });
         }
 
         await limitOrderRepository.UpdateAsync(limitOrder.Id, LimitOrderStatus.Filled);

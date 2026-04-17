@@ -11,6 +11,6 @@ public class BuyCoinConsumer(IWalletService walletService) : IConsumer<BuyCoinEv
         var message = context.Message;
         var walletId = await walletService.GetWalletIdByUserId(message.UserId);
 
-        await walletService.BuyAsset(walletId, message.Symbol, message.BuyPrice, message.BuyAmount);
+        await walletService.BuyAsset(walletId, message.Symbol, message.BuyPrice, message.BuyAmount, false);
     }
 }

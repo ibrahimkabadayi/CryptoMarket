@@ -8,6 +8,13 @@ public class TreasuryBalanceConfiguration : IEntityTypeConfiguration<TreasuryBal
 {
     public void Configure(EntityTypeBuilder<TreasuryBalance> builder)
     {
-        throw new NotImplementedException();
+        builder.HasKey(t => t.Id);
+
+        builder.Property(t => t.AssetSymbol)
+            .IsRequired()
+            .HasMaxLength(10);
+
+        builder.Property(t => t.TotalAmount)
+            .HasColumnType("decimal(18,8)");
     }
 }

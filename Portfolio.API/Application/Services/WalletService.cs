@@ -1,6 +1,8 @@
 ﻿using MassTransit;
+using MassTransit.Transports;
 using Portfolio.API.Application.DTOs;
 using Portfolio.API.Application.Interfaces;
+using Portfolio.API.Application.Settings;
 using Portfolio.API.Domain.Entities;
 using Portfolio.API.Domain.Enums;
 using Portfolio.API.Domain.Interfaces;
@@ -14,47 +16,69 @@ public class WalletService
         IAssetRepository assetRepository,
         ITransactionService transactionService,
         IPublishEndpoint publishEndpoint,
-        IAssetService assetService
+        FeeSettings feeSettings
     ) : IWalletService
 {
-    public async Task<string> BuyAsset(Guid WalletId, string Symbol, decimal CurrentPrice, decimal Amount)
+    public async Task<string> BuyAsset(Guid WalletId, string Symbol, decimal CurrentPrice, decimal Amount, bool isLimitOrder)
     {
         var wallet = await walletRepository.GetWalletWithAssetsAsync(WalletId);
 
-        if (wallet.FiatBalance < CurrentPrice * Amount)
+        if (wallet is null) return "Error: Wallet does not exist";
+
+        decimal totalCost = Amount * CurrentPrice;
+
+        if (wallet.FiatBalance < totalCost)
             return "Error: Not Enough Money!";
 
-        var walletAssets = wallet.Assets;
+        decimal feeRate = isLimitOrder ? feeSettings.MakerFeeRate : feeSettings.TakerFeeRate;
 
-        walletAssets ??= [];
+        decimal feeInCrypto = Amount * feeRate;
 
-        if (walletAssets.Any(x => x.Symbol.Equals(Symbol)))
+        decimal finalAmountToUser = Amount - feeInCrypto;
+
+        wallet.FiatBalance -= totalCost;
+        wallet.UpdatedDate = DateTime.UtcNow;
+
+        var walletAssets = wallet.Assets ?? [];
+        var asset = walletAssets.FirstOrDefault(x => x.Symbol == Symbol);
+
+        if (asset != null)
         {
-
-            var asset = walletAssets.First(x => x.Symbol.Equals(Symbol));
-            await assetService.AddAssetToWalletThatHasThatAsset(asset, CurrentPrice, Amount);
-        }      
-        else 
+            asset.Quantity += finalAmountToUser;
+            asset.UpdatedDate = DateTime.UtcNow;
+        }
+        else
         {
-            var boughtAsset = new Asset
+            asset = new Asset
             {
-                AverageBuyPrice = CurrentPrice,
-                WalletId = WalletId,
                 Symbol = Symbol,
-                Quantity = Amount
+                Quantity = finalAmountToUser,
+                WalletId = WalletId,
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow
             };
-
-            walletAssets.Add(boughtAsset);
-
-            await assetRepository.AddAsync(boughtAsset);
+            walletAssets.Add(asset);
+            wallet.Assets = walletAssets;
         }
 
-        wallet.UpdatedDate = DateTime.UtcNow;
-        wallet.FiatBalance -= Amount * CurrentPrice;
         await walletRepository.UpdateAsync(wallet);
-        await transactionService.CreateTransactionRecordAsync(WalletId, Symbol, Amount, CurrentPrice, TransactionType.Buy);
 
-        return "Success: Asset purchase is successfull";
+        await transactionService.CreateTransactionRecordAsync(WalletId, Symbol, finalAmountToUser, CurrentPrice, TransactionType.Buy);
+
+        if (feeInCrypto > 0)
+        {
+            var feeEvent = new FeeCollectionEvent
+            {
+                Symbol = Symbol,
+                FeeAmount = feeInCrypto,
+                UserId = wallet.UserId,
+                OccurredOn = DateTime.UtcNow
+            };
+
+            await publishEndpoint.Publish(feeEvent);
+        }
+
+        return "Success: Asset bought successfully";
     }
 
     public async Task<Guid> GetWalletIdByUserId(Guid userId)
@@ -207,26 +231,50 @@ public class WalletService
         await walletRepository.UpdateAsync(wallet);
     }
 
-    public async Task<string> SellAsset(Guid WalletId, string Symbol, decimal Price, decimal Amount)
+    public async Task<string> SellAsset(Guid WalletId, string Symbol, decimal Price, decimal Amount, bool isLimitOrder)
     {
         var wallet = await walletRepository.GetWalletWithAssetsAsync(WalletId);
         if (wallet is null) return "Error: Wallet does not exist";
-      
-        var asset = wallet.Assets.FirstOrDefault(x => x.Symbol == Symbol);
-        asset!.Quantity -= Amount;
+
+        var asset = wallet.Assets?.FirstOrDefault(x => x.Symbol == Symbol);
+        if (asset == null || asset.Quantity < Amount)
+        {
+            return "Error: Not enough asset to sell or asset not found!";
+        }
+
+        decimal totalCost = Amount * Price;
+        decimal feeRate = isLimitOrder ? feeSettings.MakerFeeRate : feeSettings.TakerFeeRate;
+        decimal feeAmount = totalCost * feeRate;
+
+        asset.Quantity -= Amount;
         asset.UpdatedDate = DateTime.UtcNow;
 
         if (asset.Quantity == 0)
-            wallet.Assets.Remove(asset);
+        {
+            wallet.Assets!.Remove(asset);
+        }
 
-        wallet.FiatBalance += Price * Amount;
+        wallet.FiatBalance += totalCost;
+        wallet.FiatBalance -= feeAmount;
         wallet.UpdatedDate = DateTime.UtcNow;
 
         await walletRepository.UpdateAsync(wallet);
-        await assetRepository.UpdateAsync(asset);
 
         await transactionService.CreateTransactionRecordAsync(WalletId, Symbol, Amount, Price, TransactionType.Sell);
 
-        return "Success!";
+        if (feeAmount > 0)
+        {
+            var feeEvent = new FeeCollectionEvent
+            {
+                Symbol = "USDT",
+                FeeAmount = feeAmount,
+                UserId = wallet.UserId,
+                OccurredOn = DateTime.UtcNow
+            };
+
+            await publishEndpoint.Publish(feeEvent);
+        }
+
+        return "Success: Asset sold successfully";
     }
 }
