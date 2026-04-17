@@ -35,7 +35,7 @@ jobs:
     name: Build & Push Docker Images
     needs: build-and-test # Bu adımın çalışması için önce 'build-and-test'in başarılı olması şart!
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' # Sadece main'e push yapıldığında çalışır
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' 
     
     strategy:
       # Matrix sayesinde aşağıdaki adımlar her bir mikroservis için paralel olarak ayrı ayrı çalıştırılır.
