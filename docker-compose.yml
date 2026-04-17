@@ -39,13 +39,14 @@ services:
     restart: always
     environment:
       - RabbitMQ__Host=rabbitmq
+      - EmailSettings__Password=${EMAIL_PASSWORD}
     depends_on:
       rabbitmq:
         condition: service_healthy
       postgres.db:
         condition: service_started
     ports:
-        - "6000:8080"   
+        - "6000:8080"  
 
   portfolio.api:
     image: ${DOCKER_REGISTRY-}portfolioapi
@@ -125,4 +126,4 @@ volumes:
   mongo_data:
   redis_data:
   rabbitmq_data:
-  postgres_data:  
+  postgres_data:   
