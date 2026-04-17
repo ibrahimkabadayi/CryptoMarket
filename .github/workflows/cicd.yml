@@ -72,6 +72,5 @@ jobs:
         file: ./${{ matrix.folder }}/Dockerfile # Dosyayı bulmak için büyük/küçük harfli klasör adını kullanıyoruz
         push: true
         tags: |
-          # İmajı etiketlemek için tamamen küçük harfli imaj adını kullanıyoruz
           ${{ secrets.DOCKER_USERNAME }}/cryptomarket-${{ matrix.image }}:latest
           ${{ secrets.DOCKER_USERNAME }}/cryptomarket-${{ matrix.image }}:${{ github.sha }}
