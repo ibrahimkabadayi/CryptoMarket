@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Notifications.API.Application.DTOs;
 using Notifications.API.Application.Interfaces;
 using Notifications.API.Application.Services;
+using Notifications.API.Application.Settings;
 using Notifications.API.Infrastructure.Context;
 
 namespace Notifications.API.Application;

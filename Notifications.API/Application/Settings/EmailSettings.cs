@@ -1,4 +1,4 @@
-﻿namespace Notifications.API.Application.DTOs;
+﻿namespace Notifications.API.Application.Settings;
 
 public class EmailSettings
 {

@@ -2,8 +2,8 @@
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using Notifications.API.Application.DTOs;
 using Notifications.API.Application.Interfaces;
+using Notifications.API.Application.Settings;
 
 namespace Notifications.API.Application.Services;
 
