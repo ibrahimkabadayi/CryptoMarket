@@ -1,4 +1,7 @@
+using System.Text;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Notifications.API.Application;
 using Notifications.API.Consumers;
 using Notifications.API.Infrastructure;
@@ -44,6 +47,24 @@ public class Program
             });
         });
 
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                var jwtSettings = builder.Configuration.GetSection("Jwt");
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidAudience = jwtSettings["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
+                };
+            });
+
+        builder.Services.AddAuthorization();
+
         var app = builder.Build();
 
         if (app.Environment.IsDevelopment())
@@ -51,6 +72,7 @@ public class Program
             app.MapOpenApi();
         }
 
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapControllers();

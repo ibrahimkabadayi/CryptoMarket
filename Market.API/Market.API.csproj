@@ -14,6 +14,7 @@
     <PackageReference Include="Bybit.Net" Version="6.10.0" />
     <PackageReference Include="MassTransit" Version="9.0.1" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="9.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.13" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.14" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
