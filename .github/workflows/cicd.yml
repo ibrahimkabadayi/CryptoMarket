@@ -51,8 +51,10 @@ jobs:
             image: 'notifications-api'
           - folder: 'API.Gateway'
             image: 'api-gateway'
+
     env:
       EmailSettings__Password: ${{ secrets.EMAIL_PASSWORD }}
+      Jwt__Key: ${{ secrets.JWT_SECRET_KEY }}
       
     steps:
     - name: Checkout Repository
