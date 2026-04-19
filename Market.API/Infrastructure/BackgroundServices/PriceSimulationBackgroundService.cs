@@ -42,8 +42,6 @@ public class PriceSimulationBackgroundService(
                     coin.CurrentPrice = trend.NextPrice(coin.CurrentPrice, rng);
                     coin.LastUpdated = DateTime.UtcNow;
 
-                    logger.LogInformation($"{coin.Symbol} Price: {coin.CurrentPrice}");
-
                     await publishEndpoint.Publish(
                         new CoinPriceEvent { Price = coin.CurrentPrice, Symbol = coin.Symbol },
                         stoppingToken);

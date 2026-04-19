@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using MassTransit;
 using Notifications.API.Application.Interfaces;
-using Notifications.API.Application.Services;
 using Notifications.API.Domain.Entities;
 using Notifications.API.Domain.Enums;
 using Shared.Messages;
