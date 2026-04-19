@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Portfolio.API.Application.DTOs;
 using Portfolio.API.Application.Interfaces;
 using Portfolio.API.Models;
@@ -82,9 +84,17 @@ public class WalletController(IWalletService walletService) : ControllerBase
         return Ok();
     }
 
-    [HttpGet("get_dashboard/{userId}")]
-    public async Task<IActionResult> GetDashboard(Guid userId)
+    [Authorize]
+    [HttpGet("get_dashboard")]
+    public async Task<IActionResult> GetDashboard()
     {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+        {
+            return Unauthorized("Geçersiz veya bozuk token.");
+        }
+
         var result = await walletService.GetPortfolioDashboardAsync(userId);
         return Ok(new { result });
     }

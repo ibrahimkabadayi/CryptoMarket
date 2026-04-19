@@ -27,7 +27,7 @@ public static class DependencyInjection
         services.AddScoped<IAssetRepository, AssetRepository>();
         services.AddScoped<ITreasuryBalanceRepository, TreasuryBalanceRepository>();
         services.AddScoped<ILimitOrderRepository, LimitOrderRepository>();
-        //services.AddScoped<ITreasuryBalanceRepository, TreasuryBalanceRepository>();
+        services.AddScoped<ITransactionRepository, TransactionRepository>();
 
         return services;
     }
