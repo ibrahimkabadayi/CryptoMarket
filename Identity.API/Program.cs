@@ -1,3 +1,4 @@
+using Shared.Observability.Extensions;
 using Identity.API.Application;
 using Identity.API.Infrastructure;
 using Identity.API.Infrastructure.Context;
@@ -11,6 +12,7 @@ public abstract class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.AddServiceTracing("Identity.API");
 
         // Add services to the container.
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

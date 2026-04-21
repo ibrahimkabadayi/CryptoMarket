@@ -19,4 +19,8 @@
     <Folder Include="NotificationRequests\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Shared.Observability\Shared.Observability.csproj" />
+  </ItemGroup>
+
 </Project>

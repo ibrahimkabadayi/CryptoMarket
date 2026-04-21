@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shared.Messages\Shared.Messages.csproj" />
+    <ProjectReference Include="..\Shared.Observability\Shared.Observability.csproj" />
   </ItemGroup>
 
 </Project>

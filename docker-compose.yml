@@ -7,6 +7,7 @@ services:
     restart: always
     environment:
       - RabbitMQ__Host=rabbitmq
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       rabbitmq:
         condition: service_healthy 
@@ -23,6 +24,7 @@ services:
     restart: always
     environment:
       - RabbitMQ__Host=rabbitmq
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -40,6 +42,7 @@ services:
     environment:
       - RabbitMQ__Host=rabbitmq
       - EmailSettings__Password=${EMAIL_PASSWORD}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -56,6 +59,7 @@ services:
     restart: always
     environment:
       - RabbitMQ__Host=rabbitmq
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -70,6 +74,8 @@ services:
       context: .
       dockerfile: API.Gateway/Dockerfile
     restart: always
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     ports:
       - "5000:8080"
 
@@ -122,6 +128,16 @@ services:
       interval: 5s
       timeout: 15s
       retries: 5
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    restart: always
 
 volumes:
   mongo_data:

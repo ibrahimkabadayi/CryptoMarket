@@ -1,3 +1,4 @@
+using Shared.Observability.Extensions;
 using System.Text;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,6 +16,7 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.AddServiceTracing("Portfolio.API");
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 

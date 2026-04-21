@@ -1,3 +1,4 @@
+using Shared.Observability.Extensions;
 using System.Text;
 using Market.API.Application;
 using Market.API.Consumers;
@@ -13,6 +14,7 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.AddServiceTracing("Market.API");
 
 
         builder.Services.AddControllers();

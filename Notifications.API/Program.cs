@@ -1,3 +1,4 @@
+using Shared.Observability.Extensions;
 using System.Text;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,6 +14,7 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.AddServiceTracing("Notifications.API");
 
         builder.Services.AddControllers();
         builder.Services.AddOpenApi();
