@@ -30,6 +30,8 @@ public class Program
         });
 
         var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+        var rabbitUsername = builder.Configuration["RabbitMQ:Username"] ?? "guest";
+        var rabbitPassword = builder.Configuration["RabbitMQ:Password"] ?? "guest";
 
         builder.Services.AddMassTransit(x =>
         {
@@ -38,8 +40,8 @@ public class Program
             x.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host(rabbitHost, "/", h => {
-                    h.Username("guest");
-                    h.Password("guest");
+                    h.Username(rabbitUsername);
+                    h.Password(rabbitPassword);
                 });
 
                 cfg.ReceiveEndpoint("market-user-created-queue", e =>

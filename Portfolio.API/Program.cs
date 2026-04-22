@@ -32,6 +32,8 @@ public class Program
         builder.Services.AddInfrastructureServices(builder.Configuration);
 
         var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+        var rabbitUsername = builder.Configuration["RabbitMQ:Username"] ?? "guest";
+        var rabbitPassword = builder.Configuration["RabbitMQ:Password"] ?? "guest";
 
         builder.Services.AddMassTransit(configuration =>
         {
@@ -42,15 +44,17 @@ public class Program
             {
                 cfg.Host(rabbitHost, "/", h =>
                 {
-                    h.Username("guest");
-                    h.Password("guest");
+                    h.Username(rabbitUsername);
+                    h.Password(rabbitPassword);
                 });
 
                 cfg.ReceiveEndpoint("portfolio-user-created-queue", e =>
                 {
-                    e.ConfigureConsumer<UserCreatedConsumer>(context);
-                    e.ConfigureConsumer<CoinPriceConsumer>(context);
+                    e.ConfigureConsumer<UserCreatedConsumer>(context);                
                 });
+
+                cfg.ReceiveEndpoint("portfolio-coin-price-queue", e =>
+                    e.ConfigureConsumer<CoinPriceConsumer>(context));
             });
         });
 

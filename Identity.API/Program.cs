@@ -14,7 +14,6 @@ public abstract class Program
         var builder = WebApplication.CreateBuilder(args);
         builder.AddServiceTracing("Identity.API");
 
-        // Add services to the container.
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -23,13 +22,14 @@ public abstract class Program
             options.UseNpgsql(connectionString));
 
         builder.Services.AddControllers();
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
         builder.Services.AddApplicationServices(builder.Configuration);
         builder.Services.AddInfrastructureServices(builder.Configuration);
 
         var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+        var rabbitUsername = builder.Configuration["RabbitMQ:Username"] ?? "guest";
+        var rabbitPassword = builder.Configuration["RabbitMQ:Password"] ?? "guest";
 
         builder.Services.AddMassTransit(configuration =>
         {
@@ -37,15 +37,14 @@ public abstract class Program
             {
                 cfg.Host(rabbitHost, "/", h =>
                 {
-                    h.Username("guest");
-                    h.Password("guest");
+                    h.Username(rabbitUsername);
+                    h.Password(rabbitPassword);
                 });
             });
         });
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();

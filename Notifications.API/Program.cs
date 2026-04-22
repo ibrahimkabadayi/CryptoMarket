@@ -23,6 +23,8 @@ public class Program
         builder.Services.AddInfrastructureServices(builder.Configuration);
 
         var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+        var rabbitUsername = builder.Configuration["RabbitMQ:Username"] ?? "guest";
+        var rabbitPassword = builder.Configuration["RabbitMQ:Password"] ?? "guest";
 
         builder.Services.AddMassTransit(configuration =>
         {
@@ -35,17 +37,21 @@ public class Program
             {
                 cfg.Host(rabbitHost, "/", h =>
                 {
-                    h.Username("guest");
-                    h.Password("guest");
+                    h.Username(rabbitUsername);
+                    h.Password(rabbitPassword);
                 });
 
-                cfg.ReceiveEndpoint("notification-asset-transfared-queue", e =>
-                {
-                    e.ConfigureConsumer<AssetTransferConsumer>(context);
-                    e.ConfigureConsumer<LimitOrderConsumer>(context);
-                    e.ConfigureConsumer<CoinPriceConsumer>(context);
-                    e.ConfigureConsumer<UserCreatedConsumer>(context);
-                });
+                cfg.ReceiveEndpoint("notification-asset-transferred-queue", e =>
+                    e.ConfigureConsumer<AssetTransferConsumer>(context));
+
+                cfg.ReceiveEndpoint("notification-limit-order-queue", e =>
+                    e.ConfigureConsumer<LimitOrderConsumer>(context));
+
+                cfg.ReceiveEndpoint("notification-coin-price-queue", e =>
+                    e.ConfigureConsumer<CoinPriceConsumer>(context));
+
+                cfg.ReceiveEndpoint("notification-user-created-queue", e =>
+                    e.ConfigureConsumer<UserCreatedConsumer>(context));
             });
         });
 
