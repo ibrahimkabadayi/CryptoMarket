@@ -15,11 +15,9 @@ public static class ObservabilityExtensions
             {
                 tracing.AddAspNetCoreInstrumentation()
                        .AddHttpClientInstrumentation()
-                       .AddSource("MassTransit") // MassTransit uses this ActivitySource for its traces
+                       .AddSource("MassTransit") 
                        .AddOtlpExporter(opts =>
                        {
-                           // We will define this environment variable in docker-compose.yml
-                           // Usually: http://jaeger:4317
                            var endpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
                            if (!string.IsNullOrEmpty(endpoint))
                            {

@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Portfolio.API", "Portfolio.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Observability", "Shared.Observability\Shared.Observability.csproj", "{E7A23DD3-CE16-4BB9-B72C-F58E3D2ABAAF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.API.Tests", "Tests\Identity.API.Tests.csproj", "{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -121,6 +123,18 @@ Global
 		{E7A23DD3-CE16-4BB9-B72C-F58E3D2ABAAF}.Release|x64.Build.0 = Release|Any CPU
 		{E7A23DD3-CE16-4BB9-B72C-F58E3D2ABAAF}.Release|x86.ActiveCfg = Release|Any CPU
 		{E7A23DD3-CE16-4BB9-B72C-F58E3D2ABAAF}.Release|x86.Build.0 = Release|Any CPU
+		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Debug|x64.Build.0 = Debug|Any CPU
+		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Debug|x86.Build.0 = Debug|Any CPU
+		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Release|x64.ActiveCfg = Release|Any CPU
+		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Release|x64.Build.0 = Release|Any CPU
+		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Release|x86.ActiveCfg = Release|Any CPU
+		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
