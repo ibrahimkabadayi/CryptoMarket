@@ -2,6 +2,5 @@
 
 public class WithdrawMoneyRequest
 {
-    public Guid WalletId { get; set; }
     public decimal Amount { get; set; }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Portfolio.API.Application.DTOs;
 using Portfolio.API.Application.Interfaces;
 using Portfolio.API.Domain.Enums;
@@ -6,11 +7,12 @@ using Portfolio.API.Models;
 
 namespace Portfolio.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/limit-orders")]
+    [Authorize]
     [ApiController]
     public class LimitOrderController(ILimitOrderService limitOrderService) : ControllerBase
     {
-        [HttpPost("create_limit_order")]
+        [HttpPost]
         public async Task<IActionResult> CreateLimitOrder([FromBody] CreateLimitOrderRequest request)
         {
             var orderType = (request.OrderType == 1) ? LimitOrderType.Buy : LimitOrderType.Sell;
@@ -30,28 +32,28 @@ namespace Portfolio.API.Controllers
             return Ok();
         }
 
-        [HttpGet(template: "get_limit_order/{id}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetLimitOrder(Guid id)
         {
             var limitOrder = await limitOrderService.GetLimitOrder(id);
             return Ok(limitOrder);
         }
 
-        [HttpGet("get_all_limit_orders")]
+        [HttpGet]
         public async Task<IActionResult> GetAllLimitOrders()
         {
             var result = await limitOrderService.GetAllLimitOrders();
             return Ok(result);
         }
 
-        [HttpPatch("update_limit_order")]
-        public async Task<IActionResult> UpdateLimitOrder([FromBody] UpdateLimitOrderRequest request)
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> UpdateLimitOrder(Guid id, [FromBody] UpdateLimitOrderRequest request)
         {
-            var result = await limitOrderService.UpdateLimitOrderAsync(request.Id, request.Amount, request.TargetPrice);
+            var result = await limitOrderService.UpdateLimitOrderAsync(id, request.Amount, request.TargetPrice);
             return result.StartsWith("Success") ? Ok(result) : BadRequest(result);
         }
 
-        [HttpDelete(template: "delete_limit_order/{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLimitOrder(Guid id)
         {
             await limitOrderService.DeleteLimitOrderAsync(id);

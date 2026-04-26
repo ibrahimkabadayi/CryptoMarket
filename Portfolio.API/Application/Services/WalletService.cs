@@ -123,30 +123,6 @@ public class WalletService
         }
     }
 
-    public async Task<string> DepositMoney(string WalletAddress, decimal Amount)
-    {
-        try
-        {
-            var wallet = await walletRepository.FindFirstAsync(x => x.Address.Equals(WalletAddress));
-            if (wallet == null) return "Error: Could not find wallet";
-
-            wallet.FiatBalance += Amount;
-            wallet.Value += Amount;
-            wallet.UpdatedDate = DateTime.UtcNow;
-
-            await walletRepository.UpdateAsync(wallet);
-
-            await transactionService.CreateTransactionRecordAsync(wallet.Id, string.Empty, 100, null, TransactionType.Deposit);
-
-            return "Success";
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return $"Error: {ex.Message}";
-        }
-    }
-
     public async Task<string> TransferAsset(TransferAssetDto dto)
     {
         var sourceWallet = await walletRepository.GetWalletWithAssetsAsync(dto.FromWalletId);

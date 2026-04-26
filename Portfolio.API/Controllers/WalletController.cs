@@ -7,14 +7,15 @@ using Portfolio.API.Models;
 
 namespace Portfolio.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/wallets")]
+[Authorize]
 [ApiController]
 public class WalletController(IWalletService walletService) : ControllerBase
 {
-    [HttpPost("deposit_id")]
-    public async Task<IActionResult> DepositMoney([FromBody] DepositMoneyRequestId request)
+    [HttpPost("{walletId}/transaction")]
+    public async Task<IActionResult> DepositMoney(Guid walletId, [FromBody] DepositMoneyRequestId request)
     {
-        var result = await walletService.DepositMoney(request.WalletId, request.Amount);
+        var result = await walletService.DepositMoney(walletId, request.Amount);
 
         if(result.StartsWith("Success"))
             return Ok(new {Message = $"Transfered {request.Amount} into your account."});
@@ -22,23 +23,12 @@ public class WalletController(IWalletService walletService) : ControllerBase
             return BadRequest(result);
     }
 
-    [HttpPost("deposit_address")]
-    public async Task<IActionResult> DepositMoney([FromBody] DepositMoneyRequestAdress request)
-    {
-        var result = await walletService.DepositMoney(request.WalletAddress, request.Amount);
-
-        if (result.StartsWith("Success"))
-            return Ok(new { Message = $"Transfered {request.Amount} into your account." });
-        else
-            return BadRequest(result);
-    }
-
-    [HttpPost("buy_asset")]
-    public async Task<IActionResult> BuyAsset([FromBody] BuyAssetRequest request)
+    [HttpPost("{walletId}/assets/{symbol}")]
+    public async Task<IActionResult> BuyAsset(Guid walletId, string symbol, [FromBody] BuyAssetRequest request)
     {
         try
         {
-            var result = await walletService.BuyAsset(request.WalletId, request.Symbol, request.BuyingPrice, request.Amount, false);
+            var result = await walletService.BuyAsset(walletId, symbol, request.BuyingPrice, request.Amount, false);
 
             if (result.StartsWith("Success"))
                 return Ok(new { Message = result });
@@ -51,14 +41,14 @@ public class WalletController(IWalletService walletService) : ControllerBase
         }
     }
 
-    [HttpPost("transfer_asset")]
-    public async Task<IActionResult> TransferAsset([FromBody] TransferAssetRequest request)
+    [HttpPost("{walletId}/transfers/{symbol}")]
+    public async Task<IActionResult> TransferAsset(Guid walletId, string symbol, [FromBody] TransferAssetRequest request)
     {
         var transferDto = new TransferAssetDto 
         { 
-            FromWalletId = request.FromWalletId,
+            FromWalletId = walletId,
             AssetAmount = request.AssetAmount,
-            Symbol = request.Symbol,
+            Symbol = symbol,
             TargetWalletAddress = request.TargetWalletAddress
         };
 
@@ -70,22 +60,21 @@ public class WalletController(IWalletService walletService) : ControllerBase
             return BadRequest(result);       
     }
 
-    [HttpPost("withdraw_money")]
-    public async Task<IActionResult> WithdrawMoney([FromBody] WithdrawMoneyRequest request)
+    [HttpPatch("{walletId}")]
+    public async Task<IActionResult> WithdrawMoney(Guid walletId, [FromBody] WithdrawMoneyRequest request)
     {
-        await walletService.WithdrawMoney(request.WalletId, request.Amount);
+        await walletService.WithdrawMoney(walletId, request.Amount);
         return Ok();
     }
 
-    [HttpPost("sell_asset")]
-    public async Task<IActionResult> SellAsset([FromBody] SellAssetRequest request)
+    [HttpPatch("{walletId}/assets/{symbol}")]
+    public async Task<IActionResult> SellAsset(Guid walletId, string symbol, [FromBody] SellAssetRequest request)
     {
-        await walletService.SellAsset(request.WalletId, request.Symbol, request.Price, request.Amount, false);
+        await walletService.SellAsset(walletId, symbol, request.Price, request.Amount, false);
         return Ok();
     }
 
-    [Authorize]
-    [HttpGet("get_dashboard")]
+    [HttpGet]
     public async Task<IActionResult> GetDashboard()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
