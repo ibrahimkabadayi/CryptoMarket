@@ -1,0 +1,7 @@
+PATCH http://localhost:5000/api/Market/SHIB
+Content-Type: application/json
+
+{
+  "Price": 2,
+  "MarketCap": 1000000
+}
