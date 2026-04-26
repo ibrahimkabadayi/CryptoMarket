@@ -26,19 +26,12 @@ public class WalletController(IWalletService walletService) : ControllerBase
     [HttpPost("{walletId}/assets/{symbol}")]
     public async Task<IActionResult> BuyAsset(Guid walletId, string symbol, [FromBody] BuyAssetRequest request)
     {
-        try
-        {
-            var result = await walletService.BuyAsset(walletId, symbol, request.BuyingPrice, request.Amount, false);
+        var result = await walletService.BuyAsset(walletId, symbol, request.BuyingPrice, request.Amount, false);
 
-            if (result.StartsWith("Success"))
-                return Ok(new { Message = result });
-            else
-                return BadRequest(new { Message = result });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        if (result.StartsWith("Success"))
+            return Ok(new { Message = result });
+        else
+            return BadRequest(new { Message = result });
     }
 
     [HttpPost("{walletId}/transfers/{symbol}")]

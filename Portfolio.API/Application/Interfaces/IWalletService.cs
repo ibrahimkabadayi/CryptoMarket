@@ -4,12 +4,12 @@ namespace Portfolio.API.Application.Interfaces;
 
 public interface IWalletService
 {
-    Task<string> CreateWallet(Guid UserId);
-    Task<string> DepositMoney(Guid WalletId, decimal Amount);
-    Task WithdrawMoney(Guid WalletId, decimal Amount);
+    Task<string> CreateWallet(Guid userId);
+    Task<string> DepositMoney(Guid walletId, decimal amount);
+    Task WithdrawMoney(Guid walletId, decimal amount);
     Task<string> TransferAsset(TransferAssetDto dto);
-    Task<string> BuyAsset(Guid WalletId, string Symbol, decimal CurrentPrice, decimal Amount, bool isLimitOrder);
-    Task<string> SellAsset(Guid WalletId, string Symbol, decimal price, decimal Amount, bool isLimitOrder);
+    Task<string> BuyAsset(Guid walletId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder);
+    Task<string> SellAsset(Guid walletId, string symbol, decimal price, decimal amount, bool isLimitOrder);
     Task<Guid> GetWalletIdByUserId(Guid userId);
     Task<PortfolioDashboardDto> GetPortfolioDashboardAsync(Guid userId);
 }

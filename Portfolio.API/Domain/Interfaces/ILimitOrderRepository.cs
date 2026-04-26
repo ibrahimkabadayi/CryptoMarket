@@ -5,5 +5,5 @@ namespace Portfolio.API.Domain.Interfaces;
 
 public interface ILimitOrderRepository : IRepository<LimitOrder>
 {
-    public Task UpdateAsync(Guid Id, LimitOrderStatus newStatus);
+    public Task UpdateAsync(Guid id, LimitOrderStatus newStatus);
 }
