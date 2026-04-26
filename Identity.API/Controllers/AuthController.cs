@@ -14,12 +14,12 @@ public class AuthController(IUserService userService, IAuthenticationService aut
     {
         var result = await userService.AddUserAsync(request.UserName, request.FirstName, request.LastName, request.Email, request.Password);
 
-        if (result != null && result.StartsWith("eyJ"))
+        if (result.IsSuccess)
         {
             return Ok(new { Token = result, Message = "User succesfully registired." });
         }
 
-        return BadRequest(new { Error = result });
+        return BadRequest(result);
     }
 
     [HttpPost("login")]
@@ -28,7 +28,7 @@ public class AuthController(IUserService userService, IAuthenticationService aut
         var token = await authService.LoginAsync(request.Email, request.Password);
 
         if (token == null)
-            return Unauthorized("E-posta veya şifre hatalı.");
+            return Unauthorized("Email or password is incorrect.");
 
         return Ok(new { Token = token });
     }

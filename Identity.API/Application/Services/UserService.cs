@@ -11,7 +11,7 @@ namespace Identity.API.Application.Services;
 
 public class UserService(IUserRepository userRepository, IMapper mapper, IPublishEndpoint publishEndpoint, IAuthenticationService authenticationService, UserManager<AppUser> userManager) : IUserService
 {
-    public async Task<string> AddUserAsync(string userName, string firstName, string lastName, string email, string password)
+    public async Task<AuthResult> AddUserAsync(string userName, string firstName, string lastName, string email, string password)
     {
         try
         {
@@ -28,19 +28,33 @@ public class UserService(IUserRepository userRepository, IMapper mapper, IPublis
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                return "Register Unsuccessfull: " + errors;
+                return new AuthResult
+                {
+                    IsSuccess = false,
+                    ErrorMessage = "Register is unsuccessfull."
+                };
             }
 
             await publishEndpoint.Publish(new UserCreatedEvent { Email = email, UserName = userName, UserId = addUser.Id });
 
             var jwtToken = await authenticationService.LoginAsync(addUser.Email, password);
 
-            return jwtToken ?? "Register is successfull but could not create token.";
+            return new AuthResult
+            {
+                IsSuccess = jwtToken != null,
+                Token = jwtToken,
+                ErrorMessage = (jwtToken == null) ? "Register is successfull but could not create token." : string.Empty
+            };
         }
         catch (Exception ex) 
         {
             Console.WriteLine(ex.Message);
-            return "Server Error: " + ex.Message;
+
+            return new AuthResult
+            {
+                IsSuccess = false,
+                ErrorMessage = "Server error"
+            };
         }
     }
 
