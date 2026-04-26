@@ -10,26 +10,17 @@ namespace Market.API.Application.Services;
 
 public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublishEndpoint publishEndpoint, IRedisCacheService cacheService) : ICoinService
 {
-    public async Task<string> AddCoin(string name, string symbol, decimal price, decimal marketCap)
+    public async Task AddCoin(string name, string symbol, decimal price, decimal marketCap)
     {
-        try
+        var coin = new Coin
         {
-            var coin = new Coin
-            {
-                Symbol = symbol,
-                Name = name,
-                CurrentPrice = price,
-                MarketCap = marketCap
-            };
+            Symbol = symbol,
+            Name = name,
+            CurrentPrice = price,
+            MarketCap = marketCap
+        };
 
-            await coinRepository.AddAsync(coin);
-            return "Success";
-        }
-        catch (Exception ex) 
-        {
-            Console.WriteLine(ex.ToString());
-            return "Error: " + ex.Message;
-        }
+        await coinRepository.AddAsync(coin);
     }
 
     public void BuyCoin(BuyCoinDto buyCoinDto)

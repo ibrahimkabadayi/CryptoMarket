@@ -9,18 +9,15 @@ namespace Market.API.Controllers;
 [ApiController]
 public class MarketController(ICoinService coinService) : ControllerBase
 {
-    [HttpPost("add_coin")]
+    [HttpPost]
     public async Task<IActionResult> AddCoin([FromBody] AddCoinRequest request)
     {
-        var result = await coinService.AddCoin(request.Name, request.Symbol, request.Price, request.MarketCap);
+        await coinService.AddCoin(request.Name, request.Symbol, request.Price, request.MarketCap);
 
-        if (result.StartsWith("Success"))
-            return Ok();
-        else
-            return BadRequest(result);
+        return Ok();
     }
 
-    [HttpGet("get_all_coins")]
+    [HttpGet]
     public async Task<IActionResult> GetAllCoins()
     {
         var allCoins = await coinService.GetAllCoins();
@@ -28,7 +25,7 @@ public class MarketController(ICoinService coinService) : ControllerBase
         return Ok(allCoins);
     }
 
-    [HttpGet("getcoin/{symbol}")]
+    [HttpGet("{symbol}")]
     public async Task<IActionResult> GetCoin(string symbol)
     {
         var coin = await coinService.GetCoinBySymbol(symbol);
