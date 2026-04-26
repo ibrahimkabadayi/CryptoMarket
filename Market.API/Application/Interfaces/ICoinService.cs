@@ -4,8 +4,9 @@ namespace Market.API.Application.Interfaces;
 
 public interface ICoinService
 {
-    Task<string> AddCoin(string Name, string Symbol, decimal Price, decimal MarketCap);
+    Task<string> AddCoin(string name, string symbol, decimal price, decimal marketCap);
+    Task UpdateCoin(string symbol, decimal? price, decimal? marketCap);
     Task<List<CoinDto>> GetAllCoins();
-    Task<CoinDto> GetCoinBySymbol(string Symbol);
+    Task<CoinDto> GetCoinBySymbol(string symbol);
     void BuyCoin(BuyCoinDto buyCoinDto);
 }

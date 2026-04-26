@@ -34,4 +34,11 @@ public class MarketController(ICoinService coinService) : ControllerBase
         var coin = await coinService.GetCoinBySymbol(symbol);
         return Ok(coin);
     }
+
+    [HttpPatch("{symbol}")]
+    public async Task<IActionResult> UpdateCoin(string symbol, UpdateCoinRequest request) 
+    {
+        await coinService.UpdateCoin(symbol, request.Price, request.MarketCap);
+        return Ok();
+    }
 }

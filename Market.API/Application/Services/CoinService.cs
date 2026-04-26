@@ -10,16 +10,16 @@ namespace Market.API.Application.Services;
 
 public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublishEndpoint publishEndpoint, IRedisCacheService cacheService) : ICoinService
 {
-    public async Task<string> AddCoin(string Name, string Symbol, decimal Price, decimal MarketCap)
+    public async Task<string> AddCoin(string name, string symbol, decimal price, decimal marketCap)
     {
         try
         {
             var coin = new Coin
             {
-                Symbol = Symbol,
-                Name = Name,
-                CurrentPrice = Price,
-                MarketCap = MarketCap
+                Symbol = symbol,
+                Name = name,
+                CurrentPrice = price,
+                MarketCap = marketCap
             };
 
             await coinRepository.AddAsync(coin);
@@ -66,5 +66,22 @@ public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublis
     {
         var coin = await coinRepository.GetCoinAsync(Symbol);
         return mapper.Map<CoinDto>(coin);
+    }
+
+    public async Task UpdateCoin(string symbol, decimal? price, decimal? marketCap)
+    {
+        var coin = await coinRepository.GetCoinAsync(symbol);
+
+        if (price is decimal p)
+        {
+            coin.CurrentPrice = p;
+        }
+
+        if (marketCap is decimal x)
+        {
+            coin.MarketCap = x;
+        }
+
+        await coinRepository.UpdateAsync(coin.Id, coin);
     }
 }
