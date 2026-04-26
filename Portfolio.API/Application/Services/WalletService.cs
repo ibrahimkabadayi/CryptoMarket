@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using MassTransit.Transports;
+using Microsoft.Extensions.Options;
 using Portfolio.API.Application.DTOs;
 using Portfolio.API.Application.Interfaces;
 using Portfolio.API.Application.Settings;
@@ -16,9 +17,10 @@ public class WalletService
         IAssetRepository assetRepository,
         ITransactionService transactionService,
         IPublishEndpoint publishEndpoint,
-        FeeSettings feeSettings
+        IOptions<FeeSettings> feeSettingsOptions
     ) : IWalletService
 {
+
     public async Task<string> BuyAsset(Guid walletId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
     {
         var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId);
@@ -30,7 +32,7 @@ public class WalletService
         if (wallet.FiatBalance < totalCost)
             return "Error: Not Enough Money!";
 
-        decimal feeRate = isLimitOrder ? feeSettings.MakerFeeRate : feeSettings.TakerFeeRate;
+        decimal feeRate = isLimitOrder ? feeSettingsOptions.Value.MakerFeeRate : feeSettingsOptions.Value.TakerFeeRate;
 
         decimal feeInCrypto = amount * feeRate;
 
@@ -219,7 +221,7 @@ public class WalletService
         }
 
         decimal totalCost = amount * price;
-        decimal feeRate = isLimitOrder ? feeSettings.MakerFeeRate : feeSettings.TakerFeeRate;
+        decimal feeRate = isLimitOrder ? feeSettingsOptions.Value.MakerFeeRate : feeSettingsOptions.Value.TakerFeeRate;
         decimal feeAmount = totalCost * feeRate;
 
         asset.Quantity -= amount;

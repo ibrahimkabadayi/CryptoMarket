@@ -91,8 +91,8 @@ services:
     image: postgres:latest
     container_name: postgres_db
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=Password123*
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=IdentityDb
     ports:
       - "5432:5432"
@@ -117,8 +117,8 @@ services:
      container_name: redis_db
      environment:
        - REDIS_DATABASE=0
-       - REDIS_USERNAME=redisuser   
-       - REDIS_PASSWORD=admin
+       - REDIS_USERNAME=${REDIS_USERNAME} 
+       - REDIS_PASSWORD=${REDIS_PASSWORD}
      volumes:
        - redis_data:/data
 

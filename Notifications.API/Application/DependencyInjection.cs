@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Notifications.API.Application.Interfaces;
 using Notifications.API.Application.Services;
 using Notifications.API.Application.Settings;
@@ -22,6 +24,16 @@ public static class DependencyInjection
         services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
         services.AddTransient<IEmailService, EmailService>();
+
+        services.AddSingleton<IMapper>(sp =>
+        {
+            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.AddMaps(System.Reflection.Assembly.GetExecutingAssembly());
+            }, loggerFactory);
+            return config.CreateMapper();
+        });
 
         return services;
     }
