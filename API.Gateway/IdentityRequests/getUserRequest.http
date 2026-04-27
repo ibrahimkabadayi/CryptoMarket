@@ -1,0 +1,4 @@
+GET http://localhost:5000/api/Auth/019d170a-ff1a-72c2-b5b4-d291e8008f1b
+Content-Type: application/json
+  
+

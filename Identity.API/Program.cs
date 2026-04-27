@@ -4,6 +4,7 @@ using Identity.API.Infrastructure;
 using Identity.API.Infrastructure.Context;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Identity.API.Middlewares;
 
 namespace Identity.API;
 
@@ -50,8 +51,11 @@ public abstract class Program
             app.MapOpenApi();
         }
 
-        app.UseAuthorization();
+        app.UseLoggingMiddleware();
 
+        app.UseExceptionHandlingMiddleware();
+
+        app.UseAuthorization();
 
         app.MapControllers();
 
