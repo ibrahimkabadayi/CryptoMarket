@@ -8,6 +8,7 @@ using Portfolio.API.Application;
 using Portfolio.API.Consumers;
 using Portfolio.API.Infrastructure;
 using Portfolio.API.Infrastructure.Context;
+using Shared.Infrastructure.Middlewares;
 
 namespace Portfolio.API;
 
@@ -83,9 +84,14 @@ public class Program
             app.MapOpenApi();
         }
 
-        app.UseHttpsRedirection();
+        app.UseCorrelationIdMiddleware();
+
+        app.UseLoggingMiddleware();
+
+        app.UseExceptionHandlingMiddleware();
 
         app.UseAuthentication();
+
         app.UseAuthorization();
 
 

@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Notifications.API.Application;
 using Notifications.API.Consumers;
 using Notifications.API.Infrastructure;
+using Shared.Infrastructure.Middlewares;
 
 namespace Notifications.API;
 
@@ -80,7 +81,14 @@ public class Program
             app.MapOpenApi();
         }
 
+        app.UseCorrelationIdMiddleware();
+
+        app.UseLoggingMiddleware();
+
+        app.UseExceptionHandlingMiddleware();
+
         app.UseAuthentication();
+
         app.UseAuthorization();
 
         app.MapControllers();

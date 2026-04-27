@@ -1,4 +1,6 @@
-﻿namespace Identity.API.Middlewares;
+﻿using Microsoft.AspNetCore.Builder;
+
+namespace Shared.Infrastructure.Middlewares;
 
 public static class MiddlewareExtensions
 {
@@ -10,5 +12,10 @@ public static class MiddlewareExtensions
     public static IApplicationBuilder UseLoggingMiddleware(this IApplicationBuilder builder) 
     {
         return builder.UseMiddleware<LoggingMiddleware>();
+    }
+
+    public static IApplicationBuilder UseCorrelationIdMiddleware(this IApplicationBuilder builder) 
+    {
+        return builder.UseMiddleware<CorrelationIdMiddleware>();
     }
 }

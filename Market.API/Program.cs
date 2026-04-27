@@ -6,6 +6,7 @@ using Market.API.Infrastructure;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Infrastructure.Middlewares;
 
 namespace Market.API;
 
@@ -77,7 +78,14 @@ public class Program
             app.MapOpenApi();
         }
 
+        app.UseCorrelationIdMiddleware();
+
+        app.UseLoggingMiddleware();
+
+        app.UseExceptionHandlingMiddleware();
+
         app.UseAuthentication();
+
         app.UseAuthorization();
 
 

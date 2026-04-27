@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shared.Messages\Shared.Messages.csproj" />
-    <ProjectReference Include="..\Shared.Observability\Shared.Observability.csproj" />
+    <ProjectReference Include="..\Shared.Observability\Shared.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

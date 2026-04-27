@@ -4,7 +4,7 @@ using Identity.API.Infrastructure;
 using Identity.API.Infrastructure.Context;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Identity.API.Middlewares;
+using Shared.Infrastructure.Middlewares;
 
 namespace Identity.API;
 
@@ -50,6 +50,8 @@ public abstract class Program
         {
             app.MapOpenApi();
         }
+
+        app.UseCorrelationIdMiddleware();
 
         app.UseLoggingMiddleware();
 

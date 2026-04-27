@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications.API", "Notifi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Portfolio.API", "Portfolio.API\Portfolio.API.csproj", "{984E6D88-5D9D-45A4-A441-DC4E02EF83A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Observability", "Shared.Observability\Shared.Observability.csproj", "{E7A23DD3-CE16-4BB9-B72C-F58E3D2ABAAF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Infrastructure", "Shared.Observability\Shared.Infrastructure.csproj", "{E7A23DD3-CE16-4BB9-B72C-F58E3D2ABAAF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.API.Tests", "Tests\Identity.API.Tests.csproj", "{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}"
 EndProject
