@@ -18,12 +18,8 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
 
-        var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
-        services.AddSingleton<IConnectionMultiplexer>(sp =>
-        {
-            var config = ConfigurationOptions.Parse(redisConnectionString, true);
-            return ConnectionMultiplexer.Connect(config);
-        });
+        services.AddSingleton<IConnectionMultiplexer>(
+            ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")!));
 
         services.AddSingleton<ICacheService, CacheService>();
 
