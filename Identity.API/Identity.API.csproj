@@ -29,7 +29,6 @@
 
   <ItemGroup>
     <Folder Include="Consumers\" />
-    <Folder Include="Middlewares\" />
   </ItemGroup>
 
   <ItemGroup>

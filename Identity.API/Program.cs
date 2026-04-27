@@ -5,6 +5,7 @@ using Identity.API.Infrastructure.Context;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Shared.Infrastructure.Middlewares;
+using Identity.API.Middlewares;
 
 namespace Identity.API;
 
@@ -44,6 +45,8 @@ public abstract class Program
             });
         });
 
+        builder.Services.AddMemoryCache();
+
         var app = builder.Build();
 
         if (app.Environment.IsDevelopment())
@@ -56,6 +59,8 @@ public abstract class Program
         app.UseLoggingMiddleware();
 
         app.UseExceptionHandlingMiddleware();
+
+        app.UseRateLimitingMiddleware();
 
         app.UseAuthorization();
 
