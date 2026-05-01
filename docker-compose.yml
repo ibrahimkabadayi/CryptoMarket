@@ -9,6 +9,7 @@ services:
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=${RABBITMQ_USER}
       - RabbitMQ__Password=${RABBITMQ_PASS}
+      - Jwt__Key=${JWT_SECRET_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       rabbitmq:
@@ -28,6 +29,7 @@ services:
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=${RABBITMQ_USER}
       - RabbitMQ__Password=${RABBITMQ_PASS}
+      - Jwt__Key=${JWT_SECRET_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       rabbitmq:
@@ -47,6 +49,7 @@ services:
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=${RABBITMQ_USER} 
       - RabbitMQ__Password=${RABBITMQ_PASS}
+      - Jwt__Key=${JWT_SECRET_KEY}
       - EmailSettings__Password=${EMAIL_PASSWORD}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
@@ -67,6 +70,7 @@ services:
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=${RABBITMQ_USER}
       - RabbitMQ__Password=${RABBITMQ_PASS}
+      - Jwt__Key=${JWT_SECRET_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       rabbitmq:
@@ -94,6 +98,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=IdentityDb
+      - Jwt__Key=${JWT_SECRET_KEY}
     ports:
       - "5432:5432"
     restart: always
@@ -119,6 +124,7 @@ services:
        - REDIS_DATABASE=0
        - REDIS_USERNAME=${REDIS_USERNAME} 
        - REDIS_PASSWORD=${REDIS_PASSWORD}
+       - Jwt__Key=${JWT_SECRET_KEY}
      volumes:
        - redis_data:/data
 
