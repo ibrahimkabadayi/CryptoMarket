@@ -23,6 +23,12 @@ public class AuthenticationService(UserManager<AppUser> userManager, IConfigurat
     private string GenerateJwtToken(AppUser user)
     {
         var jwtSettings = configuration.GetSection("Jwt");
+
+        Console.WriteLine("=== TOKEN ÜRETME ===");
+        Console.WriteLine("Key: " + jwtSettings["Key"]);
+        Console.WriteLine("Issuer: " + jwtSettings["Issuer"]);
+        Console.WriteLine("Audience: " + jwtSettings["Audience"]);
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
 
         var claims = new List<Claim>

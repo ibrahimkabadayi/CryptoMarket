@@ -64,6 +64,9 @@ public class Program
             .AddJwtBearer(options =>
             {
                 var jwtSettings = builder.Configuration.GetSection("Jwt");
+                Console.WriteLine(jwtSettings["Key"]);
+                Console.WriteLine("KEY: " + jwtSettings["Key"]);
+                Console.WriteLine("ISSUER: " + jwtSettings["Issuer"]);
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
