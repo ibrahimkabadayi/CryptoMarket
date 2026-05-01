@@ -1,3 +1,5 @@
 # For more info on HTTP files go to https://aka.ms/vs/httpfile
-GET http://localhost:5000/api/Wallet/get_dashboard
+GET http://localhost:5000/api/wallets
 Content-Type: application/json
+Idempotency-Key: test-key-123
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMTlkMTcwYS1mZjFhLTcyYzItYjViNC1kMjkxZTgwMDhmMWIiLCJlbWFpbCI6ImlicmFoaW10ZXN0QGdtYWlsLmNvbSIsImp0aSI6ImE4OTA1M2Y4LWM5YjQtNGZkZC04MGM5LWU3ZmU2ZTQzNTIxMSIsIm5iZiI6MTc3NzUzNTQ5OSwiZXhwIjoxNzc3NTQyNjk5LCJpYXQiOjE3Nzc1MzU0OTksImlzcyI6IklkZW50aXR5QVBJIiwiYXVkIjoiQ3J5cHRvQXBwVXNlcnMifQ.HLSH9THky4NBO_ibfLLKIt51FrDYFSuniXXG0OrT_qc

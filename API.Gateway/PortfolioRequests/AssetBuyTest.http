@@ -1,9 +1,9 @@
-POST http://localhost:5000/api/Wallet/buy_asset
+POST http://localhost:5252/api/wallets/887f497a-7233-4083-80df-1607b0f2ce38/assets/BTC
 Content-Type: application/json
+Idempotency-Key: test-key-124
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMTlkMTcwYS1mZjFhLTcyYzItYjViNC1kMjkxZTgwMDhmMWIiLCJlbWFpbCI6ImlicmFoaW10ZXN0QGdtYWlsLmNvbSIsImp0aSI6ImEwOGIxYzUwLTY1ZWQtNGEwNC05ZGVmLTNkMTQ1MDgzZGRiMSIsIm5iZiI6MTc3NzYyMTc5MCwiZXhwIjoxNzc3NjI4OTkwLCJpYXQiOjE3Nzc2MjE3OTAsImlzcyI6IklkZW50aXR5QVBJIiwiYXVkIjoiQ3J5cHRvQXBwVXNlcnMifQ.KioZHNIlGMtBIEtfJyLDZ8yxgoJuKFp2NrWKLM71YDw
 
 {
-  "WalletId": "c409d509-af18-4527-8030-38ca09395c31",
-  "Symbol": "BTC",
-  "BuyingPrice": "200",
+  "BuyingPrice": 200000,
   "Amount": 0.2
 }
