@@ -74,7 +74,7 @@ public class WalletController(IWalletService walletService) : ControllerBase
 
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
         {
-            return Unauthorized("Geçersiz veya bozuk token.");
+            return Unauthorized("Invalid or broken token.");
         }
 
         var result = await walletService.GetPortfolioDashboardAsync(userId);
