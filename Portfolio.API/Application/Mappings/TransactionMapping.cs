@@ -8,9 +8,7 @@ public class TransactionMapping : Profile
 {
     public TransactionMapping()
     {
-        CreateMap<Transaction, TransactionDto>()
-            .ForMember(dest => dest.Wallet,
-            opt => opt.MapFrom(src => src.Wallet));
+        CreateMap<Transaction, TransactionDto>();
 
         CreateMap<TransactionDto, Transaction>();
     }

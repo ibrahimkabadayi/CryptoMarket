@@ -8,9 +8,7 @@ public class AssetMapping : Profile
 {
     public AssetMapping()
     {
-        CreateMap<Asset, AssetDto>()
-            .ForMember(dest => dest.Wallet,
-            opt => opt.MapFrom(src => src.Wallet));
+        CreateMap<Asset, AssetDto>();
 
         CreateMap<AssetDto, Asset>();
     }
