@@ -9,6 +9,7 @@ using Portfolio.API.Consumers;
 using Portfolio.API.Infrastructure;
 using Portfolio.API.Infrastructure.Context;
 using Shared.Infrastructure.Middlewares;
+using Portfolio.API.Middlewares;
 
 namespace Portfolio.API;
 
@@ -94,6 +95,7 @@ public class Program
 
         app.UseAuthorization();
 
+        app.UseIdempotencyMiddleware();
 
         app.MapControllers();
 

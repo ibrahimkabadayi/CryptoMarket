@@ -1,4 +1,5 @@
-﻿using System.Net;
+using System.Net;
+using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
 using Portfolio.API.Application.Interfaces;
 
@@ -44,7 +45,7 @@ public class IdempotencyMiddleware(RequestDelegate next)
             return;
         }
 
-        await cacheService.SetAsync(cacheKey, idempotencyKey, TimeSpan.FromHours(24));
+        await cacheService.SetAsync(cacheKey, idempotencyKey.ToString(), TimeSpan.FromHours(24));
 
         await next(context);
     }
