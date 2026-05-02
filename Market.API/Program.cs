@@ -1,4 +1,3 @@
-using Shared.Observability.Extensions;
 using System.Text;
 using Market.API.Application;
 using Market.API.Consumers;
@@ -7,6 +6,7 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Infrastructure.Middlewares;
+using Shared.Infrastructure.Extensions;
 
 namespace Market.API;
 
@@ -70,6 +70,7 @@ public class Program
 
         builder.Services.AddAuthorization();
 
+        builder.Services.AddCustomHealthChecks(builder.Configuration);
 
         var app = builder.Build();
 
@@ -88,8 +89,9 @@ public class Program
 
         app.UseAuthorization();
 
-
         app.MapControllers();
+
+        app.MapCustomHealthChecks();
 
         app.Run();
     }
