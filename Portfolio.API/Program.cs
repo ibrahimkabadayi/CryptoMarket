@@ -1,4 +1,3 @@
-using Shared.Observability.Extensions;
 using System.Text;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,6 +9,7 @@ using Portfolio.API.Infrastructure;
 using Portfolio.API.Infrastructure.Context;
 using Shared.Infrastructure.Middlewares;
 using Portfolio.API.Middlewares;
+using Shared.Infrastructure.Extensions;
 
 namespace Portfolio.API;
 
