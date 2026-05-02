@@ -1,6 +1,4 @@
-﻿using Notifications.API.Application.DTOs;
-
-namespace Portfolio.API.Application.DTOs;
+﻿namespace Portfolio.API.Application.DTOs;
 
 public class WalletDto : BaseDto
 {

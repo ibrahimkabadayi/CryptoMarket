@@ -1,5 +1,4 @@
-﻿using Notifications.API.Application.DTOs;
-using Portfolio.API.Domain.Enums;
+﻿using Portfolio.API.Domain.Enums;
 
 namespace Portfolio.API.Application.DTOs;
 

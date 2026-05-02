@@ -1,4 +1,3 @@
-using Shared.Observability.Extensions;
 using Identity.API.Application;
 using Identity.API.Infrastructure;
 using Identity.API.Infrastructure.Context;
@@ -6,6 +5,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Shared.Infrastructure.Middlewares;
 using Identity.API.Middlewares;
+using Shared.Infrastructure.Extensions;
 
 namespace Identity.API;
 

@@ -1,4 +1,3 @@
-using Shared.Observability.Extensions;
 using System.Text;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -7,6 +6,7 @@ using Notifications.API.Application;
 using Notifications.API.Consumers;
 using Notifications.API.Infrastructure;
 using Shared.Infrastructure.Middlewares;
+using Shared.Infrastructure.Extensions;
 
 namespace Notifications.API;
 

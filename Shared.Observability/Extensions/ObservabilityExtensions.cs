@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-namespace Shared.Observability.Extensions;
+namespace Shared.Infrastructure.Extensions;
 
 public static class ObservabilityExtensions
 {

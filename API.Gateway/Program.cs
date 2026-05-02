@@ -1,4 +1,4 @@
-using Shared.Observability.Extensions;
+using Shared.Infrastructure.Extensions;
 
 namespace API.Gateway;
 
