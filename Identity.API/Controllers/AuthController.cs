@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Identity.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public class AuthController(IUserService userService, IAuthenticationService authService) : ControllerBase
 {
     [HttpPost("register")]

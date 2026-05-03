@@ -1,11 +1,12 @@
 ﻿using Market.API.Application.Interfaces;
 using Market.API.Models;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Market.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/market")]
+[Authorize]
 [ApiController]
 public class MarketController(ICoinService coinService) : ControllerBase
 {
