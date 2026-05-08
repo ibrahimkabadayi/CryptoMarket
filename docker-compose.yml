@@ -11,6 +11,7 @@ services:
       - RabbitMQ__Password=${RABBITMQ_PASS}
       - Jwt__Key=${JWT_SECRET_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - ConnectionStrings__DefaultConnection=Host=postgres.db;Port=5432;Database=IdentityDb;Username=postgres;Password=Password123* 
     depends_on:
       rabbitmq:
         condition: service_healthy 
@@ -31,6 +32,8 @@ services:
       - RabbitMQ__Password=${RABBITMQ_PASS}
       - Jwt__Key=${JWT_SECRET_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - Redis__ConnectionString=redis_db:6379,abortConnect=false
+      - MongoDbSettings__ConnectionString=mongodb://my-mongodb:27017
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -51,6 +54,8 @@ services:
       - RabbitMQ__Password=${RABBITMQ_PASS}
       - Jwt__Key=${JWT_SECRET_KEY}
       - EmailSettings__Password=${EMAIL_PASSWORD}
+      - Redis__ConnectionString=redis_db:6379,abortConnect=false
+      - ConnectionStrings__DefaultConnection=Host=postgres.db;Port=5432;Database=NotificationsDb;Username=postgres;Password=Password123* 
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
       rabbitmq:
@@ -70,6 +75,8 @@ services:
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=${RABBITMQ_USER}
       - RabbitMQ__Password=${RABBITMQ_PASS}
+      - ConnectionStrings__DefaultConnection=Host=postgres.db;Port=5432;Database=PortfolioDb;Username=postgres;Password=Password123* 
+      - Redis__ConnectionString=redis_db:6379,abortConnect=false
       - Jwt__Key=${JWT_SECRET_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
@@ -125,6 +132,7 @@ services:
        - REDIS_USERNAME=${REDIS_USERNAME} 
        - REDIS_PASSWORD=${REDIS_PASSWORD}
        - Jwt__Key=${JWT_SECRET_KEY}
+       - Redis__ConnectionString=redis_db:6379,abortConnect=false
      volumes:
        - redis_data:/data
 
@@ -142,6 +150,8 @@ services:
       interval: 5s
       timeout: 15s
       retries: 5
+    environment:
+      - RabbitMQ__Host="rabbitmq"
 
   jaeger:
     image: jaegertracing/all-in-one:latest
