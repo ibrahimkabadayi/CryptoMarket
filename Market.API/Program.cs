@@ -83,7 +83,7 @@ public class Program
 
         app.UseLoggingMiddleware();
 
-        app.UseExceptionHandlingMiddleware();
+        app.UseExceptionHandlingMiddleware();   
 
         app.UseAuthentication();
 
