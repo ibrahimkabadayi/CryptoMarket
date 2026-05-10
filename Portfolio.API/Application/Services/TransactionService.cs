@@ -14,26 +14,7 @@ public class TransactionService(ITransactionRepository transactionRepository, IM
 {
     public async Task CreateTransactionRecordAsync(Guid walletId, string symbol, decimal amount, decimal? price, TransactionType type)
     {
-        Transaction transaction;
-
-        if (price is not null)
-            transaction = new Transaction
-            {
-                WalletId = walletId,
-                Symbol = symbol,
-                Amount = amount,
-                PriceAtTransaction = (decimal)price,
-                TransactionType = type
-            };
-        else
-            transaction = new Transaction
-            {
-                WalletId = walletId,
-                Symbol = symbol,
-                Amount = amount,
-                TransactionType = type
-            };
-
+        var transaction = new Transaction(walletId, symbol, amount, type, price);
         await transactionRepository.AddAsync(transaction);
     }
 
