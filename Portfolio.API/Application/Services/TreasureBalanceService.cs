@@ -5,8 +5,7 @@ using Portfolio.API.Domain.Interfaces;
 namespace Portfolio.API.Application.Services;
 
 public class TreasureBalanceService(ITreasuryBalanceRepository treasuryBalanceRepository) : ITreasureBalanceService
-{
-    //Symbol could be BTC, ETH, SOL, XRP (default coin of that blockchain)
+{   
     public async Task AddAssetViaFee(string assetSymbol, decimal amount)
     {
         var treasureBalanceOfThatSymbol = await treasuryBalanceRepository.FindFirstAsync(x => x.AssetSymbol == assetSymbol);
@@ -23,7 +22,6 @@ public class TreasureBalanceService(ITreasuryBalanceRepository treasuryBalanceRe
         await treasuryBalanceRepository.UpdateAsync(treasureBalanceOfThatSymbol);
     }
 
-    //Symbol is USDT
     public async Task AddAssetViaFee(decimal amount)
     {
         var treasureUSDTBalance = await treasuryBalanceRepository.FindFirstAsync(x => x.AssetSymbol == "USDT");
