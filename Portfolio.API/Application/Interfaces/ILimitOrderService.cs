@@ -6,9 +6,9 @@ namespace Portfolio.API.Application.Interfaces;
 public interface ILimitOrderService
 {
     Task CreateLimitOrderAsync(CreateLimitOrderDto orderDto);
-    Task<string> UpdateLimitOrderAsync(Guid limitOrderId, decimal? amount, decimal? targetPrice);
+    Task UpdateLimitOrderAsync(Guid limitOrderId, decimal? amount, decimal? targetPrice);
     Task DeleteLimitOrderAsync(Guid limitOrderId);
-    Task<string> ApplyLimitOrder(ApplyLimitOrderDto limitOrder, decimal price);
+    Task ApplyLimitOrder(ApplyLimitOrderDto limitOrder, decimal price);
     Task<LimitOrderDto> GetLimitOrder(Guid id);
     Task<List<LimitOrderDto>> GetAllLimitOrders();
     Task<List<LimitOrder>> GetLimitOrdersBySymbol(string symbol);
