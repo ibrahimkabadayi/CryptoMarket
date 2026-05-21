@@ -27,7 +27,13 @@ public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublis
     {
         try
         {
-            publishEndpoint.Publish(new BuyCoinEvent { BuyPrice = buyCoinDto.BuyPrice, Symbol = buyCoinDto.Symbol, UserId = buyCoinDto.UserId, BuyAmount = buyCoinDto.BuyAmount });
+            publishEndpoint.Publish(new BuyCoinEvent 
+            {
+                BuyPrice = buyCoinDto.BuyPrice,
+                Symbol = buyCoinDto.Symbol,
+                UserId = buyCoinDto.UserId,
+                BuyAmount = buyCoinDto.BuyAmount 
+            });
         }
         catch (Exception ex)
         {
