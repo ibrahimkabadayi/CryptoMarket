@@ -1,12 +1,12 @@
 using System.Text;
 using Market.API.Application;
-using Market.API.Consumers;
 using Market.API.Infrastructure;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Infrastructure.Middlewares;
 using Shared.Infrastructure.Extensions;
+using Market.API.Hubs;
 
 namespace Market.API;
 
@@ -36,7 +36,6 @@ public class Program
 
         builder.Services.AddMassTransit(x =>
         {
-            x.AddConsumer<UserCreatedConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -45,12 +44,21 @@ public class Program
                     h.Password(rabbitPassword);
                 });
 
-                cfg.ReceiveEndpoint("market-user-created-queue", e =>
-                {
-                    e.ConfigureConsumer<UserCreatedConsumer>(context);
-                });
             });
         });
+
+        builder.Services.AddCors(options =>
+                {
+            options.AddPolicy("AllowVueApp", policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            });
+        });
+
+        builder.Services.AddSignalR();
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -78,6 +86,8 @@ public class Program
         {
             app.MapOpenApi();
         }
+
+        app.UseCors("AllowVueApp");
 
         app.UseCorrelationIdMiddleware();
 
