@@ -1,6 +1,6 @@
 ﻿namespace Portfolio.API.Models;
 
-public class DepositMoneyRequestId
+public class DepositMoneyRequest
 {
     public decimal Amount { get; set; }
 }

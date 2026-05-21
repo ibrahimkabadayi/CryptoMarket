@@ -13,25 +13,20 @@ namespace Portfolio.API.Controllers;
 public class WalletController(IWalletService walletService) : ControllerBase
 {
     [HttpPost("{walletId}/transaction")]
-    public async Task<IActionResult> DepositMoney(Guid walletId, [FromBody] DepositMoneyRequestId request)
+    public async Task<IActionResult> DepositMoney(Guid walletId, [FromBody] DepositMoneyRequest request)
     {
-        var result = await walletService.DepositMoney(walletId, request.Amount);
-
-        if(result.StartsWith("Success"))
-            return Ok(new {Message = $"Transfered {request.Amount} into your account."});
-        else 
-            return BadRequest(result);
+        await walletService.DepositMoney(walletId, request.Amount);
+       
+        return Ok(new {Message = $"Transfered {request.Amount} into your account."});
     }
 
     [HttpPost("{walletId}/assets/{symbol}")]
     public async Task<IActionResult> BuyAsset(Guid walletId, string symbol, [FromBody] BuyAssetRequest request)
     {
-        var result = await walletService.BuyAsset(walletId, symbol, request.BuyingPrice, request.Amount, false);
+        await walletService.BuyAsset(walletId, symbol, request.BuyingPrice, request.Amount, false);
 
-        if (result.StartsWith("Success"))
-            return Ok(new { Message = result });
-        else
-            return BadRequest(new { Message = result });
+        return Ok($"Succesfully bought {request.Amount} {symbol}s");
+        
     }
 
     [HttpPost("{walletId}/transfers/{symbol}")]
@@ -45,12 +40,9 @@ public class WalletController(IWalletService walletService) : ControllerBase
             TargetWalletAddress = request.TargetWalletAddress
         };
 
-        var result = await walletService.TransferAsset(transferDto);
-
-        if (result.StartsWith("Success"))
-            return Ok(new { Message = "Transfer is successfull" });
-        else       
-            return BadRequest(result);       
+        await walletService.TransferAsset(transferDto);
+      
+        return Ok(new { Message = "Transfer is successfull" });            
     }
 
     [HttpPatch("{walletId}")]
