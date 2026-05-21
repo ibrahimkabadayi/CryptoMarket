@@ -11,8 +11,8 @@ public class UserCreatedConsumer(IWalletService walletService) : IConsumer<UserC
         var message = context.Message;
         var userId = message.UserId;
 
-        var result = await walletService.CreateWallet(userId);
+        await walletService.CreateWallet(userId);
 
-        Console.WriteLine($"Created new wallet at the address {result}!");
+        Console.WriteLine($"Created new wallet at a new address!");
     }
 }

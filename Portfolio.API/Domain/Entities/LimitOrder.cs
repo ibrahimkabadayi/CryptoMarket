@@ -56,4 +56,22 @@ public class LimitOrder : BaseEntity
 
         UpdatedDate = DateTime.UtcNow;
     }
+
+    public void StartProcessing()
+    {
+        if (OrderStatus != LimitOrderStatus.Pending)
+            throw new InvalidOperationException(
+                $"Cannot process order in status {OrderStatus}.");
+        OrderStatus = LimitOrderStatus.Processing;
+        UpdatedDate = DateTime.UtcNow;
+    }
+
+    public void ResetToPending()
+    {
+        if (OrderStatus != LimitOrderStatus.Processing)
+            throw new InvalidOperationException(
+                $"Cannot reset order in status {OrderStatus}.");
+        OrderStatus = LimitOrderStatus.Pending;
+        UpdatedDate = DateTime.UtcNow;
+    }
 }

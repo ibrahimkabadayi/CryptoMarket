@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 using Portfolio.API.Application.DTOs;
 using Portfolio.API.Application.Interfaces;
 using Portfolio.API.Application.Services;
@@ -9,61 +10,71 @@ using Shared.Messages;
 
 namespace Portfolio.API.Consumers;
 
-public class CoinPriceConsumer(ILimitOrderService limitOrderService, ICacheService cacheService, IMapper mapper) : IConsumer<CoinPriceEvent>
+public class CoinPriceConsumer(
+    ILimitOrderService limitOrderService,
+    ICacheService cacheService,
+    IMapper mapper,
+    ILogger<CoinPriceConsumer> logger)
+    : IConsumer<CoinPriceEvent>
 {
     public async Task Consume(ConsumeContext<CoinPriceEvent> context)
     {
         var message = context.Message;
+        var cacheKey = $"{message.Symbol}:Orders";
 
-        var key = message.Symbol + "Orders";
+        var limitOrders = await GetOrdersAsync(cacheKey, message.Symbol);
+        if (limitOrders is not { Count: > 0 }) return;
 
-        var limitOrders = await cacheService.GetAsync<List<LimitOrder>>(key);
-        limitOrders ??= await limitOrderService.GetLimitOrdersBySymbol(message.Symbol);
+        var triggered = limitOrders
+            .Where(o => o is { OrderStatus: LimitOrderStatus.Pending } && IsTriggered(o, message.Price))
+            .ToList();
 
-        foreach (var order in limitOrders)
+        if (triggered.Count == 0) return;
+
+        foreach (var order in triggered)
+            order.StartProcessing(); 
+
+        await RefreshCacheAsync(cacheKey, limitOrders);
+
+        await Parallel.ForEachAsync(triggered,
+            new ParallelOptions { MaxDegreeOfParallelism = 4 },
+            async (order, ct) =>
+            {
+                logger.LogInformation(
+                    "Applying {OrderType} order {OrderId} at {Price}",
+                    order.OrderType, order.Id, message.Price);
+
+                var dto = mapper.Map<ApplyLimitOrderDto>(order);
+                await limitOrderService.ApplyLimitOrder(dto, message.Price);                          
+
+                order.ResetToPending();
+            });
+
+        await RefreshCacheAsync(cacheKey, limitOrders);
+    }
+
+
+    private static bool IsTriggered(LimitOrder order, decimal currentPrice) =>
+        order.OrderType switch
         {
-            if(order == null) continue;
+            LimitOrderType.Buy => currentPrice <= order.TargetPrice,
+            LimitOrderType.Sell => currentPrice >= order.TargetPrice,
+            _ => false
+        };
 
-            if (order.OrderType == LimitOrderType.Buy && order.TargetPrice <= message.Price && order.OrderStatus == LimitOrderStatus.Pending) 
-            {
-                order.OrderStatus = LimitOrderStatus.Proccesing;
+    private async Task<List<LimitOrder>> GetOrdersAsync(string key, string symbol)
+    {
+        var cached = await cacheService.GetAsync<List<LimitOrder>>(key);
+        if (cached is not null) return cached;
 
-                var dtosToCache = mapper.Map<List<LimitOrderCacheDto>>(limitOrders);
-                await cacheService.SetAsync(key, dtosToCache, TimeSpan.FromSeconds(5));
+        var orders = await limitOrderService.GetLimitOrdersBySymbol(symbol);
+        await RefreshCacheAsync(key, orders);
+        return orders;
+    }
 
-                Console.WriteLine($"Found one: Applying buy order at {message.Price}");
-
-                var dto = mapper.Map<ApplyLimitOrderDto>(order);
-                var result = await limitOrderService.ApplyLimitOrder(dto, message.Price);
-
-                if (!result.StartsWith("Success"))
-                {
-                    Console.WriteLine($"[HATA BAŞARISIZ EMİR]: {result}");
-                    order.OrderStatus = LimitOrderStatus.Pending;
-                    dtosToCache = mapper.Map<List<LimitOrderCacheDto>>(limitOrders);
-                    await cacheService.SetAsync(key, dtosToCache, TimeSpan.FromSeconds(5));
-                }
-            }
-            else if (order.OrderType == LimitOrderType.Sell && order.TargetPrice >= message.Price && order.OrderStatus == LimitOrderStatus.Pending)
-            {
-                order.OrderStatus = LimitOrderStatus.Proccesing;
-
-                var dtosToCache = mapper.Map<List<LimitOrderCacheDto>>(limitOrders);
-                await cacheService.SetAsync(key, dtosToCache, TimeSpan.FromSeconds(5));
-
-                Console.WriteLine($"Found one: Applying sell order at {message.Price}");
-
-                var dto = mapper.Map<ApplyLimitOrderDto>(order);
-                var result = await limitOrderService.ApplyLimitOrder(dto, message.Price);
-
-                if (!result.StartsWith("Success"))
-                {
-                    Console.WriteLine($"[HATA BAŞARISIZ EMİR]: {result}");
-                    order.OrderStatus = LimitOrderStatus.Pending;
-                    dtosToCache = mapper.Map<List<LimitOrderCacheDto>>(limitOrders);
-                    await cacheService.SetAsync(key, dtosToCache, TimeSpan.FromSeconds(5));
-                }
-            }
-        }
+    private async Task RefreshCacheAsync(string key, List<LimitOrder> orders)
+    {
+        var dtos = mapper.Map<List<LimitOrderCacheDto>>(orders);
+        await cacheService.SetAsync(key, dtos, TimeSpan.FromMinutes(2));
     }
 }

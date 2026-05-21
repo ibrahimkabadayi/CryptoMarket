@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Portfolio.API.Domain.Entities;
+﻿using Portfolio.API.Domain.Entities;
 using Portfolio.API.Domain.Enums;
 using Portfolio.API.Domain.Interfaces;
 using Portfolio.API.Infrastructure.Context;
@@ -13,11 +12,10 @@ public class LimitOrderRepository(ApplicationDbContext context) : Repository<Lim
         var entity = await GetByIdAsync(Id);
         if (entity == null) return;
 
-        entity.UpdatedDate = DateTime.UtcNow;
-        entity.OrderStatus = newStatus;
-
-        if(newStatus == LimitOrderStatus.Filled)
-            entity.CompletedAt = DateTime.UtcNow;
+        if (newStatus == LimitOrderStatus.Filled)
+            entity.Fill();
+        else
+            entity.UpdateStatus(newStatus);
         
         context.LimitOrders.Update(entity);
         await context.SaveChangesAsync();

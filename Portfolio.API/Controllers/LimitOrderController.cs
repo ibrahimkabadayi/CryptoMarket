@@ -49,8 +49,8 @@ namespace Portfolio.API.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateLimitOrder(Guid id, [FromBody] UpdateLimitOrderRequest request)
         {
-            var result = await limitOrderService.UpdateLimitOrderAsync(id, request.Amount, request.TargetPrice);
-            return result.StartsWith("Success") ? Ok(result) : BadRequest(result);
+            await limitOrderService.UpdateLimitOrderAsync(id, request.Amount, request.TargetPrice);
+            return Ok("Updated limit order");
         }
 
         [HttpDelete("{id}")]

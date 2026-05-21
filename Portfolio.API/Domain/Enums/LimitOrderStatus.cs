@@ -3,7 +3,7 @@
 public enum LimitOrderStatus
 {
     Pending = 1,
-    Proccesing = 2,
+    Processing = 2,
     Filled = 3,
     Canceled = 4
 }
