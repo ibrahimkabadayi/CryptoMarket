@@ -27,8 +27,7 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         {
             try
             {
-                var result = await walletService.BuyAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount, true);
-                Console.WriteLine(result);
+                await walletService.BuyAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount, true);
 
                 await publishEndpoint.Publish(new LimitOrderOccuredEvent
                 {

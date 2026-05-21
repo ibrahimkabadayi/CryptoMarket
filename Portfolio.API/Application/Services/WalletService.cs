@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Portfolio.API.Application.DTOs;
 using Portfolio.API.Application.Interfaces;
@@ -6,6 +7,7 @@ using Portfolio.API.Application.Settings;
 using Portfolio.API.Domain.Entities;
 using Portfolio.API.Domain.Enums;
 using Portfolio.API.Domain.Interfaces;
+using Portfolio.API.Hubs;
 using Shared.Messages;
 
 namespace Portfolio.API.Application.Services;
@@ -16,15 +18,14 @@ public class WalletService
         IAssetRepository assetRepository,
         ITransactionService transactionService,
         IPublishEndpoint publishEndpoint,
-        IOptions<FeeSettings> feeSettingsOptions
+        IOptions<FeeSettings> feeSettingsOptions,
+        IHubContext<PortfolioHub> hubContext
     ) : IWalletService
 {
 
-    public async Task<bool> BuyAsset(Guid walletId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
+    public async Task BuyAsset(Guid walletId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
     {
-        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId);
-
-        if (wallet is null) return false;
+        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId) ?? throw new ArgumentException("Wallet could not be found!");
 
         decimal totalCost = amount * currentPrice;
         decimal feeRate = isLimitOrder ? feeSettingsOptions.Value.MakerFeeRate : feeSettingsOptions.Value.TakerFeeRate;
@@ -35,9 +36,9 @@ public class WalletService
         {
             wallet.Buy(totalCost, feeInCrypto, finalAmountToUser, currentPrice, symbol, walletId);
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException error)
         {
-            return false;
+            throw new ArgumentException(error.Message);
         }
 
         await walletRepository.UpdateAsync(wallet);     
@@ -57,7 +58,21 @@ public class WalletService
             await publishEndpoint.Publish(feeEvent);
         }
 
-        return true;
+        var assetDtos = wallet.Assets?.Select(a => new AssetDashboardDto
+        {
+            Symbol = a.Symbol,
+            Quantity = a.Quantity,
+            AverageBuyPrice = a.CostBasis
+        }).ToList() ?? [];
+
+        var updatedDashboard = new PortfolioDashboardDto
+        {
+            FiatBalance = wallet.FiatBalance,
+            TotalInvestedValue = wallet.Value,
+            Assets = assetDtos
+        };
+
+        await hubContext.Clients.User(wallet.UserId.ToString()).SendAsync("UpdatePortfolio", updatedDashboard);
     }
 
     public async Task<Guid> GetWalletIdByUserId(Guid userId)
@@ -74,7 +89,6 @@ public class WalletService
 
     public async Task DepositMoney(Guid walletId, decimal amount)
     {
-
         var wallet = await walletRepository.GetByIdAsync(walletId) ?? 
             throw new ArgumentException("Wallet could not be found");
 
@@ -82,7 +96,10 @@ public class WalletService
 
         await walletRepository.UpdateAsync(wallet);
 
-        return;        
+        await transactionService.CreateTransactionRecordAsync(walletId, amount, TransactionType.Deposit);
+
+        await hubContext.Clients.User(wallet.UserId.ToString())
+            .SendAsync("UpdateBalance", wallet.FiatBalance);
     }
 
     public async Task TransferAsset(TransferAssetDto dto)
@@ -155,6 +172,11 @@ public class WalletService
         wallet.Withdraw(amount);
 
         await walletRepository.UpdateAsync(wallet);
+        
+        await transactionService.CreateTransactionRecordAsync(walletId, amount, TransactionType.Withdraw);
+
+        await hubContext.Clients.User(wallet.UserId.ToString())
+            .SendAsync("UpdateBalance", wallet.FiatBalance);
     }
 
     public async Task SellAsset(Guid walletId, string symbol, decimal price, decimal amount, bool isLimitOrder)
@@ -195,7 +217,23 @@ public class WalletService
             };
 
             await publishEndpoint.Publish(feeEvent);
-        }       
+        }
+
+        var assetDtos = wallet.Assets?.Select(a => new AssetDashboardDto
+        {
+            Symbol = a.Symbol,
+            Quantity = a.Quantity,
+            AverageBuyPrice = a.CostBasis
+        }).ToList() ?? [];
+
+        var updatedDashboard = new PortfolioDashboardDto
+        {
+            FiatBalance = wallet.FiatBalance,
+            TotalInvestedValue = wallet.Value,
+            Assets = assetDtos
+        };
+
+        await hubContext.Clients.User(wallet.UserId.ToString()).SendAsync("UpdatePortfolio", updatedDashboard);
     }
 
     public async Task<PortfolioDashboardDto> GetPortfolioDashboardAsync(Guid userId)
@@ -225,6 +263,7 @@ public class WalletService
             TotalInvestedValue = assetDtos.Sum(a => a.InvestedAmount)
         };
 
+        
         return dashboard;
     }
 }
