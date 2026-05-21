@@ -1,7 +1,10 @@
 ﻿using Market.API.Application.Interfaces;
 using Market.API.Domain.Entities;
 using Market.API.Domain.Interfaces;
+using Market.API.Hubs;
+using Market.API.Hubs.Messages;
 using MassTransit;
+using Microsoft.AspNetCore.SignalR;
 using Shared.Messages;
 
 namespace Market.API.Infrastructure.BackgroundServices;
@@ -9,7 +12,8 @@ namespace Market.API.Infrastructure.BackgroundServices;
 public class PriceSimulationBackgroundService(
     IServiceScopeFactory scopeFactory,
     ILogger<PriceSimulationBackgroundService> logger,
-    IRedisCacheService cacheService) : BackgroundService
+    IRedisCacheService cacheService,
+    IHubContext<MarketHub> hubContext) : BackgroundService
 {
     private readonly Dictionary<string, TrendState> _trends = new();
 
@@ -45,6 +49,13 @@ public class PriceSimulationBackgroundService(
                     await publishEndpoint.Publish(
                         new CoinPriceEvent { Price = coin.CurrentPrice, Symbol = coin.Symbol },
                         stoppingToken);
+
+                    var priceUpdateMessage = new PriceUpdateMessage(coin.Symbol, coin.CurrentPrice);
+
+                    await hubContext.Clients.All.SendAsync(
+                        "ReceivePriceUpdate",
+                        priceUpdateMessage,
+                        stoppingToken);
                 }
 
                 if (++tickCount % 100 == 0)
@@ -55,7 +66,7 @@ public class PriceSimulationBackgroundService(
                 logger.LogError("Error during simulation: {Message}", ex.Message);
             }
 
-            await Task.Delay(200, stoppingToken);
+            await Task.Delay(500, stoppingToken);
         }
     }
 }
