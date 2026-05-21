@@ -1,4 +1,5 @@
-﻿using Market.API.Domain.Entities;
+﻿using System.Linq.Expressions;
+using Market.API.Domain.Entities;
 using Market.API.Domain.Interfaces;
 using Market.API.Infrastructure.Context;
 using MongoDB.Bson;
@@ -30,6 +31,11 @@ public class Repository<T>(MarketDbContext context, string collectionName) : IRe
 
     public async Task<List<T>> FindAsync(FilterDefinition<T> filter)
         => await _collection.Find(filter).ToListAsync();
+
+    public async Task<List<T>> FindAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await _collection.Find(predicate).ToListAsync();
+    }
 
     public async Task<List<T>> GetPagedAsync(int page, int pageSize)
         => await _collection.Find(_ => true)

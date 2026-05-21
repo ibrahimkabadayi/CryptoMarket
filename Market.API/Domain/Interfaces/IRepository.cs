@@ -13,6 +13,7 @@ public interface IRepository<T> where T : BaseEntity
     Task DeleteAsync(string id);                  
     Task<bool> ExistsAsync(string id);            
     Task<List<T>> FindAsync(FilterDefinition<T> filter);
+    Task<List<T>> FindAsync(Expression<Func<T, bool>> predicate);
     Task<List<T>> GetPagedAsync(int page, int pageSize);
     Task<long> CountAsync();                     
 }
