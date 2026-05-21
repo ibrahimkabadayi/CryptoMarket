@@ -1,3 +1,4 @@
+using Market.API.Application.DTOs;
 ﻿using Market.API.Application.Interfaces;
 using Market.API.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -38,5 +39,19 @@ public class MarketController(ICoinService coinService) : ControllerBase
     {
         await coinService.UpdateCoin(symbol, request.Price, request.MarketCap);
         return Ok();
+    }
+
+    [HttpGet("{symbol}/history")]
+    public async Task<IActionResult> GetCoinHistory(
+        string symbol,
+        [FromQuery] int intervalMinutes = 15,  
+        [FromQuery] int hoursBack = 24)
+    {
+        var endDate = DateTime.UtcNow;
+        var startDate = endDate.AddHours(-hoursBack);
+
+        var history = await priceHistoryService.GetPriceHistoryAsync(symbol, intervalMinutes, startDate, endDate);
+
+        return Ok(history);
     }
 }

@@ -15,6 +15,7 @@ public static class DependencyInjection
         services.AddScoped<ICoinService, CoinService>();
         services.AddScoped<IMarketNewsService, MarketNewsService>();
         services.AddScoped<IPriceHistoryService, PriceHistoryService>();
+        services.AddScoped<IPriceHistoryService, PriceHistoryService>();
 
         return services;
     }
