@@ -24,7 +24,6 @@ public class AuthenticationService(UserManager<AppUser> userManager, IConfigurat
     {
         var jwtSettings = configuration.GetSection("Jwt");
 
-        Console.WriteLine("=== TOKEN ÜRETME ===");
         Console.WriteLine("Key: " + jwtSettings["Key"]);
         Console.WriteLine("Issuer: " + jwtSettings["Issuer"]);
         Console.WriteLine("Audience: " + jwtSettings["Audience"]);
@@ -35,6 +34,7 @@ public class AuthenticationService(UserManager<AppUser> userManager, IConfigurat
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email!),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
