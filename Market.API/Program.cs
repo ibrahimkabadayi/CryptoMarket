@@ -91,6 +91,8 @@ public class Program
 
         app.MapControllers();
 
+        app.MapHub<MarketHub>("hubs/market");
+
         app.MapCustomHealthChecks();
 
         app.Run();
