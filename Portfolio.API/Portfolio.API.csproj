@@ -14,6 +14,7 @@
     <PackageReference Include="MassTransit.RabbitMQ" Version="9.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.13">
       <PrivateAssets>all</PrivateAssets>
@@ -31,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Hubs\Messages\" />
     <Folder Include="Infrastructure\BackgroundServices\" />
   </ItemGroup>
 

@@ -10,6 +10,7 @@ using Portfolio.API.Infrastructure.Context;
 using Shared.Infrastructure.Middlewares;
 using Portfolio.API.Middlewares;
 using Shared.Infrastructure.Extensions;
+using Portfolio.API.Hubs;
 
 namespace Portfolio.API;
 
@@ -33,6 +34,19 @@ public class Program
         builder.Services.AddApplicationServices(builder.Configuration);
         builder.Services.AddInfrastructureServices(builder.Configuration);
 
+        builder.Services.AddSignalR();
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowVueApp", policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            });
+        });
+
         var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
         var rabbitUsername = builder.Configuration["RabbitMQ:Username"] ?? "guest";
         var rabbitPassword = builder.Configuration["RabbitMQ:Password"] ?? "guest";
@@ -41,6 +55,7 @@ public class Program
         {
             configuration.AddConsumer<UserCreatedConsumer>();
             configuration.AddConsumer<CoinPriceConsumer>();
+            configuration.AddConsumer<SetLimitOrderEvent>();
 
             configuration.UsingRabbitMq((context, cfg) =>
             {
@@ -51,12 +66,13 @@ public class Program
                 });
 
                 cfg.ReceiveEndpoint("portfolio-user-created-queue", e =>
-                {
-                    e.ConfigureConsumer<UserCreatedConsumer>(context);                
-                });
+                    e.ConfigureConsumer<UserCreatedConsumer>(context));             
 
                 cfg.ReceiveEndpoint("portfolio-coin-price-queue", e =>
                     e.ConfigureConsumer<CoinPriceConsumer>(context));
+
+                cfg.ReceiveEndpoint("portfolio-set-limit-order-queue", e =>
+                    e.ConfigureConsumer<SetLimitOrderEvent>(context));
             });
         });
 
@@ -77,6 +93,34 @@ public class Program
                     ValidAudience = jwtSettings["Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
                 };
+
+                // Allow SignalR clients to send access_token in query string for WebSockets
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"].FirstOrDefault();
+                        var path = context.HttpContext.Request.Path;
+
+                        // Buraya kontrol loglarý ekliyoruz:
+                        Console.WriteLine("\n--- SIGNALR TOKEN KONTROLÜ ---");
+                        Console.WriteLine($"Ýstek Yolu (Path): {path}");
+                        Console.WriteLine($"URL'de Token Bulundu mu?: {!string.IsNullOrEmpty(accessToken)}");
+
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/portfolio"))
+                        {
+                            Console.WriteLine("Baþarýlý: Token içeri alýndý!");
+                            context.Token = accessToken;
+                        }
+                        else
+                        {
+                            Console.WriteLine("HATA: Koþul saðlanamadý, token reddedildi!");
+                        }
+                        Console.WriteLine("------------------------------\n");
+
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
         builder.Services.AddCustomHealthChecks(builder.Configuration);
@@ -89,6 +133,8 @@ public class Program
         {
             app.MapOpenApi();
         }
+
+        app.UseCors("AllowVueApp");
 
         app.UseCorrelationIdMiddleware();
 
@@ -103,6 +149,8 @@ public class Program
         app.UseIdempotencyMiddleware();
 
         app.MapControllers();
+
+        app.MapHub<PortfolioHub>("hubs/portfolio");
 
         app.MapCustomHealthChecks();
 

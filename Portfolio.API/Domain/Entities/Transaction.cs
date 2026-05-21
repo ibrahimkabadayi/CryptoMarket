@@ -30,6 +30,18 @@ public class Transaction : BaseEntity
         PriceAtTransaction = priceAtTransaction ?? 0;
     }
 
+    public Transaction(Guid walletId, decimal amount, TransactionType transactionType)
+    {
+        if (walletId == Guid.Empty)
+            throw new ArgumentException("WalletId cannot be empty.", nameof(walletId));      
+        if (amount <= 0)
+            throw new ArgumentException("Amount must be positive.", nameof(amount));
+
+        WalletId = walletId;      
+        Amount = amount;
+        TransactionType = transactionType;
+    }
+
     public void AssignAsset(Guid assetId)
     {
         if (assetId == Guid.Empty)

@@ -7,5 +7,6 @@ namespace Portfolio.API.Application.Interfaces;
 public interface ITransactionService
 {
     Task CreateTransactionRecordAsync(Guid walletId, string symbol, decimal amount, decimal? price, TransactionType type);
+    Task CreateTransactionRecordAsync(Guid walletId, decimal amount, TransactionType type);
     List<TransactionDto> GetTenLastTransaction(Guid walletId);
 }
