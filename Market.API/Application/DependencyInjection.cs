@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<IMarketNewsService, MarketNewsService>();
         services.AddScoped<IPriceHistoryService, PriceHistoryService>();
         services.AddScoped<IPriceHistoryService, PriceHistoryService>();
+        services.AddScoped<ILimitOrderService, LimitOrderService>();
 
         return services;
     }
