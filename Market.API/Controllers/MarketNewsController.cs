@@ -1,0 +1,58 @@
+﻿using Market.API.Application.DTOs;
+using Market.API.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Market.API.Controllers;
+
+[Route("api/market-news")]
+[ApiController]
+public class MarketNewsController(IMarketNewsService marketNewsService) : ControllerBase
+{
+    [HttpGet]
+    public async Task<IActionResult> GetRecentNews([FromQuery] int count = 10)
+    {
+        if (count <= 0 || count > 100)
+            return BadRequest("Count must be between 1 and 100.");
+
+        var news = await marketNewsService.GetRecentNewsAsync(count);
+        return Ok(news);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetNewsById(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest("News ID cannot be empty.");
+
+        var news = await marketNewsService.GetNewsByIdAsync(id);
+        if (news == null)
+            return NotFound($"News with ID '{id}' not found.");
+
+        return Ok(news);
+    }
+
+    [HttpGet("coin/{symbol}")]
+    public async Task<IActionResult> GetNewsByCoin(string symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+            return BadRequest("Coin symbol cannot be empty.");
+
+        var news = await marketNewsService.GetNewsByCoinSymbolAsync(symbol);
+        return Ok(news);
+    }
+
+    [Authorize]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteNews(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest("News ID cannot be empty.");
+
+        var result = await marketNewsService.DeleteNewsAsync(id);
+        if (!result)
+            return BadRequest("Failed to delete the news.");
+
+        return Ok(new { message = "News deleted successfully." });
+    }
+}
