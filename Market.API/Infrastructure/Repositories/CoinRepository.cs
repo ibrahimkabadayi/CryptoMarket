@@ -4,7 +4,7 @@ using Market.API.Infrastructure.Context;
 using MongoDB.Driver;
 
 namespace Market.API.Infrastructure.Repositories;
-public class CoinRepository(MarketDbContext context) : Repository<Coin>(context!, "Coins"), ICoinRepository
+public class CoinRepository(MarketDbContext context) : Repository<Coin>(context, "Coins"), ICoinRepository
 {
     public async Task<Coin> GetCoinAsync(string symbol)
     {

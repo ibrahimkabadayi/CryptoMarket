@@ -15,7 +15,7 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
     {
         if (limitOrder == null)
         {
-           throw new ArgumentException("Error: Limit order is corrupted");
+            throw new ArgumentException("Error: Limit order is corrupted");
         }
 
         price = Math.Round(price, 4);
@@ -59,7 +59,6 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         }
 
         await limitOrderRepository.UpdateAsync(limitOrder.Id, LimitOrderStatus.Filled);
-        
     }
 
     public async Task CreateLimitOrderAsync(CreateLimitOrderDto orderDto)
@@ -100,10 +99,7 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
 
     public async Task UpdateLimitOrderAsync(Guid limitOrderId, decimal? amount, decimal? targetPrice)
     {
-        var limitOrder = await limitOrderRepository.GetByIdAsync(limitOrderId);
-        if (limitOrder is null)
-            throw new ArgumentException("Error: Could not found limit order.");
-
+        var limitOrder = await limitOrderRepository.GetByIdAsync(limitOrderId) ?? throw new ArgumentException("Error: Could not found limit order.");
         limitOrder.Update(amount, targetPrice);
         await limitOrderRepository.UpdateAsync(limitOrder);
     }

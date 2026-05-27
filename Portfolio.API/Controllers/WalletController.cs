@@ -1,9 +1,9 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Portfolio.API.Application.DTOs;
 using Portfolio.API.Application.Interfaces;
 using Portfolio.API.Models;
+using System.Security.Claims;
 
 namespace Portfolio.API.Controllers;
 
@@ -16,8 +16,8 @@ public class WalletController(IWalletService walletService) : ControllerBase
     public async Task<IActionResult> DepositMoney(Guid walletId, [FromBody] DepositMoneyRequest request)
     {
         await walletService.DepositMoney(walletId, request.Amount);
-       
-        return Ok(new {Message = $"Transfered {request.Amount} into your account."});
+
+        return Ok(new { Message = $"Transfered {request.Amount} into your account." });
     }
 
     [HttpPost("{walletId}/assets/{symbol}")]
@@ -26,14 +26,14 @@ public class WalletController(IWalletService walletService) : ControllerBase
         await walletService.BuyAsset(walletId, symbol, request.BuyingPrice, request.Amount, false);
 
         return Ok($"Succesfully bought {request.Amount} {symbol}s");
-        
+
     }
 
     [HttpPost("{walletId}/transfers/{symbol}")]
     public async Task<IActionResult> TransferAsset(Guid walletId, string symbol, [FromBody] TransferAssetRequest request)
     {
-        var transferDto = new TransferAssetDto 
-        { 
+        var transferDto = new TransferAssetDto
+        {
             FromWalletId = walletId,
             AssetAmount = request.AssetAmount,
             Symbol = symbol,
@@ -41,8 +41,8 @@ public class WalletController(IWalletService walletService) : ControllerBase
         };
 
         await walletService.TransferAsset(transferDto);
-      
-        return Ok(new { Message = "Transfer is successfull" });            
+
+        return Ok(new { Message = "Transfer is successfull" });
     }
 
     [HttpPatch("{walletId}")]

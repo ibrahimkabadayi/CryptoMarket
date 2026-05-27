@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36930.0
+# Visual Studio Version 18
+VisualStudioVersion = 18.7.11819.209
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.API", "Identity.API\Identity.API.csproj", "{CAC0D255-1CA0-4FD4-B62B-857EE8C4A7A4}"
 EndProject
@@ -18,8 +18,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Portfolio.API", "Portfolio.API\Portfolio.API.csproj", "{984E6D88-5D9D-45A4-A441-DC4E02EF83A4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Infrastructure", "Shared.Observability\Shared.Infrastructure.csproj", "{E7A23DD3-CE16-4BB9-B72C-F58E3D2ABAAF}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.API.Tests", "Tests\Identity.API.Tests.csproj", "{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -123,18 +121,6 @@ Global
 		{E7A23DD3-CE16-4BB9-B72C-F58E3D2ABAAF}.Release|x64.Build.0 = Release|Any CPU
 		{E7A23DD3-CE16-4BB9-B72C-F58E3D2ABAAF}.Release|x86.ActiveCfg = Release|Any CPU
 		{E7A23DD3-CE16-4BB9-B72C-F58E3D2ABAAF}.Release|x86.Build.0 = Release|Any CPU
-		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Debug|x64.Build.0 = Debug|Any CPU
-		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Debug|x86.Build.0 = Debug|Any CPU
-		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Release|x64.ActiveCfg = Release|Any CPU
-		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Release|x64.Build.0 = Release|Any CPU
-		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Release|x86.ActiveCfg = Release|Any CPU
-		{D8F7EAAC-67E9-F98D-4A1D-5120DC6E75AB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

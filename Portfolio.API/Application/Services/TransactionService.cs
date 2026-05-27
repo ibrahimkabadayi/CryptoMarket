@@ -41,6 +41,7 @@ public class TransactionService(
         }
 
         var transaction = new Transaction(walletId, amount, type);
+
         await transactionRepository.AddAsync(transaction);
 
         var transactionDto = mapper.Map<TransactionDto>(transaction);

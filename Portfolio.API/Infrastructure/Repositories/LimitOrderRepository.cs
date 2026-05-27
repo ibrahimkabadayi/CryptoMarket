@@ -14,8 +14,10 @@ public class LimitOrderRepository(ApplicationDbContext context) : Repository<Lim
 
         if (newStatus == LimitOrderStatus.Filled)
             entity.Fill();
-        else
-            entity.UpdateStatus(newStatus);
+        else if (newStatus == LimitOrderStatus.Pending)
+            entity.ResetToPending();
+        else if (newStatus == LimitOrderStatus.Processing)
+            entity.StartProcessing();
         
         context.LimitOrders.Update(entity);
         await context.SaveChangesAsync();
