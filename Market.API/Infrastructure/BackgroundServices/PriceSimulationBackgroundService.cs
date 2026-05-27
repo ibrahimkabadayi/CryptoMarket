@@ -66,7 +66,7 @@ public class PriceSimulationBackgroundService(
                 logger.LogError("Error during simulation: {Message}", ex.Message);
             }
 
-            await Task.Delay(500, stoppingToken);
+            await Task.Delay(1000, stoppingToken);
         }
     }
 }
