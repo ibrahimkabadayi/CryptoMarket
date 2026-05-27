@@ -35,6 +35,7 @@ public static class DependencyInjection
         services.AddHostedService<DatabasePriceUpdateBackgroundService>();
         services.AddHostedService<PriceSimulationBackgroundService>();
         services.AddHostedService<PriceHistoryBackgroundService>();
+        services.AddHostedService<MarketNewsGeneratorBackgroundService>();
 
         services.AddSingleton<MarketDbContext>();
 
