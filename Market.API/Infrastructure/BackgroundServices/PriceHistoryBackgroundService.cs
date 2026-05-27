@@ -1,12 +1,16 @@
 ﻿using Market.API.Application.Interfaces;
 using Market.API.Domain.Entities;
 using Market.API.Domain.Interfaces;
+using Market.API.Hubs;
+using Market.API.Hubs.Messages;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Market.API.Infrastructure.BackgroundServices;
 
 public class PriceHistoryBackgroundService(
     IServiceScopeFactory scopeFactory,
     IRedisCacheService cacheService,
+    IHubContext<MarketHub> hubContext,
     ILogger<PriceHistoryBackgroundService> logger) : BackgroundService
 {
     private readonly Dictionary<string, decimal> _lastClosePrices = new();
@@ -62,6 +66,11 @@ public class PriceHistoryBackgroundService(
                         await priceHistoryRepository.AddAsync(history);
 
                         _lastClosePrices[coin.Symbol] = closePrice;
+
+                        await hubContext.Clients.All.SendAsync(
+                            "ReceiveHistoryUpdate",
+                            history,
+                            stoppingToken);
                     }
 
                     logger.LogInformation("Successfully saved OHLCV candlestick snapshot for {Count} coins.", coins.Count);
