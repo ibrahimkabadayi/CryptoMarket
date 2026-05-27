@@ -31,6 +31,7 @@ services:
       - RabbitMQ__Username=${RABBITMQ_USER}
       - RabbitMQ__Password=${RABBITMQ_PASS}
       - Jwt__Key=${JWT_SECRET_KEY}
+      - Gemini__ApiKey=${GEMINI_API_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
       - Redis__ConnectionString=redis_db:6379,abortConnect=false
       - MongoDbSettings__ConnectionString=mongodb://my-mongodb:27017
@@ -110,7 +111,7 @@ services:
       - "5432:5432"
     restart: always
     volumes:
-       - postgres_data:/var/lib/postgresql/data
+       - postgres_data:/var/lib/postgresql
 
   my-mongodb:
     image: mongo:latest
