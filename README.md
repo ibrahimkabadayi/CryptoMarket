@@ -122,7 +122,7 @@ As illustrated above, `Market.API` continuously streams price events via RabbitM
     -   **PostgreSQL** (Identity, Portfolio)
     -   **MongoDB** (Market)
     -   **Redis** (Distributed Caching)
--   **Messaging**: RabbitMQ with Masstransit
+-   **Messaging**: RabbitMQ with MassTransit
 -   **Containerization**: Docker & Docker Compose
 -   **CI/CD**: GitHub Actions
 
