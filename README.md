@@ -122,7 +122,7 @@ As illustrated above, `Market.API` continuously streams price events via RabbitM
     -   **PostgreSQL** (Identity, Portfolio)
     -   **MongoDB** (Market)
     -   **Redis** (Distributed Caching)
--   **Messaging**: MassTransit with RabbitMQ
+-   **Messaging**: RabbitMQ with MassTransit
 -   **Containerization**: Docker & Docker Compose
 -   **CI/CD**: GitHub Actions
 
@@ -138,7 +138,7 @@ As illustrated above, `Market.API` continuously streams price events via RabbitM
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/Identity.API.git
+    git clone https://github.com/ibrahimkabadayi/Identity.API.git
     cd Identity.API
     ```
 
