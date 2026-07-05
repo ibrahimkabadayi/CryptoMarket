@@ -1,6 +1,7 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Portfolio.API.Domain.Interfaces;
+using Portfolio.API.Domain.Entities;
 using Portfolio.API.Infrastructure.Context;
 
 namespace Portfolio.API.Infrastructure.Repositories;
@@ -57,5 +58,10 @@ public class Repository<T>(ApplicationDbContext context) : IRepository<T> where 
     {
         var list = await _dbSet.Where(predicate).ToListAsync();
         return list.Count > 0;
+    }
+
+    public void ClearChangeTracker()
+    {
+        _context.ChangeTracker.Clear();
     }
 }

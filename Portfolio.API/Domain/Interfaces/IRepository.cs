@@ -12,4 +12,5 @@ public interface IRepository<T> where T : class
     Task<List<T>> FindAsync(Expression<Func<T, bool>> predicate);
     Task<T?> FindFirstAsync(Expression<Func<T, bool>> predicate);
     Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
+    void ClearChangeTracker();
 }

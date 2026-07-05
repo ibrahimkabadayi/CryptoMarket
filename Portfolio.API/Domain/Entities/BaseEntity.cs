@@ -1,4 +1,4 @@
-﻿namespace Portfolio.API.Domain.Entities;
+namespace Portfolio.API.Domain.Entities;
 
 public abstract class BaseEntity
 {

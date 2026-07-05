@@ -48,7 +48,7 @@ public class EmailService(IOptions<EmailSettings> emailSettings) : IEmailService
 
     public async Task SendWelcomeEmailAsync(string email, string name)
     {
-        string subject = "🚀 Welcome to CryptoMarket!";
+        string subject = "Welcome to CryptoMarket!";
 
         string body = $@"
     <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #ffffff;'>

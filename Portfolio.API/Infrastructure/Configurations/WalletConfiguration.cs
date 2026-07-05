@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Portfolio.API.Domain.Entities;
 
@@ -25,7 +25,7 @@ public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
         builder
             .Property(x => x.Address)
             .IsRequired();
-        
+
         builder
             .Property(x => x.FiatBalance)
             .HasDefaultValue(0)

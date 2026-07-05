@@ -1,4 +1,4 @@
-﻿using MassTransit;
+using MassTransit;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Portfolio.API.Application.DTOs;
@@ -22,10 +22,38 @@ public class WalletService
         IHubContext<PortfolioHub> hubContext
     ) : IWalletService
 {
+    private const int MaxRetryAttempts = 3;
+    private const int InitialDelayMs = 100;
+
+    private async Task ExecuteWithRetryAsync(Func<Task> operation, string operationName)
+    {
+        int attemptCount = 0;
+        int delayMs = InitialDelayMs;
+
+        while (attemptCount < MaxRetryAttempts)
+        {
+            try
+            {
+                await operation();
+                return;
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("modified by another process") && attemptCount < MaxRetryAttempts - 1)
+            {
+                attemptCount++;
+                await Task.Delay(delayMs);
+                delayMs *= 2; // Exponential backoff
+            }
+        }
+
+        // If all retries failed, throw the exception
+        throw new InvalidOperationException("Another operation modified your wallet. Please try again.");
+    }
 
     public async Task BuyAsset(Guid walletId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
     {
-        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId) ?? throw new ArgumentException("Wallet could not be found!");
+        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId);
+
+        if (wallet is null) return;
 
         decimal totalCost = amount * currentPrice;
         decimal feeRate = isLimitOrder ? feeSettingsOptions.Value.MakerFeeRate : feeSettingsOptions.Value.TakerFeeRate;
@@ -36,12 +64,12 @@ public class WalletService
         {
             wallet.Buy(totalCost, feeInCrypto, finalAmountToUser, currentPrice, symbol, walletId);
         }
-        catch (InvalidOperationException error)
+        catch (InvalidOperationException)
         {
-            throw new ArgumentException(error.Message);
+            return;
         }
 
-        await walletRepository.UpdateAsync(wallet);     
+        await walletRepository.UpdateAsync(wallet);
 
         await transactionService.CreateTransactionRecordAsync(walletId, symbol, finalAmountToUser, currentPrice, TransactionType.Buy);
 
@@ -94,7 +122,9 @@ public class WalletService
 
         wallet.Deposit(amount);
 
-        await walletRepository.UpdateAsync(wallet);
+        
+            await walletRepository.UpdateAsync(wallet);
+        
 
         await transactionService.CreateTransactionRecordAsync(walletId, amount, TransactionType.Deposit);
 
@@ -133,7 +163,10 @@ public class WalletService
 
         targetWallet.AddValue(dto.AssetAmount, asset.CostBasis);
 
-        await walletRepository.UpdateAsync(targetWallet);
+        await ExecuteWithRetryAsync(async () =>
+        {
+            await walletRepository.UpdateAsync(targetWallet);
+        }, "TransferAsset target wallet update");
 
         asset.Deduct(dto.AssetAmount);       
         await assetRepository.UpdateAsync(asset);
@@ -156,7 +189,10 @@ public class WalletService
             await assetRepository.DeleteAsync(asset.Id);
         }
 
-        await walletRepository.UpdateAsync(sourceWallet);      
+        await ExecuteWithRetryAsync(async () =>
+        {
+            await walletRepository.UpdateAsync(sourceWallet);
+        }, "TransferAsset source wallet update");
     }
 
     public async Task WithdrawMoney(Guid walletId, decimal amount)
@@ -171,8 +207,11 @@ public class WalletService
 
         wallet.Withdraw(amount);
 
-        await walletRepository.UpdateAsync(wallet);
-        
+        await ExecuteWithRetryAsync(async () =>
+        {
+            await walletRepository.UpdateAsync(wallet);
+        }, "WithdrawMoney wallet update");
+
         await transactionService.CreateTransactionRecordAsync(walletId, amount, TransactionType.Withdraw);
 
         await hubContext.Clients.User(wallet.UserId.ToString())
@@ -202,7 +241,10 @@ public class WalletService
 
         wallet.Sell(amount, price, feeAmount);
 
-        await walletRepository.UpdateAsync(wallet);
+        await ExecuteWithRetryAsync(async () =>
+        {
+            await walletRepository.UpdateAsync(wallet);
+        }, "SellAsset wallet update");
 
         await transactionService.CreateTransactionRecordAsync(walletId, symbol, amount, price, TransactionType.Sell);
 

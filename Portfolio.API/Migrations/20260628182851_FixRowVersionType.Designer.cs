@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Portfolio.API.Infrastructure.Context;
@@ -11,9 +12,11 @@ using Portfolio.API.Infrastructure.Context;
 namespace Portfolio.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260628182851_FixRowVersionType")]
+    partial class FixRowVersionType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,6 +40,12 @@ namespace Portfolio.API.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("numeric");
 
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.Property<string>("Symbol")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -52,7 +61,7 @@ namespace Portfolio.API.Migrations
 
                     b.HasIndex("WalletId");
 
-                    b.ToTable("Assets");
+                    b.ToTable("Asset");
                 });
 
             modelBuilder.Entity("Portfolio.API.Domain.Entities.LimitOrder", b =>
@@ -75,6 +84,12 @@ namespace Portfolio.API.Migrations
 
                     b.Property<int>("OrderType")
                         .HasColumnType("integer");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.Property<string>("Symbol")
                         .IsRequired()
@@ -117,6 +132,12 @@ namespace Portfolio.API.Migrations
                     b.Property<decimal>("PriceAtTransaction")
                         .HasColumnType("numeric");
 
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.Property<string>("Symbol")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -135,7 +156,7 @@ namespace Portfolio.API.Migrations
 
                     b.HasIndex("WalletId");
 
-                    b.ToTable("Transactions");
+                    b.ToTable("Transaction");
                 });
 
             modelBuilder.Entity("Portfolio.API.Domain.Entities.TreasuryBalance", b =>
@@ -151,6 +172,12 @@ namespace Portfolio.API.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,8)");
@@ -180,6 +207,12 @@ namespace Portfolio.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("numeric")
                         .HasDefaultValue(0m);
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("timestamp with time zone");

@@ -146,6 +146,24 @@ public class Program
 
         app.UseAuthorization();
 
+        app.Use(async (context, next) =>
+        {
+            var req = context.Request;
+            req.EnableBuffering();
+            string bodyHash = "";
+            if (req.Method == HttpMethods.Post || req.Method == HttpMethods.Put)
+            {
+                using var sr = new StreamReader(req.Body, leaveOpen: true);
+                var body = await sr.ReadToEndAsync();
+                req.Body.Position = 0;
+                bodyHash = body.Length > 0 ? Convert.ToBase64String(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(body))).Substring(0, 8) : "";
+            }
+            req.Headers.TryGetValue("Idempotency-Key", out var idemp);
+            req.Headers.TryGetValue("X-Request-ID", out var xreq);
+            Console.WriteLine($"[REQ] {DateTime.UtcNow:O} {req.Method} {req.Path} from {context.Connection.RemoteIpAddress} Idemp:{idemp} XReq:{xreq} bodyHash:{bodyHash}");
+            await next();
+        });
+
         app.UseIdempotencyMiddleware();
 
         app.MapControllers();

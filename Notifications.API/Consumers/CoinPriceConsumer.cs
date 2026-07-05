@@ -56,7 +56,7 @@ public class CoinPriceConsumer(
 
                     await notificationService.CreateNotificationAsync(
                         userId: alert.UserId,
-                        title: $"🎯 {alert.Symbol} Fiyat Alarmı!",
+                        title: $"{alert.Symbol} Fiyat Alarmı!",
                         message: notificationMsg,
                         type: NotificationType.PriceAlert,
                         relatedEntityId: alert.Id.ToString()

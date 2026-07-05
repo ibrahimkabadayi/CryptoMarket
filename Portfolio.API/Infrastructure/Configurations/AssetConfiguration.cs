@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Portfolio.API.Domain.Entities;
 
 namespace Portfolio.API.Infrastructure.Configurations;
