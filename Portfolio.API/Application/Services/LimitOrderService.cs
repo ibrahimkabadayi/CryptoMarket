@@ -27,7 +27,7 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         {
             try
             {
-                await walletService.BuyAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount, true);
+                await walletService.BuyAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount, true);        
 
                 await publishEndpoint.Publish(new LimitOrderOccuredEvent
                 {
@@ -58,21 +58,22 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
             });
         }
 
-        await limitOrderRepository.UpdateAsync(limitOrder.Id, LimitOrderStatus.Filled);
+        await limitOrderRepository.UpdateAsync(limitOrder.Id, LimitOrderStatus.Filled); 
     }
 
     public async Task CreateLimitOrderAsync(CreateLimitOrderDto orderDto)
     {
         ArgumentNullException.ThrowIfNull(orderDto);
 
-        var limitOrder = new LimitOrder(
-            orderDto.WalletId,
-            orderDto.UserId,
-            orderDto.Symbol,
-            orderDto.TargetPrice,
-            orderDto.Amount,
-            orderDto.OrderType
-        );
+        var limitOrder = new LimitOrder
+        {
+            Symbol = orderDto.Symbol,
+            TargetPrice = orderDto.TargetPrice,
+            WalletId = orderDto.WalletId,
+            OrderType = orderDto.OrderType,
+            Amount = orderDto.Amount,
+            UserId = orderDto.UserId,
+        };
 
         await limitOrderRepository.AddAsync(limitOrder);
 
@@ -97,10 +98,26 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         return mapper.Map<List<LimitOrderDto>>(limitOrders);
     }
 
-    public async Task UpdateLimitOrderAsync(Guid limitOrderId, decimal? amount, decimal? targetPrice)
+    public async Task UpdateLimitOrderAsync(Guid limitOrderId, decimal? Amount, decimal? TargetPrice)
     {
-        var limitOrder = await limitOrderRepository.GetByIdAsync(limitOrderId) ?? throw new ArgumentException("Error: Could not found limit order.");
-        limitOrder.Update(amount, targetPrice);
+        var limitOrder = await limitOrderRepository.GetByIdAsync(limitOrderId) ?? throw new ArgumentException("Error: Could bot found limit order.");
+        if (Amount == null)
+        {
+            if (TargetPrice.HasValue)
+                limitOrder.TargetPrice = (decimal)TargetPrice;
+        }
+        else if (TargetPrice is null)
+        {
+            if (Amount.HasValue)
+                limitOrder.Amount = (decimal)Amount;
+        }
+        else
+        {
+            limitOrder.TargetPrice = (decimal)TargetPrice;
+            limitOrder.Amount = (decimal)Amount;
+        }
+
+        limitOrder.UpdatedDate = DateTime.UtcNow;
         await limitOrderRepository.UpdateAsync(limitOrder);
     }
 

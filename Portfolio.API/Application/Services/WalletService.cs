@@ -22,51 +22,45 @@ public class WalletService
         IHubContext<PortfolioHub> hubContext
     ) : IWalletService
 {
-    private const int MaxRetryAttempts = 3;
-    private const int InitialDelayMs = 100;
-
-    private async Task ExecuteWithRetryAsync(Func<Task> operation, string operationName)
-    {
-        int attemptCount = 0;
-        int delayMs = InitialDelayMs;
-
-        while (attemptCount < MaxRetryAttempts)
-        {
-            try
-            {
-                await operation();
-                return;
-            }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("modified by another process") && attemptCount < MaxRetryAttempts - 1)
-            {
-                attemptCount++;
-                await Task.Delay(delayMs);
-                delayMs *= 2; // Exponential backoff
-            }
-        }
-
-        // If all retries failed, throw the exception
-        throw new InvalidOperationException("Another operation modified your wallet. Please try again.");
-    }
-
     public async Task BuyAsset(Guid walletId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
     {
-        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId);
-
-        if (wallet is null) return;
-
+        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId) ?? throw new ArgumentException("Error: Wallet does not exist");
         decimal totalCost = amount * currentPrice;
+
+        if (wallet.FiatBalance < totalCost)
+            throw new ArgumentException("Error: Not Enough Money!");
+
         decimal feeRate = isLimitOrder ? feeSettingsOptions.Value.MakerFeeRate : feeSettingsOptions.Value.TakerFeeRate;
+
         decimal feeInCrypto = amount * feeRate;
+
         decimal finalAmountToUser = amount - feeInCrypto;
 
-        try
+        wallet.FiatBalance -= totalCost;
+        wallet.UpdatedDate = DateTime.UtcNow;
+
+        var walletAssets = wallet.Assets ?? [];
+        var asset = walletAssets.FirstOrDefault(x => x.Symbol == symbol);
+
+        if (asset != null)
         {
-            wallet.Buy(totalCost, feeInCrypto, finalAmountToUser, currentPrice, symbol, walletId);
+            asset.Quantity += finalAmountToUser;
+            asset.UpdatedDate = DateTime.UtcNow;
+            await assetRepository.UpdateAsync(asset);
         }
-        catch (InvalidOperationException)
+        else
         {
-            return;
+            asset = new Asset
+            {
+                Symbol = symbol,
+                Quantity = finalAmountToUser,
+                WalletId = walletId,
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow
+            };
+            await assetRepository.AddAsync(asset);
+            walletAssets.Add(asset);
+            wallet.Assets = walletAssets;
         }
 
         await walletRepository.UpdateAsync(wallet);
@@ -103,6 +97,7 @@ public class WalletService
         await hubContext.Clients.User(wallet.UserId.ToString()).SendAsync("UpdatePortfolio", updatedDashboard);
     }
 
+
     public async Task<Guid> GetWalletIdByUserId(Guid userId)
     {
         return await walletRepository.GetWalletIdByUserId(userId);
@@ -110,65 +105,85 @@ public class WalletService
 
     public async Task CreateWallet(Guid userId)
     {
-        var newWallet = new Wallet(userId);
+        var generatedAddress = "0x" + Guid.NewGuid().ToString("N");
+
+        var newWallet = new Wallet
+        {
+            UserId = userId,
+            Address = generatedAddress,
+        };
 
         await walletRepository.AddAsync(newWallet);      
     }
 
     public async Task DepositMoney(Guid walletId, decimal amount)
     {
-        var wallet = await walletRepository.GetByIdAsync(walletId) ?? 
-            throw new ArgumentException("Wallet could not be found");
+        try
+        {
+            var wallet = await walletRepository.GetByIdAsync(walletId) ?? throw new ArgumentException("Error: Could not find wallet");
+            wallet.FiatBalance += amount;
+            wallet.Value += amount;
+            wallet.UpdatedDate = DateTime.UtcNow;
 
-        wallet.Deposit(amount);
-
-        
             await walletRepository.UpdateAsync(wallet);
-        
 
-        await transactionService.CreateTransactionRecordAsync(walletId, amount, TransactionType.Deposit);
+            await transactionService.CreateTransactionRecordAsync(walletId, amount, TransactionType.Deposit);
 
-        await hubContext.Clients.User(wallet.UserId.ToString())
-            .SendAsync("UpdateBalance", wallet.FiatBalance);
+            await hubContext.Clients.User(wallet.UserId.ToString())
+                .SendAsync("UpdateBalance", wallet.FiatBalance);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw new ArgumentException($"Error: {ex.Message}");
+        }
     }
 
     public async Task TransferAsset(TransferAssetDto dto)
     {
-        var sourceWallet = await walletRepository.GetWalletWithAssetsAsync(dto.FromWalletId)
-        ?? throw new ArgumentException("Source wallet could not found.");
+        var sourceWallet = await walletRepository.GetWalletWithAssetsAsync(dto.FromWalletId);
+        if (sourceWallet is null)
+            throw new ArgumentException("Error: Could not find source wallet.");
 
-        var targetWallet = await walletRepository.GetWalletWithAssetsAsync(dto.TargetWalletAddress)
-            ?? throw new ArgumentException("Target wallet could not found.");
+        var targetWallet = await walletRepository.GetWalletWithAssetsAsync(dto.TargetWalletAddress);
+        if (targetWallet is null)
+            throw new ArgumentException("Error: Wrong address for target wallet.");
 
-        var asset = sourceWallet.Assets.FirstOrDefault(x => x.Symbol.Equals(dto.Symbol))
-            ?? throw new ArgumentException("Transfer asset is present in source wallet.");
+        var asset = sourceWallet.Assets.FirstOrDefault(x => x.Symbol.Equals(dto.Symbol));
+        if (asset is null)
+            throw new ArgumentException("Error: Could not find asset in the wallet.");
 
         if (asset.Quantity < dto.AssetAmount)
-            throw new InvalidOperationException("Not enough asset amount.");
+            throw new ArgumentException("Error: Transfer amount is bigger than asset quantity in the wallet.");
 
         if (targetWallet.Assets is not null && targetWallet.Assets.Any(x => x.Symbol.Equals(asset.Symbol)))
         {
             var assetInTargetWallet = targetWallet.Assets.First(x => x.Symbol.Equals(asset.Symbol));
-            assetInTargetWallet.Receive(dto.AssetAmount, asset.CostBasis);
+            assetInTargetWallet.Quantity += dto.AssetAmount;
             await assetRepository.UpdateAsync(assetInTargetWallet);
         }
         else
         {
-            var newAsset = new Asset(targetWallet.Id, asset.Symbol, dto.AssetAmount, asset.CostBasis);               
+            var newAsset = new Asset
+            {
+                Symbol = asset.Symbol,
+                Quantity = dto.AssetAmount,
+                WalletId = targetWallet.Id,
+                CostBasis = asset.CostBasis,
+            };
             await assetRepository.AddAsync(newAsset);
             targetWallet.Assets!.Add(newAsset);
         }
 
-        sourceWallet.DeductValue(dto.AssetAmount, asset.CostBasis);
+        sourceWallet.Value -= asset.Quantity * asset.CostBasis;
+        sourceWallet.UpdatedDate = DateTime.UtcNow;
 
-        targetWallet.AddValue(dto.AssetAmount, asset.CostBasis);
+        targetWallet.Value += dto.AssetAmount * asset.CostBasis;
+        targetWallet.UpdatedDate = DateTime.UtcNow;
+        await walletRepository.UpdateAsync(targetWallet);
 
-        await ExecuteWithRetryAsync(async () =>
-        {
-            await walletRepository.UpdateAsync(targetWallet);
-        }, "TransferAsset target wallet update");
-
-        asset.Deduct(dto.AssetAmount);       
+        asset.Quantity -= dto.AssetAmount;
+        asset.UpdatedDate = DateTime.UtcNow;
         await assetRepository.UpdateAsync(asset);
 
         await transactionService.CreateTransactionRecordAsync(sourceWallet.Id, asset.Symbol, dto.AssetAmount, asset.CostBasis, TransactionType.Transfer);
@@ -189,30 +204,19 @@ public class WalletService
             await assetRepository.DeleteAsync(asset.Id);
         }
 
-        await ExecuteWithRetryAsync(async () =>
-        {
-            await walletRepository.UpdateAsync(sourceWallet);
-        }, "TransferAsset source wallet update");
+        await walletRepository.UpdateAsync(sourceWallet);
     }
 
     public async Task WithdrawMoney(Guid walletId, decimal amount)
     {
-        var wallet = await walletRepository.GetByIdAsync(walletId)
-            ?? throw new ArgumentException("Error: Wallet does not exist for withdrawal.");
+        var wallet = await walletRepository.GetByIdAsync(walletId);
 
-        if (wallet.FiatBalance < amount)
-        {
-            throw new InvalidOperationException("Error: Insufficient fiat balance.");
-        }
+        if (wallet == null) return;
 
-        wallet.Withdraw(amount);
-
-        await ExecuteWithRetryAsync(async () =>
-        {
-            await walletRepository.UpdateAsync(wallet);
-        }, "WithdrawMoney wallet update");
+        if (wallet.FiatBalance < amount) return;
 
         await transactionService.CreateTransactionRecordAsync(walletId, amount, TransactionType.Withdraw);
+        wallet.Value -= amount;
 
         await hubContext.Clients.User(wallet.UserId.ToString())
             .SendAsync("UpdateBalance", wallet.FiatBalance);
@@ -220,7 +224,8 @@ public class WalletService
 
     public async Task SellAsset(Guid walletId, string symbol, decimal price, decimal amount, bool isLimitOrder)
     {
-        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId) ?? throw new ArgumentException("Error: Wallet does not exist");
+        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId);
+        if (wallet is null) throw new ArgumentException("Error: Wallet does not exist");
 
         var asset = wallet.Assets?.FirstOrDefault(x => x.Symbol == symbol);
         if (asset == null || asset.Quantity < amount)
@@ -232,19 +237,19 @@ public class WalletService
         decimal feeRate = isLimitOrder ? feeSettingsOptions.Value.MakerFeeRate : feeSettingsOptions.Value.TakerFeeRate;
         decimal feeAmount = totalCost * feeRate;
 
-        asset.Deduct(amount);        
+        asset.Quantity -= amount;
+        asset.UpdatedDate = DateTime.UtcNow;
 
         if (asset.Quantity == 0)
         {
-            wallet.RemoveAsset(asset);
+            wallet.Assets!.Remove(asset);
         }
 
-        wallet.Sell(amount, price, feeAmount);
+        wallet.FiatBalance += totalCost;
+        wallet.FiatBalance -= feeAmount;
+        wallet.UpdatedDate = DateTime.UtcNow;
 
-        await ExecuteWithRetryAsync(async () =>
-        {
-            await walletRepository.UpdateAsync(wallet);
-        }, "SellAsset wallet update");
+        await walletRepository.UpdateAsync(wallet);
 
         await transactionService.CreateTransactionRecordAsync(walletId, symbol, amount, price, TransactionType.Sell);
 
@@ -305,7 +310,6 @@ public class WalletService
             TotalInvestedValue = assetDtos.Sum(a => a.InvestedAmount)
         };
 
-        
         return dashboard;
     }
 }

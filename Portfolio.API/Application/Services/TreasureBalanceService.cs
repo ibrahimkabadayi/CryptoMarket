@@ -12,13 +12,13 @@ public class TreasureBalanceService(ITreasuryBalanceRepository treasuryBalanceRe
 
         if(treasureBalanceOfThatSymbol == null) 
         {
-            var newBalance = new TreasuryBalance(assetSymbol);
-            newBalance.AddFunds(amount);
+            var newBalance = new TreasuryBalance { AssetSymbol = assetSymbol };
+            newBalance.TotalAmount += amount;
             await treasuryBalanceRepository.AddAsync(newBalance);
             return;
         }
 
-        treasureBalanceOfThatSymbol.AddFunds(amount);
+        treasureBalanceOfThatSymbol.TotalAmount += amount;
         await treasuryBalanceRepository.UpdateAsync(treasureBalanceOfThatSymbol);
     }
 
@@ -27,10 +27,10 @@ public class TreasureBalanceService(ITreasuryBalanceRepository treasuryBalanceRe
         var treasureUSDTBalance = await treasuryBalanceRepository.FindFirstAsync(x => x.AssetSymbol == "USDT");
         if (treasureUSDTBalance == null) 
         {
-            treasureUSDTBalance = new TreasuryBalance("USDT");
+            treasureUSDTBalance = new TreasuryBalance { AssetSymbol = "USDT" };
             await treasuryBalanceRepository.AddAsync(treasureUSDTBalance);
         }
-        treasureUSDTBalance.AddFunds(amount);
+        treasureUSDTBalance.TotalAmount += amount;
         await treasuryBalanceRepository.UpdateAsync(treasureUSDTBalance);
     }
 }

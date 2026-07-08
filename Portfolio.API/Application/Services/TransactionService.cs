@@ -18,7 +18,18 @@ public class TransactionService(
 {
     public async Task CreateTransactionRecordAsync(Guid walletId, string symbol, decimal amount, decimal? price, TransactionType type)
     {
-        var transaction = new Transaction(walletId, symbol, amount, type, price);
+        
+        var transaction = new Transaction 
+        {
+            WalletId = walletId,
+            Symbol = symbol,
+            Amount = amount, 
+            TransactionType = type,      
+        };
+
+        if (price is decimal x)
+            transaction.PriceAtTransaction = x;
+
         await transactionRepository.AddAsync(transaction);
 
         var transactionDto = mapper.Map<TransactionDto>(transaction);
@@ -40,7 +51,12 @@ public class TransactionService(
             throw new ArgumentException("Transaction type must be either deposit or withdraw");
         }
 
-        var transaction = new Transaction(walletId, amount, type);
+        var transaction = new Transaction
+        {
+            WalletId = walletId,
+            Amount = amount,
+            TransactionType = type
+        };
 
         await transactionRepository.AddAsync(transaction);
 
