@@ -2,23 +2,6 @@
 
 public class TreasuryBalance : BaseEntity
 {
-    public string AssetSymbol { get; private set; } = string.Empty;
-    public decimal TotalAmount { get; private set; }
-
-    private TreasuryBalance() { }
-
-    public TreasuryBalance(string assetSymbol)
-    {
-        AssetSymbol = assetSymbol.ToUpperInvariant();
-        TotalAmount = 0;
-    }
-
-    public void AddFunds(decimal amount)
-    {
-        if (amount <= 0) 
-            throw new ArgumentException("Added amount must be bigger than 0.");
-
-        TotalAmount += amount;
-        UpdatedDate = DateTime.UtcNow;
-    }
+    public string AssetSymbol { get;  set; } = string.Empty;
+    public decimal TotalAmount { get; set; } = 0;
 }

@@ -5,6 +5,6 @@ public class Asset : BaseEntity
     public Guid WalletId { get; set; }
     public Wallet Wallet { get; set; } = new Wallet();
     public string Symbol { get; set; } = string.Empty;
-    public decimal AverageBuyPrice { get; set; }
+    public decimal CostBasis { get; set; }
     public decimal Quantity { get; set; }
 }
