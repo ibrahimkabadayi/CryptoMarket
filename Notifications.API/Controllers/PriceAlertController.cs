@@ -6,7 +6,7 @@ using Notifications.API.Models;
 
 namespace Notifications.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/price-alerts")]
     [ApiController]
     public class PriceAlertController(IPriceAlertService priceAlertService) : ControllerBase
     {

@@ -5,7 +5,7 @@ using Notifications.API.Models;
 
 namespace Notifications.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/notifications")]
     [ApiController]
     public class NotificationController(INotificationService notificationService) : ControllerBase
     {
