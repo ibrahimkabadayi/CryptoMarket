@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using MassTransit;
-using Microsoft.Extensions.Logging;
 using Portfolio.API.Application.DTOs;
 using Portfolio.API.Application.Interfaces;
-using Portfolio.API.Application.Services;
 using Portfolio.API.Domain.Entities;
 using Portfolio.API.Domain.Enums;
 using Shared.Messages;
@@ -32,7 +30,7 @@ public class CoinPriceConsumer(
         if (triggered.Count == 0) return;
 
         foreach (var order in triggered)
-            order.StartProcessing(); 
+            order.OrderStatus = LimitOrderStatus.Processing; 
 
         await RefreshCacheAsync(cacheKey, limitOrders);
 
@@ -47,7 +45,7 @@ public class CoinPriceConsumer(
                 var dto = mapper.Map<ApplyLimitOrderDto>(order);
                 await limitOrderService.ApplyLimitOrder(dto, message.Price);                          
 
-                order.ResetToPending();
+                order.OrderStatus = LimitOrderStatus.Pending;
             });
 
         await RefreshCacheAsync(cacheKey, limitOrders);

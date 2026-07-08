@@ -12,12 +12,7 @@ public class LimitOrderRepository(ApplicationDbContext context) : Repository<Lim
         var entity = await GetByIdAsync(Id);
         if (entity == null) return;
 
-        if (newStatus == LimitOrderStatus.Filled)
-            entity.Fill();
-        else if (newStatus == LimitOrderStatus.Pending)
-            entity.ResetToPending();
-        else if (newStatus == LimitOrderStatus.Processing)
-            entity.StartProcessing();
+        entity.OrderStatus  = newStatus;
         
         context.LimitOrders.Update(entity);
         await context.SaveChangesAsync();
