@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Market.API.Infrastructure.BackgroundServices;
 
-public class PriceHistoryBackgroundService(
+public class PriceHistoryGenerator(
     IServiceScopeFactory scopeFactory,
     IRedisCacheService cacheService,
     IHubContext<MarketHub> hubContext,
-    ILogger<PriceHistoryBackgroundService> logger) : BackgroundService
+    ILogger<PriceHistoryGenerator> logger) : BackgroundService
 {
     private readonly Dictionary<string, decimal> _lastClosePrices = new();
 
@@ -52,7 +52,7 @@ public class PriceHistoryBackgroundService(
 
                         var volume = (decimal)rng.Next(50, 5000);
 
-                        var history = new PriceHistory
+                        var history = new Domain.Entities.PriceHistory
                         {
                             Symbol = coin.Symbol,
                             OpenPrice = Math.Round(openPrice, 2),

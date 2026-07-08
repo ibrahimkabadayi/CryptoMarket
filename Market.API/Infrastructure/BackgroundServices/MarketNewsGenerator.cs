@@ -3,9 +3,9 @@ using Market.API.Domain.Interfaces;
 
 namespace Market.API.Infrastructure.BackgroundServices;
 
-public class MarketNewsGeneratorBackgroundService(
+public class MarketNewsGenerator(
     IServiceScopeFactory scopeFactory,
-    ILogger<MarketNewsGeneratorBackgroundService> logger) : BackgroundService
+    ILogger<MarketNewsGenerator> logger) : BackgroundService
 {
     private const int IntervalMinutes = 30;
     private readonly Random _random = new();

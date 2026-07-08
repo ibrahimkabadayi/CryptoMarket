@@ -3,19 +3,20 @@ using Market.API.Domain.Entities;
 using Market.API.Domain.Interfaces;
 using Market.API.Hubs;
 using Market.API.Hubs.Messages;
+using Market.API.Infrastructure.BackgroundServices.Helpers;
 using MassTransit;
 using Microsoft.AspNetCore.SignalR;
 using Shared.Messages;
 
 namespace Market.API.Infrastructure.BackgroundServices;
 
-public class PriceSimulationBackgroundService(
+public class PriceSimulation(
     IServiceScopeFactory scopeFactory,
-    ILogger<PriceSimulationBackgroundService> logger,
+    ILogger<PriceSimulation> logger,
     IRedisCacheService cacheService,
     IHubContext<MarketHub> hubContext) : BackgroundService
 {
-    private readonly Dictionary<string, TrendState> _trends = new();
+    private readonly Dictionary<string, TrendState> _trends = [];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -44,13 +45,14 @@ public class PriceSimulationBackgroundService(
                 {
                     var trend = _trends[coin.Symbol];
                     coin.CurrentPrice = trend.NextPrice(coin.CurrentPrice, rng);
+                    coin.MarketCap = coin.CurrentPrice * coin.Supply;
                     coin.LastUpdated = DateTime.UtcNow;
 
                     await publishEndpoint.Publish(
                         new CoinPriceEvent { Price = coin.CurrentPrice, Symbol = coin.Symbol },
                         stoppingToken);
 
-                    var priceUpdateMessage = new PriceUpdateMessage(coin.Symbol, coin.CurrentPrice);
+                    var priceUpdateMessage = new PriceUpdateMessage(coin.Symbol, coin.CurrentPrice, coin.MarketCap);
 
                     await hubContext.Clients.All.SendAsync(
                         "ReceivePriceUpdate",
@@ -66,54 +68,9 @@ public class PriceSimulationBackgroundService(
                 logger.LogError("Error during simulation: {Message}", ex.Message);
             }
 
-            await Task.Delay(1000, stoppingToken);
+            await Task.Delay(2000, stoppingToken);
         }
     }
 }
 
-internal class TrendState
-{
-    private decimal _momentum = 0;
-    private int _remainingTicks = 0;
 
-    private const decimal BaseVolatility = 0.0008m;
-    private const decimal MomentumFactor = 0.6m;
-
-    public TrendState(Random rng)
-    {
-        ResetTrend(rng);
-    }
-
-    public decimal NextPrice(decimal currentPrice, Random rng)
-    {
-        if (--_remainingTicks <= 0)
-            ResetTrend(rng);
-
-        var noise = (decimal)(rng.NextDouble() * 2 - 1) * BaseVolatility;
-
-        var momentumEffect = _momentum * MomentumFactor;
-
-        var spike = 0m;
-        if (rng.NextDouble() < 0.002)
-            spike = (decimal)(rng.NextDouble() * 2 - 1) * BaseVolatility * 5;
-
-        var totalChange = noise + momentumEffect + spike;
-
-        var newPrice = Math.Max(currentPrice * (1 + totalChange), 0.0001m);
-
-        return Math.Round(newPrice, 2);
-    }
-
-    private void ResetTrend(Random rng)
-    {
-        var direction = rng.NextDouble();
-        _momentum = direction switch
-        {
-            < 0.35 => (decimal)(rng.NextDouble() * 0.0003),
-            < 0.70 => -(decimal)(rng.NextDouble() * 0.0003),
-            _ => (decimal)(rng.NextDouble() * 0.0001 - 0.00005)
-        };
-
-        _remainingTicks = rng.Next(20, 200);
-    }
-}

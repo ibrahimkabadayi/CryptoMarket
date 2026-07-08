@@ -5,7 +5,7 @@ using Market.API.Domain.Interfaces;
 
 namespace Market.API.Infrastructure.BackgroundServices;
 
-public class DatabasePriceUpdateBackgroundService(IServiceScopeFactory scopeFactory, IRedisCacheService cacheService, ILogger<DatabasePriceUpdateBackgroundService> logger) : BackgroundService
+public class DatabasePriceUpdate(IServiceScopeFactory scopeFactory, IRedisCacheService cacheService, ILogger<DatabasePriceUpdate> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
