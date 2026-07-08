@@ -4,10 +4,21 @@ using Market.API.Infrastructure.Context;
 using MongoDB.Driver;
 
 namespace Market.API.Infrastructure.Repositories;
+
 public class CoinRepository(MarketDbContext context) : Repository<Coin>(context, "Coins"), ICoinRepository
 {
     public async Task<Coin> GetCoinAsync(string symbol)
     {
         return await context.Coins.Find(x => x.Symbol == symbol).FirstAsync();
+    }
+
+    public async Task UpdateCoinSupply (string symbol, decimal supply)
+    {
+        var filter = Builders<Coin>.Filter.Eq("Symbol", symbol);
+        var update = Builders<Coin>.Update
+            .Set("Supply", supply)
+            .Set("UpdatedAt", DateTime.UtcNow);
+
+        await context.Coins.UpdateOneAsync(filter, update);
     }
 }

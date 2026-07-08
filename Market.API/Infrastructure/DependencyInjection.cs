@@ -32,10 +32,12 @@ public static class DependencyInjection
         services.AddScoped<IMarketNewsRepository, MarketNewsRepository>();
         services.AddScoped<IPriceHistoryRepository, PriceHistoryRepository>();
 
-        services.AddHostedService<DatabasePriceUpdateBackgroundService>();
-        services.AddHostedService<PriceSimulationBackgroundService>();
-        services.AddHostedService<PriceHistoryBackgroundService>();
-        services.AddHostedService<MarketNewsGeneratorBackgroundService>();
+        services.AddHostedService<DatabasePriceUpdate>();
+        services.AddHostedService<PriceSimulation>();
+        services.AddHostedService<PriceHistoryGenerator>();
+        services.AddHostedService<SupplySimulation>();
+        services.AddHostedService<DatabaseSupplyUpdate>();
+        services.AddHostedService<MarketNewsGenerator>();
 
         services.AddSingleton<MarketDbContext>();
 
