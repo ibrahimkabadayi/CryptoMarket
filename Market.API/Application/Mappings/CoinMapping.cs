@@ -10,5 +10,7 @@ public class CoinMapping : Profile
     {
         CreateMap<CoinDto, Coin>();
         CreateMap<Coin, CoinDto>();
+
+        CreateMap<Coin, CoinSupplyDto>().ReverseMap();
     }
 }
