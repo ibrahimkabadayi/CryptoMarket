@@ -81,4 +81,25 @@ public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublis
 
         await coinRepository.UpdateAsync(coin.Id, coin);
     }
+
+    public async Task UpdateCoinSupplyAndCap(string symbol, decimal? supply, bool? isCapped)
+    {
+        var coin = await coinRepository.GetCoinAsync(symbol);
+
+        if (coin == null)
+            throw new Exception($"Coin with symbol {symbol} not found");
+
+        if (supply.HasValue)
+        {
+            coin.Supply = supply.Value;
+        }
+
+        if (isCapped.HasValue)
+        {
+            coin.IsCapped = isCapped.Value;
+        }
+
+        coin.LastUpdated = DateTime.UtcNow;
+        await coinRepository.UpdateAsync(coin.Id, coin);
+    }
 }

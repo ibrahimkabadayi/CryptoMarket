@@ -36,7 +36,7 @@ public class DatabaseSupplyUpdate(IServiceScopeFactory scopeFactory, IRedisCache
                 logger.LogError("Error: " + ex.Message);
             }
 
-            await Task.Delay(1000, stoppingToken);
+            await Task.Delay(100000, stoppingToken);
         }
     }
 }

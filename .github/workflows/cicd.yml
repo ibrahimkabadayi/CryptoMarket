@@ -55,6 +55,8 @@ jobs:
     env:
       EmailSettings__Password: ${{ secrets.EMAIL_PASSWORD }}
       Jwt__Key: ${{ secrets.JWT_SECRET_KEY }}
+      Gemini__ApiKey: ${{ secrets.AI_KEY }}
+
       
     steps:
     - name: Checkout Repository

@@ -9,4 +9,5 @@ public interface ICoinService
     Task<List<CoinDto>> GetAllCoins();
     Task<CoinDto> GetCoinBySymbol(string symbol);
     void BuyCoin(BuyCoinDto buyCoinDto);
+    Task UpdateCoinSupplyAndCap(string symbol, decimal? supply, bool? isCapped);
 }

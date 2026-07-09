@@ -1,8 +1,8 @@
-PATCH http://localhost:5000/api/Market/SHIB
+PATCH http://localhost:5000/api/Market/DOG
 Content-Type: application/json
 
 {
-  "Price": 2,
+  "Price": 1.1492,
   "MarketCap": 1000000
 }
 

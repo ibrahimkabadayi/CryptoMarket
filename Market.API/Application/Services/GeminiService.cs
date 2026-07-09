@@ -14,6 +14,7 @@ public class GeminiService(IOptions<GeminiSettings> options, ILogger<GeminiServi
     public async Task<string> GenerateMarketNewsAsync(List<string> coinSymbols, CancellationToken cancellationToken = default)
     {
         var settings = options.Value;
+        Console.WriteLine("\nAPI key is: " + settings.ApiKey + "\n");
 
         if (string.IsNullOrEmpty(settings.ApiKey))
             throw new InvalidOperationException("Gemini API Key is not configured.");

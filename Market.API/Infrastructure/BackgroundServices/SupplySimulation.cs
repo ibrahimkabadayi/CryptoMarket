@@ -49,7 +49,6 @@ namespace Market.API.Infrastructure.BackgroundServices
                     {
                         var trend = _trends[coinSupply.Symbol];
                         coinSupply.Supply = trend.NextPrice(coinSupply.Supply, rng);
-                        logger.LogInformation($"Updated supply {coinSupply.Supply} ");
                     }
 
                     if (++tickCount % 10 == 0)
@@ -60,8 +59,7 @@ namespace Market.API.Infrastructure.BackgroundServices
                     logger.LogError("Error during simulation: {Message}", ex.Message);
                 }
                 
-
-                await Task.Delay(1000, stoppingToken);
+                await Task.Delay(10000, stoppingToken);
             }
         }
     }

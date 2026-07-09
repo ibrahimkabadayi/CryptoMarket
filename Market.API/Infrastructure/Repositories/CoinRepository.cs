@@ -17,7 +17,17 @@ public class CoinRepository(MarketDbContext context) : Repository<Coin>(context,
         var filter = Builders<Coin>.Filter.Eq("Symbol", symbol);
         var update = Builders<Coin>.Update
             .Set("Supply", supply)
-            .Set("UpdatedAt", DateTime.UtcNow);
+            .Set("LastUpdated", DateTime.UtcNow);
+
+        await context.Coins.UpdateOneAsync(filter, update);
+    }
+    public async Task UpdateCoinSupplyAndCap(string symbol, decimal supply, bool isCapped)
+    {
+        var filter = Builders<Coin>.Filter.Eq("Symbol", symbol);
+        var update = Builders<Coin>.Update
+            .Set("Supply", supply)
+            .Set("IsCapped", isCapped)
+            .Set("LastUpdated", DateTime.UtcNow);
 
         await context.Coins.UpdateOneAsync(filter, update);
     }
