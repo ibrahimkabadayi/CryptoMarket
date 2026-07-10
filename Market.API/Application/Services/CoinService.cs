@@ -67,28 +67,23 @@ public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublis
 
     public async Task UpdateCoin(string symbol, decimal? price, decimal? marketCap)
     {
+        // Instead of GetCoinAsync + UpdateAsync, use the built-in ExecuteUpdateAsync methods
         var coin = await coinRepository.GetCoinAsync(symbol);
 
-        if (price is decimal p)
-        {
-            coin.CurrentPrice = p;
-        }
+        // Detach it first to avoid tracking conflicts
+        coinRepository.Detach(coin);  // Need to add this method to Repository<T>
 
-        if (marketCap is decimal x)
-        {
-            coin.MarketCap = x;
-        }
+        if (price.HasValue)
+            coin.CurrentPrice = price.Value;
+        if (marketCap.HasValue)
+            coin.MarketCap = marketCap.Value;
 
-        await coinRepository.UpdateAsync(coin.Id, coin);
+        await coinRepository.UpdateAsync(coin);
     }
 
     public async Task UpdateCoinSupplyAndCap(string symbol, decimal? supply, bool? isCapped)
     {
-        var coin = await coinRepository.GetCoinAsync(symbol);
-
-        if (coin == null)
-            throw new Exception($"Coin with symbol {symbol} not found");
-
+        var coin = await coinRepository.GetCoinAsync(symbol) ?? throw new Exception($"Coin with symbol {symbol} not found");
         if (supply.HasValue)
         {
             coin.Supply = supply.Value;
@@ -100,6 +95,6 @@ public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublis
         }
 
         coin.LastUpdated = DateTime.UtcNow;
-        await coinRepository.UpdateAsync(coin.Id, coin);
+        await coinRepository.UpdateAsync(coin);
     }
 }
