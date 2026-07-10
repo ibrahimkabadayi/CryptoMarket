@@ -28,8 +28,7 @@ public class DatabasePriceUpdate(IServiceScopeFactory scopeFactory, IRedisCacheS
 
                 foreach (Coin coin in coins)
                 {
-                    coinRepository.Detach(coin);
-                    await coinRepository.UpdateAsync(coin);
+                    await coinRepository.UpdateCoinPriceAsync(coin.Symbol, coin.CurrentPrice, coin.MarketCap);
                 }
             }
             catch(Exception ex)
