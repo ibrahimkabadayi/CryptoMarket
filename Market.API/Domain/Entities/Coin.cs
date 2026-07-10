@@ -1,7 +1,4 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-
-namespace Market.API.Domain.Entities;
+﻿namespace Market.API.Domain.Entities;
 
 public class Coin : BaseEntity
 {
@@ -11,7 +8,5 @@ public class Coin : BaseEntity
     public decimal Supply { get; set; }
     public bool IsCapped { get; set; }
     public decimal MarketCap { get; set; }
-
-    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 }
