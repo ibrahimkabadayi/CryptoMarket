@@ -1,34 +1,33 @@
 ﻿using Market.API.Domain.Entities;
 using Market.API.Domain.Interfaces;
 using Market.API.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 
 namespace Market.API.Infrastructure.Repositories;
 
-public class CoinRepository(MarketDbContext context) : Repository<Coin>(context, "Coins"), ICoinRepository
+public class CoinRepository(ApplicationDbContext context) : Repository<Coin>(context), ICoinRepository
 {
     public async Task<Coin> GetCoinAsync(string symbol)
     {
-        return await context.Coins.Find(x => x.Symbol == symbol).FirstAsync();
+        return await context.Coins.FirstAsync(x =>  x.Symbol == symbol);
     }
 
     public async Task UpdateCoinSupply (string symbol, decimal supply)
     {
-        var filter = Builders<Coin>.Filter.Eq("Symbol", symbol);
-        var update = Builders<Coin>.Update
-            .Set("Supply", supply)
-            .Set("LastUpdated", DateTime.UtcNow);
-
-        await context.Coins.UpdateOneAsync(filter, update);
+        await context.Coins
+            .Where(x => x.Symbol == symbol)
+            .ExecuteUpdateAsync(x => x
+            .SetProperty(y => y.Supply, supply)
+            .SetProperty(y => y.LastUpdated, DateTime.Now));
     }
     public async Task UpdateCoinSupplyAndCap(string symbol, decimal supply, bool isCapped)
     {
-        var filter = Builders<Coin>.Filter.Eq("Symbol", symbol);
-        var update = Builders<Coin>.Update
-            .Set("Supply", supply)
-            .Set("IsCapped", isCapped)
-            .Set("LastUpdated", DateTime.UtcNow);
-
-        await context.Coins.UpdateOneAsync(filter, update);
+        await context.Coins
+            .Where(x => x.Symbol == symbol)
+            .ExecuteUpdateAsync(x => x
+            .SetProperty(y => y.Supply, supply)
+            .SetProperty(y => y.LastUpdated, DateTime.Now)
+            .SetProperty(y => y.IsCapped, isCapped));
     }
 }
