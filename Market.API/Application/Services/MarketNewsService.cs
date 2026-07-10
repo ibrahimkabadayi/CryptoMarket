@@ -26,7 +26,7 @@ public class MarketNewsService(IMarketNewsRepository newsRepository, IMapper map
         return mapper.Map<MarketNewsDto>(news);
     }
 
-    public async Task<MarketNewsDto?> GetNewsByIdAsync(string id)
+    public async Task<MarketNewsDto?> GetNewsByIdAsync(Guid id)
     {
         var news = await newsRepository.GetByIdAsync(id);
         return news == null ? null : mapper.Map<MarketNewsDto>(news);
@@ -53,10 +53,10 @@ public class MarketNewsService(IMarketNewsRepository newsRepository, IMapper map
         return mapper.Map<List<MarketNewsDto>>(relevantNews);
     }
 
-    public async Task<bool> DeleteNewsAsync(string id)
+    public async Task<bool> DeleteNewsAsync(Guid id)
     {
         try
-        {
+        { 
             await newsRepository.DeleteAsync(id);
             logger.LogInformation("Deleted market news with id: {NewsId}", id);
             return true;

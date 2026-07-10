@@ -20,11 +20,8 @@ public class MarketNewsController(IMarketNewsService marketNewsService) : Contro
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetNewsById(string id)
-    {
-        if (string.IsNullOrWhiteSpace(id))
-            return BadRequest("News ID cannot be empty.");
-
+    public async Task<IActionResult> GetNewsById(Guid id)
+    {     
         var news = await marketNewsService.GetNewsByIdAsync(id);
         if (news == null)
             return NotFound($"News with ID '{id}' not found.");
@@ -44,11 +41,8 @@ public class MarketNewsController(IMarketNewsService marketNewsService) : Contro
 
     [Authorize]
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteNews(string id)
-    {
-        if (string.IsNullOrWhiteSpace(id))
-            return BadRequest("News ID cannot be empty.");
-
+    public async Task<IActionResult> DeleteNews(Guid id)
+    {  
         var result = await marketNewsService.DeleteNewsAsync(id);
         if (!result)
             return BadRequest("Failed to delete the news.");
