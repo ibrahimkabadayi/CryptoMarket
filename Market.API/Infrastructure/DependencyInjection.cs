@@ -4,7 +4,7 @@ using Market.API.Infrastructure.BackgroundServices;
 using Market.API.Infrastructure.Caching;
 using Market.API.Infrastructure.Context;
 using Market.API.Infrastructure.Repositories;
-using MongoDB.Driver;
+using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
 namespace Market.API.Infrastructure;
@@ -13,13 +13,9 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IMongoClient>(sp =>
-        {
-            var connectionString = configuration.GetValue<string>("DatabaseSettings:ConnectionString");
-            return new MongoClient(connectionString);
-        });
-
-        services.Configure<MongoDbSettings>(configuration.GetSection("MongoDbSettings"));
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseNpgsql(connectionString));
 
         var redisConnectionString = configuration.GetValue<string>("Redis:ConnectionString");
 
@@ -38,8 +34,6 @@ public static class DependencyInjection
         services.AddHostedService<SupplySimulation>();
         services.AddHostedService<DatabaseSupplyUpdate>();
         services.AddHostedService<MarketNewsGenerator>();
-
-        services.AddSingleton<MarketDbContext>();
 
         return services;
     }
