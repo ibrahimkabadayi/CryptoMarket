@@ -1,2 +1,2 @@
-GET http://localhost:5226/api/Market
+GET http://localhost:5000/api/Market
 Content-Type: application/json
