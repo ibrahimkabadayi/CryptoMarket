@@ -4,6 +4,6 @@ using Market.API.Infrastructure.Context;
 
 namespace Market.API.Infrastructure.Repositories;
 
-public class PriceHistoryRepository(MarketDbContext context) : Repository<PriceHistory>(context, "PriceHistory"), IPriceHistoryRepository
+public class PriceHistoryRepository(ApplicationDbContext context) : Repository<PriceHistory>(context), IPriceHistoryRepository
 {
 }

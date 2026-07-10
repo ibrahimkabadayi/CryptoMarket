@@ -6,5 +6,4 @@ public class AddCoinRequest
     public string Symbol { get; set; } = string.Empty;
     public decimal Price { get; set; } 
     public decimal MarketCap { get; set; }
-
 }

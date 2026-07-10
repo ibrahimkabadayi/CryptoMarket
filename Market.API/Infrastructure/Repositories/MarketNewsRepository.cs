@@ -4,6 +4,6 @@ using Market.API.Infrastructure.Context;
 
 namespace Market.API.Infrastructure.Repositories;
 
-public class MarketNewsRepository(MarketDbContext context) : Repository<MarketNews>(context, "MarketNews"), IMarketNewsRepository
+public class MarketNewsRepository(ApplicationDbContext context) : Repository<MarketNews>(context), IMarketNewsRepository
 {
 }
