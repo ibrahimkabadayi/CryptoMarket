@@ -7,6 +7,7 @@ using Notifications.API.Consumers;
 using Notifications.API.Infrastructure;
 using Shared.Infrastructure.Middlewares;
 using Shared.Infrastructure.Extensions;
+using Notifications.API.Hubs;
 
 namespace Notifications.API;
 
@@ -72,6 +73,8 @@ public class Program
                 };
             });
 
+        builder.Services.AddSignalR();
+
         builder.Services.AddCustomHealthChecks(builder.Configuration);
 
         builder.Services.AddAuthorization();
@@ -94,6 +97,8 @@ public class Program
         app.UseAuthorization();
 
         app.MapControllers();
+
+        app.MapHub<NotificationHub>("hubs/notifications");
 
         app.MapCustomHealthChecks();
 
