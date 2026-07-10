@@ -34,12 +34,12 @@ services:
       - Gemini__ApiKey=${AI_KEY}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
       - Redis__ConnectionString=redis_db:6379,abortConnect=false
-      - MongoDbSettings__ConnectionString=mongodb://my-mongodb:27017
+      - ConnectionStrings__DefaultConnection=Host=postgres.db;Port=5432;Database=MarketDb;Username=postgres;Password=Password123*
     depends_on:
       rabbitmq:
         condition: service_healthy
-      my-mongodb:
-        condition: service_started
+      postgres.db:
+        condition: service_started 
     ports:
         - "8002:8080"
 
@@ -112,15 +112,6 @@ services:
     restart: always
     volumes:
        - postgres_data:/var/lib/postgresql
-
-  my-mongodb:
-    image: mongo:latest
-    container_name: mongo_db
-    ports:
-      - "27017:27017"
-    restart: always
-    volumes:
-      - mongo_data:/data/db
 
   redis:
      image: redis:6.2-alpine
