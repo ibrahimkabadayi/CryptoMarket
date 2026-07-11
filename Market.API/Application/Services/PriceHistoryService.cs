@@ -1,10 +1,11 @@
-﻿using Market.API.Application.DTOs;
+using Market.API.Application.DTOs;
 using Market.API.Application.Interfaces;
+using Market.API.Domain.Entities;
 using Market.API.Domain.Interfaces;
 
 namespace Market.API.Application.Services;
 
-public class PriceHistoryService(IPriceHistoryRepository priceHistoryRepository) : IPriceHistoryService
+public class PriceHistoryService(IPriceHistoryRepository priceHistoryRepository, ICoinRepository coinRepository) : IPriceHistoryService
 {
     public async Task<List<PriceHistoryDto>> GetPriceHistoryAsync(string symbol, int intervalMinutes, DateTime startDate, DateTime endDate)
     {
@@ -13,106 +14,121 @@ public class PriceHistoryService(IPriceHistoryRepository priceHistoryRepository)
             x.Timestamp >= startDate &&
             x.Timestamp <= endDate);
 
-        if (allCandles == null || allCandles.Count == 0)
-            return [];
+        var candlesList = allCandles?.OrderBy(x => x.Timestamp).ToList() ?? new List<PriceHistory>();
+        var coin = await coinRepository.GetCoinAsync(symbol);
+        decimal currentPrice = coin?.CurrentPrice ?? 0;
 
-        var aggregatedCandles = allCandles
-            .OrderBy(x => x.Timestamp)
-            .GroupBy(x =>
-            {
-                var timeSpan = x.Timestamp - DateTime.UnixEpoch;
-                var totalMinutes = (long)timeSpan.TotalMinutes;
-                var periodStartMinute = (totalMinutes / intervalMinutes) * intervalMinutes;
-                return DateTime.UnixEpoch.AddMinutes(periodStartMinute);
-            })
-            .Select(g => new PriceHistoryDto(
-                Symbol: symbol,
-                OpenPrice: g.First().OpenPrice,
-                ClosePrice: g.Last().ClosePrice,
-                HighPrice: g.Max(c => c.HighPrice),
-                LowPrice: g.Min(c => c.LowPrice),
-                Volume: g.Sum(c => c.Volume),
-                Timestamp: g.Key
-            ))
-            .OrderBy(x => x.Timestamp)
-            .ToList();
+        var alignedStartDate = GetAlignedTime(startDate, intervalMinutes);
+        var alignedEndDate = GetAlignedTime(endDate, intervalMinutes);
 
-        var filledCandles = FillGapsAndZeroVolume(aggregatedCandles, intervalMinutes);
+        var previousCandles = await priceHistoryRepository.FindAsync(x => x.Symbol == symbol && x.Timestamp < startDate);
+        var anchor = previousCandles?.OrderByDescending(x => x.Timestamp).FirstOrDefault();
+        
+        decimal lastKnownPrice = anchor?.ClosePrice ?? currentPrice;
 
-        return filledCandles;
-    }
+        var intervals = new List<PriceHistoryDto>();
+        var currentTime = alignedStartDate;
+        
+        var nonZeroVolumeCandles = candlesList.Where(c => c.Volume > 0).ToList();
+        var averageVolume = nonZeroVolumeCandles.Count > 0 ? nonZeroVolumeCandles.Average(c => c.Volume) : 1000m;
 
-    private static List<PriceHistoryDto> FillGapsAndZeroVolume(List<PriceHistoryDto> candles, int intervalMinutes)
-    {
-        if (candles.Count < 2)
-            return candles;
-
-        var result = new List<PriceHistoryDto> { candles[0] };
-        var averageVolume = candles.Where(c => c.Volume > 0).Average(c => c.Volume);
-
-        for (int i = 0; i < candles.Count - 1; i++)
+        while (currentTime <= alignedEndDate)
         {
-            var current = candles[i];
-            var next = candles[i + 1];
-            var timeDiff = (next.Timestamp - current.Timestamp).TotalMinutes;
-            var expectedIntervals = (int)(timeDiff / intervalMinutes);
+            var nextTime = currentTime.AddMinutes(intervalMinutes);
+            var candlesInInterval = candlesList.Where(x => x.Timestamp >= currentTime && x.Timestamp < nextTime).ToList();
 
-            if (expectedIntervals > 1)
+            if (candlesInInterval.Count > 0)
             {
-                var syntheticCandles = GenerateSyntheticCandles(current, next, expectedIntervals - 1, intervalMinutes, averageVolume);
-                result.AddRange(syntheticCandles);
+                intervals.Add(new PriceHistoryDto(
+                    Symbol: symbol,
+                    OpenPrice: candlesInInterval.First().OpenPrice,
+                    ClosePrice: candlesInInterval.Last().ClosePrice,
+                    HighPrice: candlesInInterval.Max(c => c.HighPrice),
+                    LowPrice: candlesInInterval.Min(c => c.LowPrice),
+                    Volume: candlesInInterval.Sum(c => c.Volume),
+                    Timestamp: currentTime
+                ));
+            }
+            else
+            {
+                // Placeholder, will be filled later
+                intervals.Add(new PriceHistoryDto(
+                    Symbol: symbol,
+                    OpenPrice: 0,
+                    ClosePrice: 0,
+                    HighPrice: 0,
+                    LowPrice: 0,
+                    Volume: -1, // Mark as missing
+                    Timestamp: currentTime
+                ));
             }
 
-            result.Add(next);
+            currentTime = nextTime;
         }
 
-        return result;
+        // Fill gaps smoothly
+        for (int i = 0; i < intervals.Count; i++)
+        {
+            if (intervals[i].Volume == -1)
+            {
+                int gapStart = i;
+                int gapEnd = i;
+                while (gapEnd + 1 < intervals.Count && intervals[gapEnd + 1].Volume == -1)
+                {
+                    gapEnd++;
+                }
+
+                decimal startPrice = gapStart > 0 ? intervals[gapStart - 1].ClosePrice : lastKnownPrice;
+                decimal endPrice = gapEnd + 1 < intervals.Count ? intervals[gapEnd + 1].OpenPrice : currentPrice;
+                
+                int gapCount = gapEnd - gapStart + 1;
+                var priceRange = endPrice - startPrice;
+                var volatility = Math.Abs(priceRange) * 0.08m;
+                if (volatility == 0) volatility = startPrice * 0.002m;
+
+                var seed = (intervals[gapStart].Timestamp.Ticks).GetHashCode();
+                var random = new Random(seed);
+
+                for (int j = 0; j < gapCount; j++)
+                {
+                    var progressRatio = (decimal)(j + 1) / (gapCount + 1);
+                    var expectedPrice = startPrice + (priceRange * progressRatio);
+
+                    var randomMovement = (decimal)(random.NextDouble() - 0.5) * volatility * 4;
+                    var closePrice = expectedPrice + randomMovement;
+                    
+                    var openPrice = j == 0 ? startPrice : intervals[gapStart + j - 1].ClosePrice + (decimal)(random.NextDouble() - 0.5) * volatility * 3;
+
+                    var wickRange = volatility * (decimal)(1.2 + random.NextDouble() * 1.5);
+                    var highPrice = Math.Max(openPrice, closePrice) + wickRange;
+                    var lowPrice = Math.Min(openPrice, closePrice) - wickRange;
+
+                    var volumeMultiplier = 0.6m + (decimal)random.NextDouble() * 0.9m;
+                    var volume = (decimal)Math.Round(averageVolume * volumeMultiplier);
+
+                    intervals[gapStart + j] = new PriceHistoryDto(
+                        Symbol: symbol,
+                        OpenPrice: Math.Round(openPrice, 2),
+                        ClosePrice: Math.Round(closePrice, 2),
+                        HighPrice: Math.Round(highPrice, 2),
+                        LowPrice: Math.Round(lowPrice, 2),
+                        Volume: (long)volume,
+                        Timestamp: intervals[gapStart + j].Timestamp
+                    );
+                }
+                
+                i = gapEnd;
+            }
+        }
+
+        return intervals;
     }
 
-    private static List<PriceHistoryDto> GenerateSyntheticCandles(PriceHistoryDto from, PriceHistoryDto to, int count, int intervalMinutes, decimal averageVolume)
+    private static DateTime GetAlignedTime(DateTime time, int intervalMinutes)
     {
-        var synthetic = new List<PriceHistoryDto>();
-        var startPrice = from.ClosePrice;
-        var endPrice = to.OpenPrice;
-
-        var priceRange = endPrice - startPrice;
-        var volatility = Math.Abs(priceRange) * 0.08m;
-
-        for (int i = 1; i <= count; i++)
-        {
-            var timestamp = from.Timestamp.AddMinutes(intervalMinutes * i);
-
-            var seed = timestamp.Ticks.GetHashCode();
-            var random = new Random(seed);
-
-            var progressRatio = (decimal)i / (count + 1);
-            var expectedPrice = startPrice + (priceRange * progressRatio);
-
-            var randomMovement = (decimal)(random.NextDouble() - 0.5) * volatility * 4;
-            var closePrice = expectedPrice + randomMovement;
-
-            var openPrice = i == 1 ? startPrice : synthetic[^1].ClosePrice + (decimal)(random.NextDouble() - 0.5) * volatility * 3;
-
-            var wickRange = volatility * (decimal)(1.2 + random.NextDouble() * 1.5); 
-            var highPrice = Math.Max(openPrice, closePrice) + wickRange;
-            var lowPrice = Math.Min(openPrice, closePrice) - wickRange;
-
-            var volumeMultiplier = 0.6m + (decimal)random.NextDouble() * 0.9m;
-            var volume = (decimal)Math.Round(averageVolume * volumeMultiplier);
-
-            var syntheticCandle = new PriceHistoryDto(
-                Symbol: from.Symbol,
-                OpenPrice: Math.Round(openPrice, 2),
-                ClosePrice: Math.Round(closePrice, 2),
-                HighPrice: Math.Round(highPrice, 2),
-                LowPrice: Math.Round(lowPrice, 2),
-                Volume: (long)volume,
-                Timestamp: timestamp
-            );
-
-            synthetic.Add(syntheticCandle);
-        }
-
-        return synthetic;
+        var timeSpan = time - DateTime.UnixEpoch;
+        var totalMinutes = (long)timeSpan.TotalMinutes;
+        var periodStartMinute = (totalMinutes / intervalMinutes) * intervalMinutes;
+        return DateTime.UnixEpoch.AddMinutes(periodStartMinute);
     }
 }
