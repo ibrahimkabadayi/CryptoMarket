@@ -21,6 +21,17 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddOpenApi();
 
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("SignalRPolicy", policy =>
+            {
+                policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+        });
+
         builder.Services.AddApplicationServices(builder.Configuration);
         builder.Services.AddInfrastructureServices(builder.Configuration);
 
@@ -71,6 +82,20 @@ public class Program
                     ValidAudience = jwtSettings["Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
                 };
+
+                // Configure SignalR to use JWT from query string
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        if (!string.IsNullOrEmpty(accessToken))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
         builder.Services.AddSignalR();
@@ -95,6 +120,8 @@ public class Program
         app.UseAuthentication();
 
         app.UseAuthorization();
+
+        app.UseCors("SignalRPolicy");
 
         app.MapControllers();
 

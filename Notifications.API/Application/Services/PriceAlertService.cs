@@ -8,7 +8,7 @@ namespace Notifications.API.Application.Services;
 
 public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapper mapper, ICacheService cacheService) : IPriceAlertService
 {
-    public async Task CreateAlertAsync(Guid userId, string symbol, decimal targetPrice, bool isAbove)
+    public async Task<PriceAlertDto> CreateAlertAsync(Guid userId, string symbol, decimal targetPrice, bool isAbove)
     {
         var alert = new PriceAlert(userId, symbol, targetPrice, isAbove);
 
@@ -16,6 +16,8 @@ public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapp
 
         var key = alert.Symbol + "Alerts";
         await cacheService.RemoveAsync(key);
+
+        return mapper.Map<PriceAlertDto>(alert);
     }
 
     public async Task<IEnumerable<PriceAlertDto>> GetActiveAlertsByUserAsync(Guid userId)
@@ -40,7 +42,7 @@ public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapp
 
         if (alert == null || alert.UserId != userId)
         {
-            throw new Exception("Alarm bulunamadı veya yetkisiz erişim işlemi.");
+            throw new Exception("Alert not found or unauthorized access.");
         }
 
         alert.Deactivate();

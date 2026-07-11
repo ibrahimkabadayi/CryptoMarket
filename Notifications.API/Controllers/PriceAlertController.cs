@@ -1,27 +1,32 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Notifications.API.Application.DTOs;
 using Notifications.API.Application.Interfaces;
+using Notifications.API.Hubs;
 using Notifications.API.Models;
 
 namespace Notifications.API.Controllers
 {
     [Route("api/price-alerts")]
     [ApiController]
-    public class PriceAlertController(IPriceAlertService priceAlertService) : ControllerBase
+    public class PriceAlertController(IPriceAlertService priceAlertService, IHubContext<NotificationHub> hubContext) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> CreateAlert([FromBody] CreatePriceAlertRequest request)
         {
             try
             {
-                await priceAlertService.CreateAlertAsync(
+                var alert = await priceAlertService.CreateAlertAsync(
                     request.UserId,
                     request.Symbol,
                     request.TargetPrice,
                     request.IsAbove);
 
-                return Ok(new { Message = $"{request.Symbol} için fiyat alarmı başarıyla kuruldu." });
+                await hubContext.Clients.User(request.UserId.ToString())
+                    .SendAsync("ReceivePriceAlert", alert);
+
+                return Ok(new { Message = $"{request.Symbol} price alert created successfully." });
             }
             catch (ArgumentException ex)
             {

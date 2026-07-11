@@ -2,6 +2,8 @@
 
 public class PriceAlertDto
 {
+    public Guid Id { get; set; }
+
     public Guid UserId { get; private set; }
 
     public string Symbol { get; private set; } = string.Empty;
@@ -33,6 +35,8 @@ public class PriceAlertDto
         IsActive = true;
         CreatedAt = DateTime.UtcNow;
     }
+
+    public PriceAlertDto() { }
 
     public void Deactivate()
     {
