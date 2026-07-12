@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Notifications.API.Application.DTOs;
 using Notifications.API.Application.Interfaces;
 using Notifications.API.Domain.Entities;
@@ -7,13 +8,16 @@ using Notifications.API.Domain.Interfaces;
 
 namespace Notifications.API.Application.Services;
 
-public class NotificationService(INotificationRepository notificationRepository, IMapper mapper) : INotificationService
+public class NotificationService(INotificationRepository notificationRepository, IMapper mapper, IHubContext hubContext) : INotificationService
 {
     public async Task CreateNotificationAsync(Guid userId, string title, string message, NotificationType type, string? relatedEntityId = null)
     {
         var notification = new Notification(userId, title, message, type, relatedEntityId);
 
         await notificationRepository.AddAsync(notification);
+
+        await hubContext.Clients.User(userId.ToString())
+            .SendAsync("SendNotification", notification);
     }
 
     public async Task<IEnumerable<NotificationDto>> GetUserNotificationsAsync(Guid userId)
@@ -42,6 +46,9 @@ public class NotificationService(INotificationRepository notificationRepository,
         notification.MarkAsRead();
 
         await notificationRepository.UpdateAsync(notification);
+
+        await hubContext.Clients.User(userId.ToString())
+               .SendAsync("DeactivateNotification", notification.Id.ToString());
     }
 
     public async Task MarkAllAsReadAsync(Guid userId)
@@ -52,6 +59,9 @@ public class NotificationService(INotificationRepository notificationRepository,
         {
             notification.MarkAsRead();
             await notificationRepository.UpdateAsync(notification);
+
+            await hubContext.Clients.User(userId.ToString())
+                .SendAsync("DeactivateNotification", notification.Id.ToString());
         }
     }
 }

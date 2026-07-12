@@ -55,7 +55,7 @@ namespace Notifications.API.Controllers
                 request.Type,
                 request.RelatedEntityId);
 
-            return Ok(new { Message = "Bildirim başarıyla oluşturuldu." });
+            return Ok(new { Message = "Notification created succesfully." });
         }
     }
 }

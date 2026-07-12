@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Notifications.API.Application.DTOs;
 using Notifications.API.Application.Interfaces;
 using Notifications.API.Domain.Entities;
@@ -6,7 +7,7 @@ using Notifications.API.Domain.Interfaces;
 
 namespace Notifications.API.Application.Services;
 
-public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapper mapper, ICacheService cacheService) : IPriceAlertService
+public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapper mapper, ICacheService cacheService, IHubContext hubContext) : IPriceAlertService
 {
     public async Task<PriceAlertDto> CreateAlertAsync(Guid userId, string symbol, decimal targetPrice, bool isAbove)
     {
@@ -51,6 +52,9 @@ public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapp
         await cacheService.RemoveAsync(key);
 
         await priceAlertRepository.UpdateAsync(alert);
+
+        await hubContext.Clients.User(userId.ToString())
+                    .SendAsync("DeactivatePriceAlert", alertId);
     }
 
     public async Task<List<PriceAlert>> GetActiveAlertsBySymbolAsync(string symbol)

@@ -22,4 +22,19 @@ public class NotificationHub : Hub
     {
         await Clients.User(userId).SendAsync("ReceivePriceAlert", priceAlert);
     }
+
+    public async Task DeactivatePriceAlertNotification(string userId, string priceAlertId)
+    {
+        await Clients.User(userId).SendAsync("DeactivatePriceAlert", priceAlertId);
+    }
+
+    public async Task SendNotification(string userId, object notification)
+    {
+        await Clients.User(userId).SendAsync("SendNotification", notification);
+    }
+
+    public async Task MarkNotificationAsRead(string userId, string notificationId)
+    {
+        await Clients.User(userId).SendAsync("DeactivateNotification", notificationId);
+    }
 }
