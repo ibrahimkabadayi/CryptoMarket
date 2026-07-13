@@ -4,10 +4,11 @@ using Notifications.API.Application.DTOs;
 using Notifications.API.Application.Interfaces;
 using Notifications.API.Domain.Entities;
 using Notifications.API.Domain.Interfaces;
+using Notifications.API.Hubs;
 
 namespace Notifications.API.Application.Services;
 
-public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapper mapper, ICacheService cacheService, IHubContext hubContext) : IPriceAlertService
+public class PriceAlertService(IPriceAlertRepository priceAlertRepository, IMapper mapper, ICacheService cacheService, IHubContext<NotificationHub> hubContext) : IPriceAlertService
 {
     public async Task<PriceAlertDto> CreateAlertAsync(Guid userId, string symbol, decimal targetPrice, bool isAbove)
     {

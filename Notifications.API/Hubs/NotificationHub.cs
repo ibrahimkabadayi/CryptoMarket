@@ -30,11 +30,6 @@ public class NotificationHub : Hub
 
     public async Task SendNotification(string userId, object notification)
     {
-        await Clients.User(userId).SendAsync("SendNotification", notification);
-    }
-
-    public async Task MarkNotificationAsRead(string userId, string notificationId)
-    {
-        await Clients.User(userId).SendAsync("DeactivateNotification", notificationId);
+        await Clients.User(userId).SendAsync("ReceiveNotification", notification);
     }
 }

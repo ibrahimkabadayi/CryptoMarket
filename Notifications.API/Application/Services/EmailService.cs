@@ -42,7 +42,7 @@ public class EmailService(IOptions<EmailSettings> emailSettings) : IEmailService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[E-POSTA HATASI]: E-posta gönderilemedi. Sebep: {ex.Message}");
+            Console.WriteLine($"[E-MAIL ERROR]: E-Mail could not be sent. Cause: {ex.Message}");
         }
     }
 
@@ -63,7 +63,7 @@ public class EmailService(IOptions<EmailSettings> emailSettings) : IEmailService
             <p>You can now track real-time markets, set smart price alerts, and trade securely.</p>
             
             <div style='text-align: center; margin: 35px 0;'>
-                <a href='https://yourstockmarket.com/login' style='background-color: #0052cc; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;'>Log In to Platform</a>
+                <a href='http://localhost:5000/api/auth/login' style='background-color: #0052cc; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;'>Log In to Platform</a>
             </div>
         </div>
         

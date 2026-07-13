@@ -5,10 +5,11 @@ using Notifications.API.Application.Interfaces;
 using Notifications.API.Domain.Entities;
 using Notifications.API.Domain.Enums;
 using Notifications.API.Domain.Interfaces;
+using Notifications.API.Hubs;
 
 namespace Notifications.API.Application.Services;
 
-public class NotificationService(INotificationRepository notificationRepository, IMapper mapper, IHubContext hubContext) : INotificationService
+public class NotificationService(INotificationRepository notificationRepository, IMapper mapper, IHubContext<NotificationHub> hubContext) : INotificationService
 {
     public async Task CreateNotificationAsync(Guid userId, string title, string message, NotificationType type, string? relatedEntityId = null)
     {
@@ -17,7 +18,7 @@ public class NotificationService(INotificationRepository notificationRepository,
         await notificationRepository.AddAsync(notification);
 
         await hubContext.Clients.User(userId.ToString())
-            .SendAsync("SendNotification", notification);
+            .SendAsync("ReceiveNotification", notification);
     }
 
     public async Task<IEnumerable<NotificationDto>> GetUserNotificationsAsync(Guid userId)
@@ -58,10 +59,7 @@ public class NotificationService(INotificationRepository notificationRepository,
         foreach (var notification in unreadNotifications)
         {
             notification.MarkAsRead();
-            await notificationRepository.UpdateAsync(notification);
-
-            await hubContext.Clients.User(userId.ToString())
-                .SendAsync("DeactivateNotification", notification.Id.ToString());
+            await notificationRepository.UpdateAsync(notification);        
         }
     }
 }
