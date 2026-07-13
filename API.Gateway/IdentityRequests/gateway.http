@@ -1,10 +1,10 @@
-POST http://localhost:5000/api/Auth/register
+POST http://localhost:5000/api/auth/register
 Content-Type: application/json
 
 {
-  "UserName": "ibrahimtest",
-  "FirstName": "AliErenÞimþir2",
+  "UserName": "AnanasAvcisi",
+  "FirstName": "Ýbrahim",
   "LastName": "Kabadayý",
-  "Email": "ibrahimtest@gmail.com",
-  "Password": "MySecretPassword123!"
+  "Email": "ibrahimkabadayi180@gmail.com",
+  "Password": "i1b3r9a8A*"
 }
