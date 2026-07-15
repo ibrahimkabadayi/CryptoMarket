@@ -8,4 +8,5 @@ public class CoinDto
     public bool IsCapped { get; set; }
     public decimal CurrentPrice { get; set; }
     public decimal MarketCap { get; set; }
+    public string IconUrlPng { get; set; } = string.Empty;
 }

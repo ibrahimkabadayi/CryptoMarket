@@ -8,5 +8,6 @@ public class Coin : BaseEntity
     public decimal Supply { get; set; }
     public bool IsCapped { get; set; }
     public decimal MarketCap { get; set; }
+    public string IconUrlPng { get; set; } = string.Empty;
     public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 }
