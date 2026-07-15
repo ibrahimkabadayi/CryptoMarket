@@ -9,11 +9,18 @@ public class PriceHistoryRepository(ApplicationDbContext context) : Repository<P
 {
     public async Task<PriceHistory> GetPriceHistory(string symbol, TimeSpan howMuchPast)
     {
-        var wantedDate = DateTime.UtcNow.Subtract(howMuchPast);
+        var targetDate = DateTime.UtcNow.Subtract(howMuchPast);
 
-        return await context.PriceHistories
-            .Where(x => x.Symbol == symbol)
-            .OrderBy(x => x.Timestamp)
-            .FirstAsync(x => x.Timestamp >= wantedDate);
+        var priceHistory = await context.PriceHistories
+            .Where(x => x.Symbol == symbol && x.Timestamp <= targetDate)
+            .OrderByDescending(x => x.Timestamp)
+            .FirstOrDefaultAsync();
+
+        priceHistory ??= await context.PriceHistories
+                .Where(x => x.Symbol == symbol && x.Timestamp > targetDate)
+                .OrderBy(x => x.Timestamp)
+                .FirstAsync();
+
+        return priceHistory;
     }
 }
