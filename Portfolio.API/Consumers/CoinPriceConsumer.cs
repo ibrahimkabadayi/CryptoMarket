@@ -45,7 +45,7 @@ public class CoinPriceConsumer(
                 var dto = mapper.Map<ApplyLimitOrderDto>(order);
                 await limitOrderService.ApplyLimitOrder(dto, message.Price);                          
 
-                order.OrderStatus = LimitOrderStatus.Pending;
+                order.OrderStatus = LimitOrderStatus.Filled;
             });
 
         await RefreshCacheAsync(cacheKey, limitOrders);

@@ -8,16 +8,10 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include=".env" />
-    <None Include="CHANGE_MANIFEST.md" />
-    <None Include="CODE_EXAMPLES.md" />
-    <None Include="CONCURRENCY_FIX_DOCUMENTATION.md" />
-    <None Include="DEPLOYMENT_GUIDE.md" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
-    <None Include="IMPLEMENTATION_CHECKLIST.md" />
-    <None Include="README_DEPLOYMENT.md" />
   </ItemGroup>
 </Project>

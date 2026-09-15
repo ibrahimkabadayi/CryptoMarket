@@ -58,6 +58,14 @@ public abstract class Program
                       .AllowAnyMethod()
                       .AllowCredentials();
             });
+
+            options.AddPolicy("AllowFlutterApp", policy =>
+            {
+                policy.WithOrigins("http://localhost:53285")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            });
         });
 
         var app = builder.Build();
