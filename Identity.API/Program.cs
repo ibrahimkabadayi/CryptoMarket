@@ -51,17 +51,9 @@ public abstract class Program
 
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AllowVueApp", policy =>
+            options.AddDefaultPolicy(policy =>
             {
-                policy.WithOrigins("http://localhost:5173")
-                      .AllowAnyHeader()
-                      .AllowAnyMethod()
-                      .AllowCredentials();
-            });
-
-            options.AddPolicy("AllowFlutterApp", policy =>
-            {
-                policy.WithOrigins("http://localhost:53285")
+                policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .AllowCredentials();
@@ -75,7 +67,7 @@ public abstract class Program
             app.MapOpenApi();
         }
 
-        app.UseCors("AllowVueApp");
+        app.UseCors();
 
         app.UseCorrelationIdMiddleware();
 
