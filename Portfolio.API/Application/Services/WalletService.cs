@@ -95,6 +95,15 @@ public class WalletService
         };
 
         await hubContext.Clients.User(wallet.UserId.ToString()).SendAsync("UpdatePortfolio", updatedDashboard);
+
+        await publishEndpoint.Publish(new TradeExecuted(
+            walletId,
+            finalAmountToUser,
+            symbol,
+            totalCost,
+            "USDT",
+            DateTime.UtcNow
+        ));
     }
 
 
@@ -131,6 +140,13 @@ public class WalletService
 
             await hubContext.Clients.User(wallet.UserId.ToString())
                 .SendAsync("UpdateBalance", wallet.FiatBalance);
+
+            await publishEndpoint.Publish(new AssetDeposited(
+                walletId,
+                amount,
+                "USDT",
+                DateTime.UtcNow
+            ));
         }
         catch (Exception ex)
         {
@@ -198,6 +214,20 @@ public class WalletService
             TargetWalletUserId = targetWallet.UserId
         });
 
+        await publishEndpoint.Publish(new AssetWithdrawn(
+            sourceWallet.Id,
+            dto.AssetAmount,
+            asset.Symbol,
+            DateTime.UtcNow
+        ));
+
+        await publishEndpoint.Publish(new AssetDeposited(
+            targetWallet.Id,
+            dto.AssetAmount,
+            asset.Symbol,
+            DateTime.UtcNow
+        ));
+
         if (asset.Quantity == 0)
         {
             sourceWallet.Assets.Remove(asset);
@@ -215,11 +245,23 @@ public class WalletService
 
         if (wallet.FiatBalance < amount) return;
 
-        await transactionService.CreateTransactionRecordAsync(walletId, amount, TransactionType.Withdraw);
+        wallet.FiatBalance -= amount;
         wallet.Value -= amount;
+        wallet.UpdatedDate = DateTime.UtcNow;
+
+        await walletRepository.UpdateAsync(wallet);
+
+        await transactionService.CreateTransactionRecordAsync(walletId, amount, TransactionType.Withdraw);
 
         await hubContext.Clients.User(wallet.UserId.ToString())
             .SendAsync("UpdateBalance", wallet.FiatBalance);
+
+        await publishEndpoint.Publish(new AssetWithdrawn(
+            walletId,
+            amount,
+            "USDT",
+            DateTime.UtcNow
+        ));
     }
 
     public async Task SellAsset(Guid walletId, string symbol, decimal price, decimal amount, bool isLimitOrder)
@@ -281,6 +323,15 @@ public class WalletService
         };
 
         await hubContext.Clients.User(wallet.UserId.ToString()).SendAsync("UpdatePortfolio", updatedDashboard);
+
+        await publishEndpoint.Publish(new TradeExecuted(
+            walletId,
+            totalCost - feeAmount,
+            "USDT",
+            amount,
+            symbol,
+            DateTime.UtcNow
+        ));
     }
 
     public async Task<PortfolioDashboardDto> GetPortfolioDashboardAsync(Guid userId)

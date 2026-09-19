@@ -1,5 +1,4 @@
-﻿
-using Market.API.Application.Interfaces;
+﻿using Market.API.Application.Interfaces;
 using Market.API.Domain.Entities;
 using Market.API.Domain.Interfaces;
 
@@ -31,10 +30,10 @@ public class DatabasePriceUpdate(IServiceScopeFactory scopeFactory, IRedisCacheS
                     await coinRepository.UpdateCoinPriceAsync(coin.Symbol, coin.CurrentPrice, coin.MarketCap);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.LogError("Error: " + ex.Message);
-            }          
+            }
 
             await Task.Delay(1000, stoppingToken);
         }
