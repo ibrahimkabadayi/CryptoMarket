@@ -9,6 +9,7 @@ public interface IWalletService
     Task WithdrawMoney(Guid walletId, decimal amount);
     Task TransferAsset(TransferAssetDto dto);
     Task BuyAsset(Guid walletId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder);
+    Task BuyAssetWithUserId(Guid userId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder);
     Task SellAsset(Guid walletId, string symbol, decimal price, decimal amount, bool isLimitOrder);
     Task<Guid> GetWalletIdByUserId(Guid userId);
     Task<PortfolioDashboardDto> GetPortfolioDashboardAsync(Guid userId);
