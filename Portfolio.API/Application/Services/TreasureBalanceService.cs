@@ -6,7 +6,7 @@ namespace Portfolio.API.Application.Services;
 
 public class TreasureBalanceService(ITreasuryBalanceRepository treasuryBalanceRepository) : ITreasureBalanceService
 {   
-    public async Task AddAssetViaFee(string assetSymbol, decimal amount)
+    private async Task AddAssetViaFee(string assetSymbol, decimal amount)
     {
         var treasureBalanceOfThatSymbol = await treasuryBalanceRepository.FindFirstAsync(x => x.AssetSymbol == assetSymbol);
 
@@ -22,7 +22,7 @@ public class TreasureBalanceService(ITreasuryBalanceRepository treasuryBalanceRe
         await treasuryBalanceRepository.UpdateAsync(treasureBalanceOfThatSymbol);
     }
 
-    public async Task AddAssetViaFee(decimal amount)
+    private async Task AddAssetViaFee(decimal amount)
     {
         var treasureUSDTBalance = await treasuryBalanceRepository.FindFirstAsync(x => x.AssetSymbol == "USDT");
         if (treasureUSDTBalance == null) 
@@ -32,5 +32,13 @@ public class TreasureBalanceService(ITreasuryBalanceRepository treasuryBalanceRe
         }
         treasureUSDTBalance.TotalAmount += amount;
         await treasuryBalanceRepository.UpdateAsync(treasureUSDTBalance);
+    }
+
+    public async Task AddFee(string assetSymbol, decimal amount)
+    {
+        if (assetSymbol.Equals("USDT"))
+            await AddAssetViaFee(amount);
+        else
+            await AddAssetViaFee(assetSymbol, amount);
     }
 }

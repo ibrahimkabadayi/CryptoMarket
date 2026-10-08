@@ -14,7 +14,7 @@ public class TransactionService(
     IMapper mapper,
     IHubContext<PortfolioHub> hubContext,
     IWalletRepository walletRepository
-) : ITransactionService
+    ) : ITransactionService
 {
     public async Task CreateTransactionRecordAsync(Guid walletId, string symbol, decimal amount, decimal? price, TransactionType type)
     {

@@ -1,6 +1,4 @@
 using System.Net;
-using System.Text.Json;
-using Microsoft.Extensions.Caching.Distributed;
 using Portfolio.API.Application.Interfaces;
 
 namespace Portfolio.API.Middlewares;

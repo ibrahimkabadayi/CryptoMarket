@@ -9,10 +9,6 @@ public class UserCreatedConsumer(IWalletService walletService) : IConsumer<UserC
     public async Task Consume(ConsumeContext<UserCreatedEvent> context)
     {
         var message = context.Message;
-        var userId = message.UserId;
-
-        await walletService.CreateWallet(userId);
-
-        Console.WriteLine($"Created new wallet at a new address!");
+        await walletService.CreateWallet(message.UserId);
     }
 }

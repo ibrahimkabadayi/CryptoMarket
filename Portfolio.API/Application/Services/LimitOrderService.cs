@@ -9,7 +9,12 @@ using Shared.Messages;
 
 namespace Portfolio.API.Application.Services;
 
-public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWalletService walletService, IPublishEndpoint publishEndpoint, IMapper mapper, ICacheService cacheService) : ILimitOrderService
+public class LimitOrderService(
+    ILimitOrderRepository limitOrderRepository,
+    IWalletService walletService,
+    IPublishEndpoint publishEndpoint,
+    IMapper mapper, ICacheService cacheService
+    ) : ILimitOrderService
 {
     public async Task ApplyLimitOrder(ApplyLimitOrderDto limitOrder, decimal price)
     {
@@ -61,9 +66,18 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         await limitOrderRepository.UpdateAsync(limitOrder.Id, LimitOrderStatus.Filled); 
     }
 
-    public async Task CreateLimitOrderAsync(CreateLimitOrderDto orderDto)
+    public async Task CreateLimitOrderAsync(CreateLimitOrderDto orderDto, Guid correlationId)
     {
         ArgumentNullException.ThrowIfNull(orderDto);
+
+        var correlationIdStringValue = correlationId.ToString();
+
+        var result = await cacheService.GetAsync<string>(correlationIdStringValue);
+
+        if (result != null)
+        {
+            throw new InvalidOperationException("This order already done");
+        }
 
         var limitOrder = new LimitOrder
         {
@@ -76,6 +90,8 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         };
 
         await limitOrderRepository.AddAsync(limitOrder);
+
+        await cacheService.SetAsync<string>(correlationIdStringValue, correlationIdStringValue, TimeSpan.FromHours(24));
 
         var key = $"{orderDto.Symbol}Orders";
         await cacheService.RemoveAsync(key);
@@ -137,5 +153,62 @@ public class LimitOrderService(ILimitOrderRepository limitOrderRepository, IWall
         await cacheService.SetAsync(key, limitOrders, TimeSpan.FromSeconds(5));
 
         return limitOrders;
+    }
+
+    public async Task CheckLimitOrders(string symbol, decimal price)
+    {
+        var cacheKey = $"{symbol}:Orders";
+
+        var limitOrders = await GetOrdersAsync(cacheKey, symbol);
+        if (limitOrders is not { Count: > 0 }) return;
+
+        var triggered = limitOrders
+            .Where(o => o is { OrderStatus: LimitOrderStatus.Pending } && IsTriggered(o, price))
+            .ToList();
+
+        if (triggered.Count == 0) return;
+
+        foreach (var order in triggered)
+            order.OrderStatus = LimitOrderStatus.Processing;
+
+        await RefreshCacheAsync(cacheKey, limitOrders);
+
+        await Parallel.ForEachAsync(triggered,
+            new ParallelOptions { MaxDegreeOfParallelism = 4 },
+            async (order, ct) =>
+            {
+                Console.WriteLine($"Applying {order.OrderType} order {order.Id} at {price}");
+
+                var dto = mapper.Map<ApplyLimitOrderDto>(order);
+                await ApplyLimitOrder(dto, price);
+
+                order.OrderStatus = LimitOrderStatus.Filled;
+            });
+
+        await RefreshCacheAsync(cacheKey, limitOrders);
+    }
+
+    private static bool IsTriggered(LimitOrder order, decimal currentPrice) =>
+        order.OrderType switch
+        {
+            LimitOrderType.Buy => currentPrice <= order.TargetPrice,
+            LimitOrderType.Sell => currentPrice >= order.TargetPrice,
+            _ => false
+        };
+
+    private async Task<List<LimitOrder>> GetOrdersAsync(string key, string symbol)
+    {
+        var cached = await cacheService.GetAsync<List<LimitOrder>>(key);
+        if (cached is not null) return cached;
+
+        var orders = await GetLimitOrdersBySymbol(symbol);
+        await RefreshCacheAsync(key, orders);
+        return orders;
+    }
+
+    private async Task RefreshCacheAsync(string key, List<LimitOrder> orders)
+    {
+        var dtos = mapper.Map<List<LimitOrderCacheDto>>(orders);
+        await cacheService.SetAsync(key, dtos, TimeSpan.FromMinutes(2));
     }
 }

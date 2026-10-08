@@ -12,8 +12,7 @@ using Shared.Messages;
 
 namespace Portfolio.API.Application.Services;
 
-public class WalletService
-    (
+public class WalletService(
         IWalletRepository walletRepository,
         IAssetRepository assetRepository,
         ITransactionService transactionService,
@@ -22,6 +21,92 @@ public class WalletService
         IHubContext<PortfolioHub> hubContext
     ) : IWalletService
 {
+
+    public async Task BuyAssetWithUserId(Guid userId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
+    {
+        var walletId = await GetWalletIdByUserId(userId);
+        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId) ?? throw new ArgumentException("Error: Wallet does not exist");
+        decimal totalCost = amount * currentPrice;
+
+        if (wallet.FiatBalance < totalCost)
+            throw new ArgumentException("Error: Not Enough Money!");
+
+        decimal feeRate = isLimitOrder ? feeSettingsOptions.Value.MakerFeeRate : feeSettingsOptions.Value.TakerFeeRate;
+
+        decimal feeInCrypto = amount * feeRate;
+
+        decimal finalAmountToUser = amount - feeInCrypto;
+
+        wallet.FiatBalance -= totalCost;
+        wallet.UpdatedDate = DateTime.UtcNow;
+
+        var walletAssets = wallet.Assets ?? [];
+        var asset = walletAssets.FirstOrDefault(x => x.Symbol == symbol);
+
+        if (asset != null)
+        {
+            asset.Quantity += finalAmountToUser;
+            asset.UpdatedDate = DateTime.UtcNow;
+            await assetRepository.UpdateAsync(asset);
+        }
+        else
+        {
+            asset = new Asset
+            {
+                Symbol = symbol,
+                Quantity = finalAmountToUser,
+                WalletId = walletId,
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow
+            };
+            await assetRepository.AddAsync(asset);
+            walletAssets.Add(asset);
+            wallet.Assets = walletAssets;
+        }
+
+        await walletRepository.UpdateAsync(wallet);
+
+        await transactionService.CreateTransactionRecordAsync(walletId, symbol, finalAmountToUser, currentPrice, TransactionType.Buy);
+
+        if (feeInCrypto > 0)
+        {
+            var feeEvent = new FeeCollectionEvent
+            {
+                Symbol = symbol,
+                FeeAmount = feeInCrypto,
+                UserId = wallet.UserId,
+                OccurredOn = DateTime.UtcNow
+            };
+
+            await publishEndpoint.Publish(feeEvent);
+        }
+
+        var assetDtos = wallet.Assets?.Select(a => new AssetDashboardDto
+        {
+            Symbol = a.Symbol,
+            Quantity = a.Quantity,
+            AverageBuyPrice = a.CostBasis
+        }).ToList() ?? [];
+
+        var updatedDashboard = new PortfolioDashboardDto
+        {
+            FiatBalance = wallet.FiatBalance,
+            TotalInvestedValue = wallet.Value,
+            Assets = assetDtos
+        };
+
+        await hubContext.Clients.User(wallet.UserId.ToString()).SendAsync("UpdatePortfolio", updatedDashboard);
+
+        await publishEndpoint.Publish(new TradeExecuted(
+            walletId,
+            finalAmountToUser,
+            symbol,
+            totalCost,
+            "USDT",
+            DateTime.UtcNow
+        ));
+    }
+
     public async Task BuyAsset(Guid walletId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
     {
         var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId) ?? throw new ArgumentException("Error: Wallet does not exist");
@@ -105,7 +190,6 @@ public class WalletService
             DateTime.UtcNow
         ));
     }
-
 
     public async Task<Guid> GetWalletIdByUserId(Guid userId)
     {
