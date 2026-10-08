@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace Shared.Messages;
+﻿namespace Shared.Messages;
 
 public record CoinPriceEvent
 {
