@@ -9,10 +9,6 @@ public class FeeCollectionConsumer(ITreasureBalanceService treasureBalanceServic
     public async Task Consume(ConsumeContext<FeeCollectionEvent> context)
     {
         var message = context.Message;
-
-        if (message.Symbol.Equals("USDT"))
-            await treasureBalanceService.AddAssetViaFee(message.FeeAmount);
-        else 
-            await treasureBalanceService.AddAssetViaFee(message.Symbol, message.FeeAmount);
+        await treasureBalanceService.AddFee(message.Symbol, message.FeeAmount);
     }
 }
