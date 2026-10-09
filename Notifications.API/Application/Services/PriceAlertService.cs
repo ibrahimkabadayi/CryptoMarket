@@ -97,12 +97,12 @@ public class PriceAlertService(
             if (alert.IsAbove && price >= alert.TargetPrice)
             {
                 isTriggered = true;
-                Console.WriteLine($"[ALARM] The price of {alert.Symbol} has rose above the target price ({alert.TargetPrice})! Now: {message.Price}");
+                Console.WriteLine($"[ALARM] The price of {alert.Symbol} has rose above the target price ({alert.TargetPrice})! Now: {price}");
             }
             else if (!alert.IsAbove && price <= alert.TargetPrice)
             {
                 isTriggered = true;
-                Console.WriteLine($"[ALARM] The price of {alert.Symbol} has fallen below the target price ({alert.TargetPrice})! Now: {message.Price}");
+                Console.WriteLine($"[ALARM] The price of {alert.Symbol} has fallen below the target price ({alert.TargetPrice})! Now: {price}");
             }
 
             if (isTriggered)
@@ -110,7 +110,7 @@ public class PriceAlertService(
                 try
                 {
                     string direction = alert.IsAbove ? "rose above" : "fell blow";
-                    string notificationMsg = $"{alert.Symbol} is the price you set for the {alert.TargetPrice} target in {direction}. Current Price: {message.Price}"
+                    string notificationMsg = $"{alert.Symbol} is the price you set for the {alert.TargetPrice} target in {direction}. Current Price: {price}";
 
                     await notificationService.CreateNotificationAsync(
                         userId: alert.UserId,

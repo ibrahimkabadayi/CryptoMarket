@@ -10,6 +10,6 @@ public class BuyCoinConsumer(IWalletService walletService) : IConsumer<BuyCoinEv
     {
         var message = context.Message;
         var isLimitOrder = false;
-        await walletService.BuyAssetWithUserId(message.UserId, message.Symbol, message.BuyPrice, message.BuyAmount, isLimitOrder);
+        await walletService.BuyAssetWithUserId(message.UserId.ToString(), message.Symbol, message.BuyPrice, message.BuyAmount, isLimitOrder);
     }
 }

@@ -7,34 +7,79 @@ using System.Security.Claims;
 
 namespace Portfolio.API.Controllers;
 
-[Route("api/wallets")]
+[Route("api/wallet")]
 [Authorize]
 [ApiController]
 public class WalletController(IWalletService walletService) : ControllerBase
 {
-    [HttpPost("{walletId}/transaction")]
-    public async Task<IActionResult> DepositMoney(Guid walletId, [FromBody] DepositMoneyRequest request)
+    [HttpGet]
+    public async Task<IActionResult> GetDashboard()
     {
-        await walletService.DepositMoney(walletId, request.Amount);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized("Invalid or broken token.");
+        }
+
+        var result = await walletService.GetPortfolioDashboardAsync(userId);
+        return Ok(new { result });
+    }
+
+    [HttpPost("withdrawals")]
+    public async Task<IActionResult> Withdraw([FromBody] WithdrawMoneyRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+        {
+            return BadRequest();
+        }
+
+        await walletService.WithdrawMoney(userId, request.Amount);
+        return Ok();
+    }
+
+    [HttpPost("deposits")]
+    public async Task<IActionResult> DepositMoney([FromBody] DepositMoneyRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+        {
+            return BadRequest();
+        }
+
+        await walletService.DepositMoney(userId, request.Amount);
 
         return Ok(new { Message = $"Transfered {request.Amount} into your account." });
     }
 
-    [HttpPost("{walletId}/assets/{symbol}")]
-    public async Task<IActionResult> BuyAsset(Guid walletId, string symbol, [FromBody] BuyAssetRequest request)
+    [HttpPost("assets/{symbol}/purchases")]
+    public async Task<IActionResult> BuyAsset(string symbol, [FromBody] BuyAssetRequest request)
     {
-        await walletService.BuyAsset(walletId, symbol, request.BuyingPrice, request.Amount, false);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+        {
+            return BadRequest();
+        }
+
+        await walletService.BuyAsset(userId, symbol, request.BuyingPrice, request.Amount, false);
 
         return Ok($"Succesfully bought {request.Amount} {symbol}s");
 
     }
 
-    [HttpPost("{walletId}/transfers/{symbol}")]
-    public async Task<IActionResult> TransferAsset(Guid walletId, string symbol, [FromBody] TransferAssetRequest request)
+    [HttpPost("assets/{symbol}/transfers")]
+    public async Task<IActionResult> TransferAsset(string symbol, [FromBody] TransferAssetRequest request)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+        {
+            return BadRequest();
+        }
+
         var transferDto = new TransferAssetDto
         {
-            FromWalletId = walletId,
+            UserId = userId,
             AssetAmount = request.AssetAmount,
             Symbol = symbol,
             TargetWalletAddress = request.TargetWalletAddress
@@ -45,31 +90,16 @@ public class WalletController(IWalletService walletService) : ControllerBase
         return Ok(new { Message = "Transfer is successfull" });
     }
 
-    [HttpPatch("{walletId}")]
-    public async Task<IActionResult> WithdrawMoney(Guid walletId, [FromBody] WithdrawMoneyRequest request)
+    [HttpPost("assets/{symbol}/sales")]
+    public async Task<IActionResult> SellAsset(string symbol, [FromBody] SellAssetRequest request)
     {
-        await walletService.WithdrawMoney(walletId, request.Amount);
-        return Ok();
-    }
-
-    [HttpPatch("{walletId}/assets/{symbol}")]
-    public async Task<IActionResult> SellAsset(Guid walletId, string symbol, [FromBody] SellAssetRequest request)
-    {
-        await walletService.SellAsset(walletId, symbol, request.Price, request.Amount, false);
-        return Ok();
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> GetDashboard()
-    {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
         {
-            return Unauthorized("Invalid or broken token.");
+            return BadRequest();
         }
 
-        var result = await walletService.GetPortfolioDashboardAsync(userId);
-        return Ok(new { result });
+        await walletService.SellAsset(userId, symbol, request.Price, request.Amount, false);
+        return Ok();
     }
 }

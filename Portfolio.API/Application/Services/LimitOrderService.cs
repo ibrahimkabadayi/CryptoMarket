@@ -32,7 +32,7 @@ public class LimitOrderService(
         {
             try
             {
-                await walletService.BuyAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount, true);        
+                await walletService.BuyAsset(limitOrder.UserId.ToString(), limitOrder.Symbol, price, limitOrder.Amount, true);        
 
                 await publishEndpoint.Publish(new LimitOrderOccuredEvent
                 {
@@ -51,7 +51,7 @@ public class LimitOrderService(
         }
         else
         {
-            await walletService.SellAsset(limitOrder.WalletId, limitOrder.Symbol, price, limitOrder.Amount, true);
+            await walletService.SellAsset(limitOrder.UserId.ToString(), limitOrder.Symbol, price, limitOrder.Amount, true);
 
             await publishEndpoint.Publish(new LimitOrderOccuredEvent
             {
