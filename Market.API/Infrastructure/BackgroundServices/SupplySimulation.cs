@@ -1,15 +1,18 @@
 ﻿using AutoMapper;
 using Market.API.Application.DTOs;
 using Market.API.Application.Interfaces;
-using Market.API.Domain.Entities;
 using Market.API.Domain.Interfaces;
 using Market.API.Infrastructure.BackgroundServices.Helpers;
 
 namespace Market.API.Infrastructure.BackgroundServices
 {
-    public class SupplySimulation(IServiceScopeFactory scopeFactory, IRedisCacheService cacheService, IMapper mapper, ILogger<SupplySimulation> logger) : BackgroundService
+    public class SupplySimulation(
+        IServiceScopeFactory scopeFactory,
+        IRedisCacheService cacheService,
+        IMapper mapper,
+        ILogger<SupplySimulation> logger) : BackgroundService
     {
-        private Dictionary<string, TrendState> _trends = [];
+        private readonly Dictionary<string, TrendState> _trends = [];
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             logger.LogInformation("Supply simulation has started...");

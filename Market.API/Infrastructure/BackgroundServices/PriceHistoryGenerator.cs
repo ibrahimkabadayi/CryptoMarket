@@ -52,7 +52,7 @@ public class PriceHistoryGenerator(
 
                         var volume = (decimal)rng.Next(50, 5000);
 
-                        var history = new Domain.Entities.PriceHistory
+                        var history = new PriceHistory
                         {
                             Symbol = coin.Symbol,
                             OpenPrice = Math.Round(openPrice, 2),

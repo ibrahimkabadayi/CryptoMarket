@@ -7,7 +7,10 @@ using Market.API.Domain.Interfaces;
 
 namespace Market.API.Application.Services;
 
-public class MarketNewsService(IMarketNewsRepository newsRepository, IMapper mapper, ILogger<MarketNewsService> logger) : IMarketNewsService
+public class MarketNewsService(
+    IMarketNewsRepository newsRepository,
+    IMapper mapper, 
+    ILogger<MarketNewsService> logger) : IMarketNewsService
 {
     public async Task<MarketNewsDto> CreateMarketNewsAsync(string title, string content, List<string> relatedSymbols)
     {

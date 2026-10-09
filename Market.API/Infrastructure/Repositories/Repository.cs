@@ -16,9 +16,9 @@ public class Repository<T>(ApplicationDbContext context) : IRepository<T> where 
         return entity;
     }
 
-    public async Task<List<T?>> GetAllAsync()
+    public async Task<List<T>> GetAllAsync()
     {
-        List<T?> list = (await _dbSet.ToListAsync())!;
+        List<T> list = (await _dbSet.ToListAsync())!;
         list.RemoveAll(x => x == null);
         return list;
     }

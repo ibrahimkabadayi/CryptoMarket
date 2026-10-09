@@ -15,7 +15,6 @@ public class MarketNewsGenerator(
     {
         logger.LogInformation("Market News Generator Background Service started. Will run every {Minutes} minutes.", IntervalMinutes);
 
-        // Initial delay to let the application start properly
         await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
@@ -41,7 +40,6 @@ public class MarketNewsGenerator(
                 logger.LogInformation("Found {CoinCount} coins in database: {Coins}",
                     allCoins.Count, string.Join(", ", allCoins.Select(c => c.Symbol)));
 
-                // Select random coins (1-3)
                 var numberOfCoins = _random.Next(1, Math.Min(4, allCoins.Count + 1));
                 var selectedCoins = allCoins
                     .OrderBy(_ => _random.Next())
@@ -107,7 +105,6 @@ public class MarketNewsGenerator(
         }
         catch (OperationCanceledException)
         {
-            // Expected when service is stopping
         }
     }
 
@@ -116,7 +113,7 @@ public class MarketNewsGenerator(
         if (string.IsNullOrEmpty(newsContent))
             return ("Market Update", "Unable to generate news at this time.");
 
-        var lines = newsContent.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None);
+        var lines = newsContent.Split(["\n", "\r\n"], StringSplitOptions.None);
 
         var titleLine = lines.FirstOrDefault(l => l.StartsWith("##"))?.Replace("##", "").Trim();
         var title = !string.IsNullOrEmpty(titleLine) ? titleLine : "Cryptocurrency Market Update";
@@ -128,10 +125,9 @@ public class MarketNewsGenerator(
 
         var content = string.Join("\n", contentLines).Trim();
 
-        // Ensure minimum content length
         if (content.Length < 50)
         {
-            content = newsContent; // Fallback to raw content if parsing didn't work well
+            content = newsContent;
         }
 
         return (title, content);

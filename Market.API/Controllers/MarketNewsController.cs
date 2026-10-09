@@ -1,5 +1,4 @@
-﻿using Market.API.Application.DTOs;
-using Market.API.Application.Interfaces;
+﻿using Market.API.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
