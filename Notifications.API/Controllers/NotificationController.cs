@@ -24,12 +24,12 @@ namespace Notifications.API.Controllers
             return Ok(count);
         }
 
-        [HttpPut("{id}/read")]
-        public async Task<IActionResult> MarkAsRead(Guid id, [FromBody] Guid userId)
+        [HttpPut("{notificationId}/read")]
+        public async Task<IActionResult> MarkAsRead(Guid notificationId, [FromBody] Guid userId)
         {
             try
             {
-                await notificationService.MarkAsReadAsync(id, userId);
+                await notificationService.MarkAsReadAsync(notificationId, userId);
                 return NoContent();
             }
             catch (Exception ex)

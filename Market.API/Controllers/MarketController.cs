@@ -11,14 +11,6 @@ namespace Market.API.Controllers;
 [ApiController]
 public class MarketController(ICoinService coinService, IPriceHistoryService priceHistoryService, ILimitOrderService limitOrderService) : ControllerBase
 {
-    [HttpPost]
-    public async Task<IActionResult> AddCoin([FromBody] AddCoinRequest request)
-    {
-        await coinService.AddCoin(request.Name, request.Symbol, request.Price, request.MarketCap);
-
-        return Ok();
-    }
-
     [Authorize]
     [HttpPost("{symbol}")]
     public IActionResult BuyCoin(string symbol, BuyCoinRequest request)
@@ -60,7 +52,6 @@ public class MarketController(ICoinService coinService, IPriceHistoryService pri
     public async Task<IActionResult> GetAllCoins()
     {
         var allCoins = await coinService.GetAllCoins();
-
         return Ok(allCoins);
     }
 
@@ -69,13 +60,6 @@ public class MarketController(ICoinService coinService, IPriceHistoryService pri
     {
         var coin = await coinService.GetCoinBySymbol(symbol);
         return Ok(coin);
-    }
-
-    [HttpPatch("{symbol}")]
-    public async Task<IActionResult> UpdateCoin(string symbol, UpdateCoinRequest request) 
-    {
-        await coinService.UpdateCoin(symbol, request.Price, request.MarketCap);
-        return Ok();
     }
 
     [HttpGet("{symbol}/history")]
@@ -90,19 +74,5 @@ public class MarketController(ICoinService coinService, IPriceHistoryService pri
         var history = await priceHistoryService.GetPriceHistoryAsync(symbol, intervalMinutes, startDate, endDate);
 
         return Ok(history);
-    }
-
-    [HttpPut("{symbol}/supply")]
-    public async Task<IActionResult> UpdateCoinSupplyAndCap(string symbol, [FromBody] UpdateCoinSupplyRequest request)
-    {
-        try
-        {
-            await coinService.UpdateCoinSupplyAndCap(symbol, request.Supply, request.IsCapped);
-            return Ok(new { message = $"Coin {symbol} updated successfully" });
-        }
-        catch (Exception ex)
-        {
-            return NotFound(new { message = ex.Message });
-        }
     }
 }

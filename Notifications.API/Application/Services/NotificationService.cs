@@ -9,7 +9,11 @@ using Notifications.API.Hubs;
 
 namespace Notifications.API.Application.Services;
 
-public class NotificationService(INotificationRepository notificationRepository, IMapper mapper, IHubContext<NotificationHub> hubContext) : INotificationService
+public class NotificationService(
+    INotificationRepository notificationRepository,
+    IMapper mapper,
+    IHubContext<NotificationHub> hubContext
+    ) : INotificationService
 {
     public async Task CreateNotificationAsync(Guid userId, string title, string message, NotificationType type, string? relatedEntityId = null)
     {

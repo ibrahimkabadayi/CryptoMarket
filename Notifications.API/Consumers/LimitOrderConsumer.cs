@@ -15,7 +15,5 @@ public class LimitOrderConsumer(INotificationService notificationService) : ICon
             "Your Limit Order occured",
             $"Target Price of {message.Price} is reached\nYou have bought {message.Amount} of {message.Symbol}",
             Domain.Enums.NotificationType.LimitOrderMatch);
-
-        return;
     }
 }

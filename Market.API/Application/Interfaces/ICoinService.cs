@@ -4,10 +4,7 @@ namespace Market.API.Application.Interfaces;
 
 public interface ICoinService
 {
-    Task AddCoin(string name, string symbol, decimal price, decimal marketCap);
-    Task UpdateCoin(string symbol, decimal? price, decimal? marketCap);
     Task<List<CoinDto>> GetAllCoins();
     Task<CoinDto> GetCoinBySymbol(string symbol);
     void BuyCoin(BuyCoinDto buyCoinDto);
-    Task UpdateCoinSupplyAndCap(string symbol, decimal? supply, bool? isCapped);
 }

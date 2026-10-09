@@ -7,7 +7,10 @@ using System.Text.Json;
 
 namespace Market.API.Application.Services;
 
-public class GeminiService(IOptions<GeminiSettings> options, ILogger<GeminiService> logger, HttpClient httpClient) : IGeminiService
+public class GeminiService(
+    IOptions<GeminiSettings> options,
+    ILogger<GeminiService> logger,
+    HttpClient httpClient) : IGeminiService
 {
     private const string GeminiApiBaseUrl = "https://generativelanguage.googleapis.com/v1/models";
 

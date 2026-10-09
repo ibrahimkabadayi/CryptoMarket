@@ -1,7 +1,6 @@
 ﻿using Market.API.Domain.Entities;
 using Market.API.Infrastructure.Configurations;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
 
 namespace Market.API.Infrastructure.Context;
 

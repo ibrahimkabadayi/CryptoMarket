@@ -51,14 +51,13 @@ public class PriceHistoryService(IPriceHistoryRepository priceHistoryRepository,
             }
             else
             {
-                // Placeholder, will be filled later
                 intervals.Add(new PriceHistoryDto(
                     Symbol: symbol,
                     OpenPrice: 0,
                     ClosePrice: 0,
                     HighPrice: 0,
                     LowPrice: 0,
-                    Volume: -1, // Mark as missing
+                    Volume: -1,
                     Timestamp: currentTime
                 ));
             }
@@ -66,7 +65,6 @@ public class PriceHistoryService(IPriceHistoryRepository priceHistoryRepository,
             currentTime = nextTime;
         }
 
-        // Fill gaps smoothly
         for (int i = 0; i < intervals.Count; i++)
         {
             if (intervals[i].Volume == -1)

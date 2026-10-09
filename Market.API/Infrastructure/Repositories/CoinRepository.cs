@@ -21,15 +21,7 @@ public class CoinRepository(ApplicationDbContext context) : Repository<Coin>(con
             .SetProperty(y => y.Supply, supply)
             .SetProperty(y => y.LastUpdated, DateTime.UtcNow));
     }
-    public async Task UpdateCoinSupplyAndCap(string symbol, decimal supply, bool isCapped)
-    {
-        await context.Coins
-            .Where(x => x.Symbol == symbol)
-            .ExecuteUpdateAsync(x => x
-            .SetProperty(y => y.Supply, supply)
-            .SetProperty(y => y.LastUpdated, DateTime.UtcNow)
-            .SetProperty(y => y.IsCapped, isCapped));
-    }
+    
     public async Task UpdateCoinPriceAsync(string symbol, decimal price, decimal marketCap)
     {
         await context.Coins
