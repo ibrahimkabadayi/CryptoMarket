@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Notifications.API.Application.DTOs;
 using Notifications.API.Application.Interfaces;
@@ -48,17 +47,17 @@ namespace Notifications.API.Controllers
             return Ok(alerts);
         }
 
-        [HttpPut("{id}/deactivate")]
-        public async Task<IActionResult> DeactivateAlert(Guid id, [FromBody] Guid userId)
+        [HttpPut("{priceAlertId}/deactivate")]
+        public async Task<IActionResult> DeactivateAlert(Guid priceAlertId, [FromBody] Guid userId)
         {
             try
             {
-                await priceAlertService.DeactivateAlertAsync(id, userId);
+                await priceAlertService.DeactivateAlertAsync(priceAlertId, userId);
                 return NoContent();
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                return BadRequest(new { ex.Message });
             }
         }
     }
