@@ -8,21 +8,12 @@ using Shared.Messages;
 
 namespace Market.API.Application.Services;
 
-public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublishEndpoint publishEndpoint, IRedisCacheService cacheService) : ICoinService
+public class CoinService(
+    ICoinRepository coinRepository,
+    IMapper mapper,
+    IPublishEndpoint publishEndpoint,
+    IRedisCacheService cacheService) : ICoinService
 {
-    public async Task AddCoin(string name, string symbol, decimal price, decimal marketCap)
-    {
-        var coin = new Coin
-        {
-            Symbol = symbol,
-            Name = name,
-            CurrentPrice = price,
-            MarketCap = marketCap
-        };
-
-        await coinRepository.AddAsync(coin);
-    }
-
     public void BuyCoin(BuyCoinDto buyCoinDto)
     {
         try
@@ -63,38 +54,5 @@ public class CoinService(ICoinRepository coinRepository, IMapper mapper, IPublis
     {
         var coin = await coinRepository.GetCoinAsync(Symbol);
         return mapper.Map<CoinDto>(coin);
-    }
-
-    public async Task UpdateCoin(string symbol, decimal? price, decimal? marketCap)
-    {
-        // Instead of GetCoinAsync + UpdateAsync, use the built-in ExecuteUpdateAsync methods
-        var coin = await coinRepository.GetCoinAsync(symbol);
-
-        // Detach it first to avoid tracking conflicts
-        coinRepository.Detach(coin);  // Need to add this method to Repository<T>
-
-        if (price.HasValue)
-            coin.CurrentPrice = price.Value;
-        if (marketCap.HasValue)
-            coin.MarketCap = marketCap.Value;
-
-        await coinRepository.UpdateAsync(coin);
-    }
-
-    public async Task UpdateCoinSupplyAndCap(string symbol, decimal? supply, bool? isCapped)
-    {
-        var coin = await coinRepository.GetCoinAsync(symbol) ?? throw new Exception($"Coin with symbol {symbol} not found");
-        if (supply.HasValue)
-        {
-            coin.Supply = supply.Value;
-        }
-
-        if (isCapped.HasValue)
-        {
-            coin.IsCapped = isCapped.Value;
-        }
-
-        coin.LastUpdated = DateTime.UtcNow;
-        await coinRepository.UpdateAsync(coin);
     }
 }
