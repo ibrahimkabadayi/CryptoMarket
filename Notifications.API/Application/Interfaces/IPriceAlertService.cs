@@ -10,4 +10,5 @@ public interface IPriceAlertService
     Task<IEnumerable<PriceAlertDto>> GetAllAlertsByUserAsync(Guid userId);
     Task DeactivateAlertAsync(Guid alertId, Guid userId);
     Task<List<PriceAlert>> GetActiveAlertsBySymbolAsync(string symbol);
+    Task CheckPriceAlerts(string symbol, decimal price);
 }

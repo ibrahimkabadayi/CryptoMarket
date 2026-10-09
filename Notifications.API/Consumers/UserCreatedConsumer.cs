@@ -9,7 +9,6 @@ public class UserCreatedConsumer(IEmailService emailService) : IConsumer<UserCre
     public async Task Consume(ConsumeContext<UserCreatedEvent> context)
     {
         var message = context.Message;
-
         await emailService.SendWelcomeEmailAsync(message.Email, message.UserName);
     }
 }
