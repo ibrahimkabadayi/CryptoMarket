@@ -22,10 +22,9 @@ public class WalletService(
     ) : IWalletService
 {
 
-    public async Task BuyAssetWithUserId(Guid userId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
+    public async Task BuyAssetWithUserId(string userId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
     {
-        var walletId = await GetWalletIdByUserId(userId);
-        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId) ?? throw new ArgumentException("Error: Wallet does not exist");
+        var (walletId, wallet) = await LoadWalletWithAssetsAsync(userId);
         decimal totalCost = amount * currentPrice;
 
         if (wallet.FiatBalance < totalCost)
@@ -107,9 +106,9 @@ public class WalletService(
         ));
     }
 
-    public async Task BuyAsset(Guid walletId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
+    public async Task BuyAsset(string userId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
     {
-        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId) ?? throw new ArgumentException("Error: Wallet does not exist");
+        var (walletId, wallet) = await LoadWalletWithAssetsAsync(userId);
         decimal totalCost = amount * currentPrice;
 
         if (wallet.FiatBalance < totalCost)
@@ -189,6 +188,19 @@ public class WalletService(
             "USDT",
             DateTime.UtcNow
         ));
+    }
+
+    private async Task<Guid> ResolveWalletIdAsync(string userId)
+        => await GetWalletIdByUserId(Guid.Parse(userId));
+
+    private async Task<(Guid walletId, Wallet wallet)> LoadWalletWithAssetsAsync(
+        string userId,
+        string notFoundMessage = "Error: Wallet does not exist")
+    {
+        var walletId = await ResolveWalletIdAsync(userId);
+        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId)
+            ?? throw new ArgumentException(notFoundMessage);
+        return (walletId, wallet);
     }
 
     public async Task<Guid> GetWalletIdByUserId(Guid userId)
@@ -206,13 +218,14 @@ public class WalletService(
             Address = generatedAddress,
         };
 
-        await walletRepository.AddAsync(newWallet);      
+        await walletRepository.AddAsync(newWallet);
     }
 
-    public async Task DepositMoney(Guid walletId, decimal amount)
+    public async Task DepositMoney(string userId, decimal amount)
     {
         try
         {
+            var walletId = await ResolveWalletIdAsync(userId);
             var wallet = await walletRepository.GetByIdAsync(walletId) ?? throw new ArgumentException("Error: Could not find wallet");
             wallet.FiatBalance += amount;
             wallet.Value += amount;
@@ -241,17 +254,13 @@ public class WalletService(
 
     public async Task TransferAsset(TransferAssetDto dto)
     {
-        var sourceWallet = await walletRepository.GetWalletWithAssetsAsync(dto.FromWalletId);
-        if (sourceWallet is null)
-            throw new ArgumentException("Error: Could not find source wallet.");
+        var (_, sourceWallet) = await LoadWalletWithAssetsAsync(dto.UserId, "Error: Could not find source wallet.");
 
-        var targetWallet = await walletRepository.GetWalletWithAssetsAsync(dto.TargetWalletAddress);
-        if (targetWallet is null)
-            throw new ArgumentException("Error: Wrong address for target wallet.");
+        var targetWallet = await walletRepository.GetWalletWithAssetsAsync(dto.TargetWalletAddress)
+            ?? throw new ArgumentException("Error: Wrong address for target wallet.");
 
-        var asset = sourceWallet.Assets.FirstOrDefault(x => x.Symbol.Equals(dto.Symbol));
-        if (asset is null)
-            throw new ArgumentException("Error: Could not find asset in the wallet.");
+        var asset = sourceWallet.Assets.FirstOrDefault(x => x.Symbol.Equals(dto.Symbol))
+            ?? throw new ArgumentException("Error: Could not find asset in the wallet.");
 
         if (asset.Quantity < dto.AssetAmount)
             throw new ArgumentException("Error: Transfer amount is bigger than asset quantity in the wallet.");
@@ -321,8 +330,9 @@ public class WalletService(
         await walletRepository.UpdateAsync(sourceWallet);
     }
 
-    public async Task WithdrawMoney(Guid walletId, decimal amount)
+    public async Task WithdrawMoney(string userId, decimal amount)
     {
+        var walletId = await ResolveWalletIdAsync(userId);
         var wallet = await walletRepository.GetByIdAsync(walletId);
 
         if (wallet == null) return;
@@ -348,10 +358,9 @@ public class WalletService(
         ));
     }
 
-    public async Task SellAsset(Guid walletId, string symbol, decimal price, decimal amount, bool isLimitOrder)
+    public async Task SellAsset(string userId, string symbol, decimal price, decimal amount, bool isLimitOrder)
     {
-        var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId);
-        if (wallet is null) throw new ArgumentException("Error: Wallet does not exist");
+        var (walletId, wallet) = await LoadWalletWithAssetsAsync(userId);
 
         var asset = wallet.Assets?.FirstOrDefault(x => x.Symbol == symbol);
         if (asset == null || asset.Quantity < amount)
@@ -418,9 +427,9 @@ public class WalletService(
         ));
     }
 
-    public async Task<PortfolioDashboardDto> GetPortfolioDashboardAsync(Guid userId)
+    public async Task<PortfolioDashboardDto> GetPortfolioDashboardAsync(string userId)
     {
-        var walletId = await walletRepository.GetWalletIdByUserId(userId);
+        var walletId = await ResolveWalletIdAsync(userId);
         if (walletId == Guid.Empty) return null!;
 
         var wallet = await walletRepository.GetWalletWithAssetsAsync(walletId);
