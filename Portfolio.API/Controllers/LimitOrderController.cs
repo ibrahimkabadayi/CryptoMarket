@@ -13,7 +13,9 @@ namespace Portfolio.API.Controllers
     public class LimitOrderController(ILimitOrderService limitOrderService) : ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> CreateLimitOrder([FromBody] CreateLimitOrderRequest request)
+        public async Task<IActionResult> CreateLimitOrder(
+            [FromBody] CreateLimitOrderRequest request, 
+            [FromHeader(Name = "Idempotency-Key")] Guid idempotencyKey)
         {
             var orderType = (request.OrderType == 1) ? LimitOrderType.Buy : LimitOrderType.Sell;
 
@@ -27,7 +29,7 @@ namespace Portfolio.API.Controllers
                 WalletId = request.WalletId,
             };
 
-            await limitOrderService.CreateLimitOrderAsync(dto);
+            await limitOrderService.CreateLimitOrderAsync(dto, idempotencyKey);
 
             return Ok();
         }
