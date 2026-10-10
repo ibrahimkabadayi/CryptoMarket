@@ -18,7 +18,7 @@ public class CoinService(
     {
         try
         {
-            await publishEndpoint.Publish(new BuyCoivent 
+            await publishEndpoint.Publish(new BuyCoinEvent 
             {
                 BuyPrice = buyCoinDto.BuyPrice,
                 Symbol = buyCoinDto.Symbol,
