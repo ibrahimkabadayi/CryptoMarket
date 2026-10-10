@@ -11,7 +11,7 @@ public class AssetTransferConsumer(INotificationService notificationService) : I
         var message = context.Message;
 
         await notificationService.CreateNotificationAsync(
-            message.SourceWalletUserId,
+            message.SourceWalletUserId.ToString(),
             "Transfer Successfull!",
             $"You have successfully trasfered {message.Quantity} {message.Symbol}",
             Domain.Enums.NotificationType.AssetTransfer

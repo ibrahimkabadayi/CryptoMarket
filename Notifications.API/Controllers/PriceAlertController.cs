@@ -45,7 +45,7 @@ namespace Notifications.API.Controllers
             return Ok(alerts);
         }
 
-        [HttpGet("/all")]
+        [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<PriceAlertDto>>> GetAllAlerts()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
