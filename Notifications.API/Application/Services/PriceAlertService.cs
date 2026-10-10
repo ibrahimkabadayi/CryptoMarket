@@ -18,39 +18,46 @@ public class PriceAlertService(
     IHubContext<NotificationHub> hubContext
     ) : IPriceAlertService
 {
-    public async Task<PriceAlertDto> CreateAlertAsync(Guid userId, string symbol, decimal targetPrice, bool isAbove)
+    public async Task<PriceAlertDto> CreateAlertAsync(string userId, string symbol, decimal targetPrice, bool isAbove)
     {
-        var alert = new PriceAlert(userId, symbol, targetPrice, isAbove);
+        var userGuid = Guid.Parse(userId);
+        var alert = new PriceAlert(userGuid, symbol, targetPrice, isAbove);
 
         await priceAlertRepository.AddAsync(alert);
 
         var key = alert.Symbol + "Alerts";
         await cacheService.RemoveAsync(key);
 
+        await hubContext.Clients.User(userId)
+                    .SendAsync("ReceivePriceAlert", alert);
+
         return mapper.Map<PriceAlertDto>(alert);
     }
 
-    public async Task<IEnumerable<PriceAlertDto>> GetActiveAlertsByUserAsync(Guid userId)
+    public async Task<IEnumerable<PriceAlertDto>> GetActiveAlertsByUserAsync(string userId)
     {
-        var alerts = await priceAlertRepository.FindAsync(a => a.UserId == userId && a.IsActive);
+        var userGuid = Guid.Parse(userId);
+        var alerts = await priceAlertRepository.FindAsync(a => a.UserId == userGuid && a.IsActive);
         var orderedAlerts = alerts.OrderByDescending(a => a.CreatedAt).ToList();
 
         return mapper.Map<IEnumerable<PriceAlertDto>>(orderedAlerts);
     }
 
-    public async Task<IEnumerable<PriceAlertDto>> GetAllAlertsByUserAsync(Guid userId)
+    public async Task<IEnumerable<PriceAlertDto>> GetAllAlertsByUserAsync(string userId)
     {
-        var alerts = await priceAlertRepository.FindAsync(a => a.UserId == userId);
+        var userGuid = Guid.Parse(userId);
+        var alerts = await priceAlertRepository.FindAsync(a => a.UserId == userGuid);
         var orderedAlerts = alerts.OrderByDescending(a => a.CreatedAt).ToList();
 
         return mapper.Map<IEnumerable<PriceAlertDto>>(orderedAlerts);
     }
 
-    public async Task DeactivateAlertAsync(Guid alertId, Guid userId)
+    public async Task DeactivateAlertAsync(Guid alertId, string userId)
     {
+        var userGuid = Guid.Parse(userId);
         var alert = await priceAlertRepository.GetByIdAsync(alertId);
 
-        if (alert == null || alert.UserId != userId)
+        if (alert == null || alert.UserId != userGuid)
         {
             throw new Exception("Alert not found or unauthorized access.");
         }
@@ -113,14 +120,14 @@ public class PriceAlertService(
                     string notificationMsg = $"{alert.Symbol} is the price you set for the {alert.TargetPrice} target in {direction}. Current Price: {price}";
 
                     await notificationService.CreateNotificationAsync(
-                        userId: alert.UserId,
+                        userId: alert.UserId.ToString(),
                         title: $"{alert.Symbol} price alert!",
                         message: notificationMsg,
                         type: NotificationType.PriceAlert,
                         relatedEntityId: alert.Id.ToString()
                     );
 
-                    await DeactivateAlertAsync(alert.Id, alert.UserId);
+                    await DeactivateAlertAsync(alert.Id, alert.UserId.ToString());
 
                     alert.Deactivate();
                     isCacheChanged = true;

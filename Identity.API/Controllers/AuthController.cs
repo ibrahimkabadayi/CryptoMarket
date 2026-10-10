@@ -7,7 +7,9 @@ namespace Identity.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IUserService userService, IAuthenticationService authService) : ControllerBase
+public class AuthController(
+    IUserService userService,
+    IAuthenticationService authService) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
@@ -28,7 +30,9 @@ public class AuthController(IUserService userService, IAuthenticationService aut
         var token = await authService.LoginAsync(request.Email, request.Password);
 
         if (token == null)
+        {
             return Unauthorized("Email or password is incorrect.");
+        }
 
         return Ok(new { Token = token });
     }
@@ -39,7 +43,9 @@ public class AuthController(IUserService userService, IAuthenticationService aut
         var userDto = await userService.GetUserByIdAsync(userId);
 
         if (userDto == null)
+        {
             return NotFound(new { Error = "Could not found user." });
+        }
 
         return Ok(userDto);
     }
