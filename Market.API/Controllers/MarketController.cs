@@ -1,4 +1,6 @@
-﻿using System.Security.Claims;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Market.API.Application.DTOs;
 using Market.API.Application.Interfaces;
 using Market.API.Models;
@@ -13,12 +15,12 @@ public class MarketController(ICoinService coinService, IPriceHistoryService pri
 {
     [Authorize]
     [HttpPost("{symbol}")]
-    public IActionResult BuyCoin(string symbol, BuyCoinRequest request)
+    public async Task<IActionResult> BuyCoin(string symbol, BuyCoinRequest request)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) 
         { 
-            BadRequest(); 
+            return BadRequest(); 
         }
 
         var buyCoinDto = new BuyCoinDto 
@@ -29,7 +31,7 @@ public class MarketController(ICoinService coinService, IPriceHistoryService pri
             Symbol = symbol
         };
 
-        coinService.BuyCoin(buyCoinDto);
+        await coinService.BuyCoin(buyCoinDto);
 
         return Ok();
     }
@@ -59,14 +61,20 @@ public class MarketController(ICoinService coinService, IPriceHistoryService pri
     public async Task<IActionResult> GetCoin(string symbol)
     {
         var coin = await coinService.GetCoinBySymbol(symbol);
+
+        if(coin == null)
+        {
+            return NotFound($"Coin with symbol {symbol} not found.");
+        }
+
         return Ok(coin);
     }
 
     [HttpGet("{symbol}/history")]
     public async Task<IActionResult> GetCoinHistory(
         string symbol,
-        [FromQuery] int intervalMinutes = 15,  
-        [FromQuery] int hoursBack = 24)
+        [Range(5, 1440)] [FromQuery] int intervalMinutes = 15,  
+        [Range(1, 720)] [FromQuery] int hoursBack = 24)
     {
         var endDate = DateTime.UtcNow;
         var startDate = endDate.AddHours(-hoursBack);

@@ -14,16 +14,16 @@ public class CoinService(
     IPublishEndpoint publishEndpoint,
     IRedisCacheService cacheService) : ICoinService
 {
-    public void BuyCoin(BuyCoinDto buyCoinDto)
+    public async Task BuyCoin(BuyCoinDto buyCoinDto)
     {
         try
         {
-            publishEndpoint.Publish(new BuyCoinEvent 
+            await publishEndpoint.Publish(new BuyCoivent 
             {
                 BuyPrice = buyCoinDto.BuyPrice,
                 Symbol = buyCoinDto.Symbol,
                 UserId = buyCoinDto.UserId,
-                BuyAmount = buyCoinDto.BuyAmount 
+                BuyAmount = buyCoinDto.BuyAmount
             });
         }
         catch (Exception ex)
