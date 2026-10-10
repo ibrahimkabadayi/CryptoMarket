@@ -5,10 +5,10 @@ namespace Notifications.API.Application.Interfaces;
 
 public interface IPriceAlertService
 {
-    Task<PriceAlertDto> CreateAlertAsync(Guid userId, string symbol, decimal targetPrice, bool isAbove);
-    Task<IEnumerable<PriceAlertDto>> GetActiveAlertsByUserAsync(Guid userId);
-    Task<IEnumerable<PriceAlertDto>> GetAllAlertsByUserAsync(Guid userId);
-    Task DeactivateAlertAsync(Guid alertId, Guid userId);
+    Task<PriceAlertDto> CreateAlertAsync(string userId, string symbol, decimal targetPrice, bool isAbove);
+    Task<IEnumerable<PriceAlertDto>> GetActiveAlertsByUserAsync(string userId);
+    Task<IEnumerable<PriceAlertDto>> GetAllAlertsByUserAsync(string userId);
+    Task DeactivateAlertAsync(Guid alertId, string userId);
     Task<List<PriceAlert>> GetActiveAlertsBySymbolAsync(string symbol);
     Task CheckPriceAlerts(string symbol, decimal price);
 }
