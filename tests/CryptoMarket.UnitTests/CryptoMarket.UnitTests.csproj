@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Identity.API\Identity.API.csproj" />
+    <ProjectReference Include="..\..\Notifications.API\Notifications.API.csproj" />
   </ItemGroup>
 
 </Project>
