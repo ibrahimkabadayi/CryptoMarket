@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\Identity.API\Identity.API.csproj" />
     <ProjectReference Include="..\..\Notifications.API\Notifications.API.csproj" />
     <ProjectReference Include="..\..\Market.API\Market.API.csproj" />
+    <ProjectReference Include="..\..\Portfolio.API\Portfolio.API.csproj" />
   </ItemGroup>
 
 </Project>
