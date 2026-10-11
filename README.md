@@ -51,39 +51,89 @@ The project follows a **Microservices Architecture** with an **API Gateway** (YA
         M["Mobile UI (Flutter)"]
     end
 
-    W & M --> GW["API Gateway<br/>YARP :5000"]
-
-    GW --> RMQ
-
-    subgraph backend["Microservices Layer"]
-        RMQ[["RabbitMQ"]]
-
-        RMQ <--> ID["Identity Service"]
-        RMQ <--> NO["Notification Service"]
-        RMQ <--> MK["Market Service"]
-        RMQ <--> PF["Portfolio Service"]
+    subgraph gateway["API Gateway Layer"]
+        GW["API Gateway<br/>YARP :5000"]
     end
 
-    ID  --> PG1[("PostgreSQL<br/>IdentityDb")]
-    NO  --> PG2[("PostgreSQL<br/>NotificationsDb")]
-    MK  --> PG3[("PostgreSQL<br/>MarketDb")]
-    MK  --> RD1[("Redis<br/>Coin Cache")]
-    PF  --> PG4[("PostgreSQL<br/>PortfolioDb")]
-    PF  --> RD2[("Redis<br/>Limit Order Cache")]
+    subgraph backend["Microservices Layer (.NET 9)"]
+        ID["Identity.API<br/>:5001"]
+        MK["Market.API<br/>:5002"]
+        PF["Portfolio.API<br/>:5003"]
+        NO["Notifications.API<br/>:5004"]
+    end
+
+    subgraph testing["Test Suite Layer"]
+        UT["CryptoMarket.UnitTests<br/>xUnit & NSubstitute (73 Tests)"]
+    end
+
+    subgraph messaging["Message Broker & Caching"]
+        RMQ[["RabbitMQ<br/>MassTransit Event Bus"]]
+        RD1[("Redis<br/>Coin Cache")]
+        RD2[("Redis<br/>Limit Order Cache")]
+    end
+
+    subgraph persistence["Databases"]
+        PG1[("PostgreSQL<br/>IdentityDb")]
+        PG2[("PostgreSQL<br/>MarketDb")]
+        PG3[("PostgreSQL<br/>PortfolioDb")]
+        PG4[("PostgreSQL<br/>NotificationsDb")]
+    end
+
+    subgraph external["External Services"]
+        GEMINI["Google Gemini API<br/>Market News AI"]
+        SMTP["SMTP Server<br/>Email Delivery"]
+    end
+
+    %% Client Traffic
+    W & M -->|HTTP / WebSocket| GW
+
+    %% Gateway Routing
+    GW -->|/api/auth| ID
+    GW -->|/api/market & /hubs/market| MK
+    GW -->|/api/portfolio & /hubs/portfolio| PF
+    GW -->|/api/notifications & /hubs/notifications| NO
+
+    %% Unit Test Coverage
+    UT -.->|Tests Services| ID
+    UT -.->|Tests Services| MK
+    UT -.->|Tests Services| PF
+    UT -.->|Tests Services| NO
+
+    %% Event Bus
+    ID <-->|UserCreatedEvent| RMQ
+    MK <-->|CoinPriceEvent, BuyCoinEvent| RMQ
+    PF <-->|TradeExecuted, FeeCollectionEvent| RMQ
+    NO <-->|LimitOrderOccuredEvent| RMQ
+
+    %% External APIs
+    MK -->|AI Prompt| GEMINI
+    NO -->|Send Email| SMTP
+
+    %% Persistence & Cache
+    ID --> PG1
+    MK --> PG2
+    MK --> RD1
+    PF --> PG3
+    PF --> RD2
+    NO --> PG4
 
     classDef ui       fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a,rx:8
-    classDef gw       fill:#fef9c3,stroke:#eab308,color:#713f12
-    classDef bus      fill:#ede9fe,stroke:#7c3aed,color:#3b0764
-    classDef svc      fill:#dcfce7,stroke:#16a34a,color:#14532d
-    classDef postgres fill:#fff7ed,stroke:#ea580c,color:#7c2d12
-    classDef redis    fill:#fdf4ff,stroke:#a21caf,color:#581c87
+    classDef gw       fill:#fef9c3,stroke:#eab308,color:#713f12,rx:6
+    classDef bus      fill:#ede9fe,stroke:#7c3aed,color:#3b0764,rx:6
+    classDef svc      fill:#dcfce7,stroke:#16a34a,color:#14532d,rx:6
+    classDef test     fill:#ecfdf5,stroke:#059669,color:#065f46,stroke-dasharray: 5 5,rx:6
+    classDef postgres fill:#fff7ed,stroke:#ea580c,color:#7c2d12,rx:6
+    classDef redis    fill:#fdf4ff,stroke:#a21caf,color:#581c87,rx:6
+    classDef ext      fill:#f1f5f9,stroke:#64748b,color:#334155,rx:6
 
     class W,M ui
     class GW gw
     class RMQ bus
     class ID,NO,MK,PF svc
+    class UT test
     class PG1,PG2,PG3,PG4 postgres
     class RD1,RD2 redis
+    class GEMINI,SMTP ext
 ```
 
 ### Real-time Trading Engine & Limit Order Flow
@@ -139,7 +189,7 @@ graph LR
 
 ## Services
 
-The solution (`Identity.API.sln`) contains **8 projects**:
+The solution (`Identity.API.sln`) contains **9 projects**:
 
 | Project | Type | Responsibility | Data Store(s) |
 |:--------|:-----|:---------------|:--------------|
@@ -150,6 +200,7 @@ The solution (`Identity.API.sln`) contains **8 projects**:
 | **Notifications.API** | Web API | Push notifications, price alerts, email notifications (SMTP), SignalR notification hub | PostgreSQL (`NotificationsDb`) |
 | **Shared.Messages** | Class Library | Shared MassTransit event contracts consumed by all services | — |
 | **Shared.Infrastructure** | Class Library | Cross-cutting concerns: OpenTelemetry tracing, health checks, correlation ID / logging / exception-handling middleware | — |
+| **CryptoMarket.UnitTests** | xUnit Test Project | Comprehensive unit test suite (73 tests) using NSubstitute and FluentAssertions across all service layers | — |
 | **docker-compose** | Docker Compose | Orchestration project for Visual Studio container tooling | — |
 
 ---
@@ -800,11 +851,15 @@ Triggers on push/PR to `master`. Two jobs:
 # Run all tests in the solution
 dotnet test Identity.API.sln --verbosity normal
 
-# Run tests for a specific project
-dotnet test <TestProject>/<TestProject>.csproj
+# Run the unit test project directly
+dotnet test tests/CryptoMarket.UnitTests/CryptoMarket.UnitTests.csproj
 ```
 
-> **Note:** As of the current codebase, dedicated test projects (e.g., `*.Tests`) have not been added yet. The `dotnet.yml` pipeline includes a test step that will execute once test projects are created.
+The test suite is located in [`tests/CryptoMarket.UnitTests`](file:///c:/CryptoMarketProject/backend/tests/CryptoMarket.UnitTests) and contains **73 unit tests** with a 100% passing rate across all service layers:
+- **Identity.API**: Authentication, JWT token verification, user registration, MassTransit events.
+- **Market.API**: Coin management, price simulation caching, order publishing, AI market news generation, historical chart interpolation.
+- **Notifications.API**: Real-time push notifications, price alert triggering, email dispatching.
+- **Portfolio.API**: Wallet balance operations (buy/sell, deposit/withdraw, transfer), trade fees, and limit order execution.
 
 ### Integration Tests
 
