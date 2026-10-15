@@ -1,0 +1,36 @@
+classDiagram
+direction BT
+class Coins {
+   varchar(100) Name
+   varchar(10) Symbol
+   numeric(18,8) CurrentPrice
+   numeric(20,8) Supply
+   boolean IsCapped
+   numeric(20,2) MarketCap
+   timestamp with time zone LastUpdated
+   text IconUrlPng
+   uuid Id
+}
+class MarketNews {
+   varchar(200) Title
+   text Content
+   varchar(100) Source
+   text RelatedSymbols
+   timestamp with time zone PublishedAt
+   uuid Id
+}
+class PriceHistories {
+   varchar(10) Symbol
+   numeric(18,8) OpenPrice
+   numeric(18,8) ClosePrice
+   numeric(18,8) HighPrice
+   numeric(18,8) LowPrice
+   numeric(20,8) Volume
+   timestamp with time zone Timestamp
+   uuid Id
+}
+class __EFMigrationsHistory {
+   varchar(32) ProductVersion
+   varchar(150) MigrationId
+}
+

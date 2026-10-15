@@ -1,0 +1,58 @@
+classDiagram
+direction BT
+class Assets {
+   uuid WalletId
+   varchar(50) Symbol
+   numeric CostBasis
+   numeric Quantity
+   timestamp with time zone CreatedDate
+   timestamp with time zone UpdatedDate
+   uuid Id
+}
+class LimitOrders {
+   uuid WalletId
+   text Symbol
+   numeric Amount
+   integer OrderType
+   timestamp with time zone CreatedDate
+   timestamp with time zone UpdatedDate
+   integer OrderStatus
+   numeric TargetPrice
+   uuid UserId
+   uuid Id
+}
+class Transactions {
+   uuid WalletId
+   uuid AssetId
+   varchar(50) Symbol
+   numeric Amount
+   numeric PriceAtTransaction
+   integer TransactionType
+   timestamp with time zone CreatedDate
+   timestamp with time zone UpdatedDate
+   uuid Id
+}
+class TreasuryBalances {
+   varchar(10) AssetSymbol
+   numeric(18,8) TotalAmount
+   timestamp with time zone CreatedDate
+   timestamp with time zone UpdatedDate
+   uuid Id
+}
+class Wallets {
+   uuid UserId
+   text Address
+   numeric FiatBalance
+   numeric Value
+   timestamp with time zone CreatedDate
+   timestamp with time zone UpdatedDate
+   uuid Id
+}
+class __EFMigrationsHistory {
+   varchar(32) ProductVersion
+   varchar(150) MigrationId
+}
+
+Assets  -->  Wallets : WalletId:Id
+LimitOrders  -->  Wallets : WalletId:Id
+Transactions  -->  Wallets : WalletId:Id
