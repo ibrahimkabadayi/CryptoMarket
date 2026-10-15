@@ -9,6 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Infrastructure\BackgroundServices\**" />
+    <Content Remove="Infrastructure\BackgroundServices\**" />
+    <EmbeddedResource Remove="Infrastructure\BackgroundServices\**" />
+    <None Remove="Infrastructure\BackgroundServices\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.1.1" />
     <PackageReference Include="MassTransit" Version="9.0.1" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="9.0.1" />
@@ -33,7 +40,6 @@
 
   <ItemGroup>
     <Folder Include="Hubs\Messages\" />
-    <Folder Include="Infrastructure\BackgroundServices\" />
   </ItemGroup>
 
 </Project>

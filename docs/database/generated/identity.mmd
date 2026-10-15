@@ -1,0 +1,68 @@
+classDiagram
+direction BT
+class AspNetRoleClaims {
+   uuid RoleId
+   text ClaimType
+   text ClaimValue
+   integer Id
+}
+class AspNetRoles {
+   varchar(256) Name
+   varchar(256) NormalizedName
+   text ConcurrencyStamp
+   uuid Id
+}
+class AspNetUserClaims {
+   uuid UserId
+   text ClaimType
+   text ClaimValue
+   integer Id
+}
+class AspNetUserLogins {
+   text ProviderDisplayName
+   uuid UserId
+   text LoginProvider
+   text ProviderKey
+}
+class AspNetUserRoles {
+   uuid UserId
+   uuid RoleId
+}
+class AspNetUserTokens {
+   text Value
+   uuid UserId
+   text LoginProvider
+   text Name
+}
+class AspNetUsers {
+   timestamp with time zone CreatedDate
+   timestamp with time zone UpdatedDate
+   varchar(50) FirstName
+   varchar(50) LastName
+   varchar(256) UserName
+   varchar(256) NormalizedUserName
+   varchar(256) Email
+   varchar(256) NormalizedEmail
+   boolean EmailConfirmed
+   text PasswordHash
+   text SecurityStamp
+   text ConcurrencyStamp
+   text PhoneNumber
+   boolean PhoneNumberConfirmed
+   boolean TwoFactorEnabled
+   timestamp with time zone LockoutEnd
+   boolean LockoutEnabled
+   integer AccessFailedCount
+   uuid Id
+}
+class __EFMigrationsHistory {
+   varchar(32) ProductVersion
+   varchar(150) MigrationId
+}
+
+AspNetRoleClaims  -->  AspNetRoles : RoleId:Id
+AspNetUserClaims  -->  AspNetUsers : UserId:Id
+AspNetUserLogins  -->  AspNetUsers : UserId:Id
+AspNetUserRoles  -->  AspNetRoles : RoleId:Id
+AspNetUserRoles  -->  AspNetUsers : UserId:Id
+AspNetUserTokens  -->  AspNetUsers : UserId:Id

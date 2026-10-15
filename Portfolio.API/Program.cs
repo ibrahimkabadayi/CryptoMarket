@@ -56,6 +56,7 @@ public class Program
             configuration.AddConsumer<UserCreatedConsumer>();
             configuration.AddConsumer<CoinPriceConsumer>();
             configuration.AddConsumer<SetLimitOrderEvent>();
+            configuration.AddConsumer<BuyCoinConsumer>();
 
             configuration.UsingRabbitMq((context, cfg) =>
             {
@@ -73,6 +74,9 @@ public class Program
 
                 cfg.ReceiveEndpoint("portfolio-set-limit-order-queue", e =>
                     e.ConfigureConsumer<SetLimitOrderEvent>(context));
+
+                cfg.ReceiveEndpoint("portfolio-buy-coin-order-queue", e =>
+                    e.ConfigureConsumer<BuyCoinConsumer>(context));
             });
         });
 

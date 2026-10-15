@@ -189,6 +189,9 @@ namespace Portfolio.API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
                     b.ToTable("Wallets");
                 });
 

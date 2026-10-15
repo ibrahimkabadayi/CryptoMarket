@@ -1,0 +1,30 @@
+classDiagram
+direction BT
+class Notifications {
+   uuid UserId
+   text Title
+   text Message
+   integer Type
+   boolean IsRead
+   timestamp with time zone ReadAt
+   text RelatedEntityId
+   timestamp with time zone CreatedDate
+   timestamp with time zone UpdatedDate
+   uuid Id
+}
+class PriceAlerts {
+   uuid UserId
+   text Symbol
+   numeric TargetPrice
+   boolean IsAbove
+   boolean IsActive
+   timestamp with time zone CreatedAt
+   timestamp with time zone CreatedDate
+   timestamp with time zone UpdatedDate
+   uuid Id
+}
+class __EFMigrationsHistory {
+   varchar(32) ProductVersion
+   varchar(150) MigrationId
+}
+
