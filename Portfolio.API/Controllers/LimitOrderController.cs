@@ -4,6 +4,7 @@ using Portfolio.API.Application.DTOs;
 using Portfolio.API.Application.Interfaces;
 using Portfolio.API.Domain.Enums;
 using Portfolio.API.Models;
+using System.Security.Claims;
 
 namespace Portfolio.API.Controllers
 {
@@ -17,6 +18,13 @@ namespace Portfolio.API.Controllers
             [FromBody] CreateLimitOrderRequest request, 
             [FromHeader(Name = "Idempotency-Key")] Guid idempotencyKey)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Invalid or broken token.");
+            }
+
             var orderType = (request.OrderType == 1) ? LimitOrderType.Buy : LimitOrderType.Sell;
 
             var dto = new CreateLimitOrderDto
@@ -25,7 +33,7 @@ namespace Portfolio.API.Controllers
                 Symbol= request.Symbol,
                 OrderType = orderType,
                 TargetPrice = request.TargetPrice,
-                UserId = request.UserId,
+                UserId = Guid.Parse(userId),
                 WalletId = request.WalletId,
             };
 

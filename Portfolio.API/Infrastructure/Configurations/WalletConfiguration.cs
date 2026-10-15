@@ -8,7 +8,12 @@ public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
 {
     public void Configure(EntityTypeBuilder<Wallet> builder)
     {
-        builder.HasKey(x => x.Id);
+        builder.HasKey
+            (x => x.Id);
+
+        builder.HasIndex
+            (x => x.UserId)
+            .IsUnique();
 
         builder
             .HasMany(x => x.Assets)

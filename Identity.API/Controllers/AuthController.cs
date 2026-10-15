@@ -2,6 +2,7 @@
 using Identity.API.Models;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Identity.API.Controllers;
 
@@ -37,10 +38,17 @@ public class AuthController(
         return Ok(new { Token = token });
     }
 
-    [HttpGet("{userId:guid}")]
-    public async Task<IActionResult> GetUser(Guid userId)
+    [HttpGet]
+    public async Task<IActionResult> GetUser()
     {
-        var userDto = await userService.GetUserByIdAsync(userId);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized("Invalid or broken token.");
+        }
+
+        var userDto = await userService.GetUserByIdAsync(Guid.Parse(userId));
 
         if (userDto == null)
         {
