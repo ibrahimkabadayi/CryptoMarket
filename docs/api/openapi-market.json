@@ -1,0 +1,336 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Market.API",
+    "version": "v1",
+    "description": "Cryptocurrency market data, historical charts, AI-generated news, and price simulation"
+  },
+  "paths": {
+    "/api/market": {
+      "get": {
+        "tags": ["Market"],
+        "summary": "Get all cryptocurrencies with current prices and supply",
+        "operationId": "GetAllCoins",
+        "responses": {
+          "200": {
+            "description": "List of active coins",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Coin"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/market/{symbol}": {
+      "get": {
+        "tags": ["Market"],
+        "summary": "Get coin quote by symbol",
+        "operationId": "GetCoinBySymbol",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Coin details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Coin"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Coin symbol not found"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Market"],
+        "summary": "Initiate coin purchase at market price",
+        "operationId": "BuyCoin",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuyCoinRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Order dispatched successfully" },
+          "400": { "description": "Invalid order payload" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/market/limit-order/{symbol}": {
+      "post": {
+        "tags": ["Market"],
+        "summary": "Place a limit buy/sell order via market event dispatch",
+        "operationId": "SetLimitOrder",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetLimitOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Limit order event published" },
+          "400": { "description": "Invalid order parameters" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/market/{symbol}/history": {
+      "get": {
+        "tags": ["Market"],
+        "summary": "Get OHLCV candlestick price history",
+        "operationId": "GetPriceHistory",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "intervalMinutes",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 5 }
+          },
+          {
+            "name": "hoursBack",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 24 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Candlestick bars retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PriceHistoryDto" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/market-news": {
+      "get": {
+        "tags": ["MarketNews"],
+        "summary": "Get latest market news feed",
+        "operationId": "GetLatestNews",
+        "parameters": [
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 10 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of news articles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/MarketNewsDto" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/market-news/{id}": {
+      "get": {
+        "tags": ["MarketNews"],
+        "summary": "Get market news article by ID",
+        "operationId": "GetNewsById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "News article",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketNewsDto" }
+              }
+            }
+          },
+          "404": { "description": "News article not found" }
+        }
+      },
+      "delete": {
+        "tags": ["MarketNews"],
+        "summary": "Delete a market news article",
+        "operationId": "DeleteNews",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "News deleted" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "News not found" }
+        }
+      }
+    },
+    "/api/market-news/coin/{symbol}": {
+      "get": {
+        "tags": ["MarketNews"],
+        "summary": "Get market news related to a specific coin symbol",
+        "operationId": "GetNewsBySymbol",
+        "parameters": [
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 5 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "News articles filtered by symbol",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/MarketNewsDto" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Coin": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "symbol": { "type": "string" },
+          "currentPrice": { "type": "number", "format": "decimal" },
+          "supply": { "type": "number", "format": "decimal" },
+          "isCapped": { "type": "boolean" },
+          "marketCap": { "type": "number", "format": "decimal" },
+          "iconUrlPng": { "type": "string" },
+          "lastUpdated": { "type": "string", "format": "date-time" }
+        }
+      },
+      "BuyCoinRequest": {
+        "type": "object",
+        "required": ["amount"],
+        "properties": {
+          "amount": { "type": "number", "format": "decimal" }
+        }
+      },
+      "SetLimitOrderRequest": {
+        "type": "object",
+        "required": ["targetPrice", "amount", "orderType"],
+        "properties": {
+          "targetPrice": { "type": "number", "format": "decimal" },
+          "amount": { "type": "number", "format": "decimal" },
+          "orderType": { "type": "integer", "description": "1 = Buy, 2 = Sell" }
+        }
+      },
+      "PriceHistoryDto": {
+        "type": "object",
+        "properties": {
+          "symbol": { "type": "string" },
+          "openPrice": { "type": "number", "format": "decimal" },
+          "closePrice": { "type": "number", "format": "decimal" },
+          "highPrice": { "type": "number", "format": "decimal" },
+          "lowPrice": { "type": "number", "format": "decimal" },
+          "volume": { "type": "number", "format": "decimal" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      },
+      "MarketNewsDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "content": { "type": "string" },
+          "source": { "type": "string" },
+          "relatedSymbols": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "publishedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}

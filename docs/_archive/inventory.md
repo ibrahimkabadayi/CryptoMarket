@@ -1,7 +1,7 @@
-# System Inventory
+# System Inventory (Archived)
 
-> **Temporary working file.** Populated in Phase 1 and maintained across phases; archived or deleted in Phase 10.  
-> Last updated from codebase at commit `b5229aa`.
+> **Archived working file.** Populated during Phase 1 discovery and maintained through implementation; archived upon Phase 10 completion.
+> Last verified against codebase at commit `be4cbee`.
 
 ---
 

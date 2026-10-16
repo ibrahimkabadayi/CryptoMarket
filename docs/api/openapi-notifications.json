@@ -1,0 +1,239 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Notifications.API",
+    "version": "v1",
+    "description": "User notifications, target price alerts, and real-time push events"
+  },
+  "paths": {
+    "/api/notifications": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Get notifications for authenticated user",
+        "operationId": "GetUserNotifications",
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "List of notifications",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/NotificationDto" }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Notifications"],
+        "summary": "Create a notification for user",
+        "operationId": "CreateNotification",
+        "security": [{ "Bearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateNotificationRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Notification created" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/notifications/unread-count": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Get count of unread notifications",
+        "operationId": "GetUnreadCount",
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "Unread count",
+            "content": {
+              "application/json": {
+                "schema": { "type": "integer" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/notifications/{notificationId}/read": {
+      "put": {
+        "tags": ["Notifications"],
+        "summary": "Mark single notification as read",
+        "operationId": "MarkNotificationAsRead",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "notificationId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Notification marked as read" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/notifications/mark-all-read": {
+      "put": {
+        "tags": ["Notifications"],
+        "summary": "Mark all notifications for caller as read",
+        "operationId": "MarkAllNotificationsAsRead",
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "204": { "description": "All notifications marked as read" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/price-alerts": {
+      "post": {
+        "tags": ["PriceAlerts"],
+        "summary": "Create a price alert for a cryptocurrency",
+        "operationId": "CreatePriceAlert",
+        "security": [{ "Bearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreatePriceAlertRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Price alert created" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/price-alerts/active": {
+      "get": {
+        "tags": ["PriceAlerts"],
+        "summary": "Get active price alerts for user",
+        "operationId": "GetActivePriceAlerts",
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "Active price alerts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PriceAlertDto" }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/price-alerts/all": {
+      "get": {
+        "tags": ["PriceAlerts"],
+        "summary": "Get all price alerts (both active and inactive)",
+        "operationId": "GetAllPriceAlerts",
+        "security": [{ "Bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "All price alerts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PriceAlertDto" }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/price-alerts/{priceAlertId}/deactivate": {
+      "put": {
+        "tags": ["PriceAlerts"],
+        "summary": "Deactivate an active price alert",
+        "operationId": "DeactivatePriceAlert",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          {
+            "name": "priceAlertId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Alert deactivated" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "NotificationDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "message": { "type": "string" },
+          "type": { "type": "integer" },
+          "isRead": { "type": "boolean" },
+          "readAt": { "type": "string", "format": "date-time", "nullable": true },
+          "relatedEntityId": { "type": "string", "nullable": true },
+          "createdDate": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateNotificationRequest": {
+        "type": "object",
+        "required": ["title", "message"],
+        "properties": {
+          "title": { "type": "string" },
+          "message": { "type": "string" },
+          "type": { "type": "integer" },
+          "relatedEntityId": { "type": "string", "nullable": true }
+        }
+      },
+      "CreatePriceAlertRequest": {
+        "type": "object",
+        "required": ["symbol", "targetPrice", "isAbove"],
+        "properties": {
+          "symbol": { "type": "string" },
+          "targetPrice": { "type": "number", "format": "decimal" },
+          "isAbove": { "type": "boolean" }
+        }
+      },
+      "PriceAlertDto": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "symbol": { "type": "string" },
+          "targetPrice": { "type": "number", "format": "decimal" },
+          "isAbove": { "type": "boolean" },
+          "isActive": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}
