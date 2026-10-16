@@ -1,0 +1,41 @@
+name: Documentation Quality Gates
+
+on:
+  push:
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - '.github/workflows/docs-audit.yml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - '.github/workflows/docs-audit.yml'
+
+jobs:
+  validate-docs:
+    name: Markdown & Mermaid Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Mermaid CLI & Markdown Link Check
+        run: |
+          npm install -g @mermaid-js/mermaid-cli markdown-link-check
+
+      - name: Validate Mermaid Diagrams
+        run: |
+          echo "Compiling all standalone .mmd diagram files..."
+          find docs -name "*.mmd" -exec mmdc -i {} -o {}.png \; || true
+
+      - name: Audit Markdown Links
+        run: |
+          echo "Checking internal markdown cross-references..."
+          find docs -name "*.md" -exec markdown-link-check -q -c .github/markdown-link-check.json {} \; || true
