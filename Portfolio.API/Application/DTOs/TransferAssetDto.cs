@@ -2,7 +2,7 @@
 
 public class TransferAssetDto
 {
-    public string UserId { get; set; }
+    public string UserId { get; set; } = string.Empty;
     public string TargetWalletAddress { get; set; } = string.Empty;
     public string Symbol { get; set; } = string.Empty;
     public decimal AssetAmount { get; set; }
