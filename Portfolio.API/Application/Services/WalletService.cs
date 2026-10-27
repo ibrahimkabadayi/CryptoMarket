@@ -21,91 +21,6 @@ public class WalletService(
         IHubContext<PortfolioHub> hubContext
     ) : IWalletService
 {
-
-    public async Task BuyAssetWithUserId(string userId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
-    {
-        var (walletId, wallet) = await LoadWalletWithAssetsAsync(userId);
-        decimal totalCost = amount * currentPrice;
-
-        if (wallet.FiatBalance < totalCost)
-            throw new ArgumentException("Error: Not Enough Money!");
-
-        decimal feeRate = isLimitOrder ? feeSettingsOptions.Value.MakerFeeRate : feeSettingsOptions.Value.TakerFeeRate;
-
-        decimal feeInCrypto = amount * feeRate;
-
-        decimal finalAmountToUser = amount - feeInCrypto;
-
-        wallet.FiatBalance -= totalCost;
-        wallet.UpdatedDate = DateTime.UtcNow;
-
-        var walletAssets = wallet.Assets ?? [];
-        var asset = walletAssets.FirstOrDefault(x => x.Symbol == symbol);
-
-        if (asset != null)
-        {
-            asset.Quantity += finalAmountToUser;
-            asset.UpdatedDate = DateTime.UtcNow;
-            await assetRepository.UpdateAsync(asset);
-        }
-        else
-        {
-            asset = new Asset
-            {
-                Symbol = symbol,
-                Quantity = finalAmountToUser,
-                WalletId = walletId,
-                CreatedDate = DateTime.UtcNow,
-                UpdatedDate = DateTime.UtcNow
-            };
-            await assetRepository.AddAsync(asset);
-            walletAssets.Add(asset);
-            wallet.Assets = walletAssets;
-        }
-
-        await walletRepository.UpdateAsync(wallet);
-
-        await transactionService.CreateTransactionRecordAsync(walletId, symbol, finalAmountToUser, currentPrice, TransactionType.Buy);
-
-        if (feeInCrypto > 0)
-        {
-            var feeEvent = new FeeCollectionEvent
-            {
-                Symbol = symbol,
-                FeeAmount = feeInCrypto,
-                UserId = wallet.UserId,
-                OccurredOn = DateTime.UtcNow
-            };
-
-            await publishEndpoint.Publish(feeEvent);
-        }
-
-        var assetDtos = wallet.Assets?.Select(a => new AssetDashboardDto
-        {
-            Symbol = a.Symbol,
-            Quantity = a.Quantity,
-            AverageBuyPrice = a.CostBasis
-        }).ToList() ?? [];
-
-        var updatedDashboard = new PortfolioDashboardDto
-        {
-            FiatBalance = wallet.FiatBalance,
-            TotalInvestedValue = wallet.Value,
-            Assets = assetDtos
-        };
-
-        await hubContext.Clients.User(wallet.UserId.ToString()).SendAsync("UpdatePortfolio", updatedDashboard);
-
-        await publishEndpoint.Publish(new TradeExecuted(
-            walletId,
-            finalAmountToUser,
-            symbol,
-            totalCost,
-            "USDT",
-            DateTime.UtcNow
-        ));
-    }
-
     public async Task BuyAsset(string userId, string symbol, decimal currentPrice, decimal amount, bool isLimitOrder)
     {
         var (walletId, wallet) = await LoadWalletWithAssetsAsync(userId);
@@ -333,17 +248,17 @@ public class WalletService(
     public async Task WithdrawMoney(string userId, decimal amount)
     {
         var walletId = await ResolveWalletIdAsync(userId);
+        var withdrawn = await walletRepository.TryWithdrawAsync(walletId, amount);
+
+        if (!withdrawn)
+        {
+            var existingWallet = await walletRepository.GetByIdAsync(walletId);
+            if (existingWallet == null) return;
+            throw new InvalidOperationException();
+        }
+
         var wallet = await walletRepository.GetByIdAsync(walletId);
-
         if (wallet == null) return;
-
-        if (wallet.FiatBalance < amount) return;
-
-        wallet.FiatBalance -= amount;
-        wallet.Value -= amount;
-        wallet.UpdatedDate = DateTime.UtcNow;
-
-        await walletRepository.UpdateAsync(wallet);
 
         await transactionService.CreateTransactionRecordAsync(walletId, amount, TransactionType.Withdraw);
 
