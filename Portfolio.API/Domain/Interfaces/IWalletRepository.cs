@@ -7,4 +7,5 @@ public interface IWalletRepository : IRepository<Wallet>
     Task<Wallet> GetWalletWithAssetsAsync(Guid walletId);
     Task<Wallet> GetWalletWithAssetsAsync(string walletAddress);
     Task<Guid> GetWalletIdByUserId(Guid userId);
+    Task<bool> TryWithdrawAsync(Guid walletId, decimal amount);
 }

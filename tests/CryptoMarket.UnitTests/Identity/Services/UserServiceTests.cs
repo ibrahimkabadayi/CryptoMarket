@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Identity;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Shared.Messages;
-using Xunit;
 
 namespace CryptoMarket.UnitTests.Identity.Services;
 

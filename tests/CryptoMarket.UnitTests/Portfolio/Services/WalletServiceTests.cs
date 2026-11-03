@@ -356,12 +356,14 @@ public class WalletServiceTests
         };
 
         _walletRepository.GetWalletIdByUserId(userId).Returns(walletId);
+        _walletRepository.TryWithdrawAsync(walletId, 1000m).Returns(false);
         _walletRepository.GetByIdAsync(walletId).Returns(wallet);
 
-        // Act (Attempting to withdraw 1,000 from 500)
-        await _sut.WithdrawMoney(userId.ToString(), 1000m);
+        // Act
+        var act = () => _sut.WithdrawMoney(userId.ToString(), 1000m);
 
         // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>();
         wallet.FiatBalance.Should().Be(500m);
         await _walletRepository.DidNotReceive().UpdateAsync(Arg.Any<Wallet>());
         await _publishEndpoint.DidNotReceive().Publish(Arg.Any<AssetWithdrawn>(), Arg.Any<CancellationToken>());
@@ -382,6 +384,12 @@ public class WalletServiceTests
         };
 
         _walletRepository.GetWalletIdByUserId(userId).Returns(walletId);
+        _walletRepository.TryWithdrawAsync(walletId, 800m).Returns(_ =>
+        {
+            wallet.FiatBalance -= 800m;
+            wallet.Value -= 800m;
+            return Task.FromResult(true);
+        });
         _walletRepository.GetByIdAsync(walletId).Returns(wallet);
 
         const decimal withdrawAmount = 800m;
@@ -393,7 +401,7 @@ public class WalletServiceTests
         wallet.FiatBalance.Should().Be(1200m);
         wallet.Value.Should().Be(1200m);
 
-        await _walletRepository.Received(1).UpdateAsync(wallet);
+        await _walletRepository.DidNotReceive().UpdateAsync(Arg.Any<Wallet>());
 
         await _transactionService.Received(1).CreateTransactionRecordAsync(
             walletId,

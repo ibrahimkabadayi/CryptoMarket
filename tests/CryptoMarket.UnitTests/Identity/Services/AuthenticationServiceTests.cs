@@ -116,7 +116,7 @@ public class AuthenticationServiceTests
 
         jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == userId.ToString());
         jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Email && c.Value == email);
-        jwtToken.Claims.Should().Contain(c => (c.Type == "nameid" || c.Type == ClaimTypes.NameIdentifier) && c.Value == userId.ToString());
+        jwtToken.Claims.Should().Contain(c => c.Type == "nameid" && c.Value == userId.ToString());
         jwtToken.Claims.Should().Contain(c => c.Type == JwtRegisteredClaimNames.Jti);
 
         jwtToken.ValidTo.Should().BeAfter(DateTime.UtcNow);

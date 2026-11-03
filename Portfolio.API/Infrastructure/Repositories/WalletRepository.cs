@@ -13,6 +13,19 @@ public class WalletRepository(ApplicationDbContext context) : Repository<Wallet>
         return wallet.Id;
     }
 
+    public async Task<bool> TryWithdrawAsync(Guid walletId, decimal amount)
+    {
+        var updatedDate = DateTime.UtcNow;
+        var affectedRows = await context.Wallets
+            .Where(wallet => wallet.Id == walletId && wallet.FiatBalance >= amount)
+            .ExecuteUpdateAsync(updates => updates
+                .SetProperty(wallet => wallet.FiatBalance, wallet => wallet.FiatBalance - amount)
+                .SetProperty(wallet => wallet.Value, wallet => wallet.Value - amount)
+                .SetProperty(wallet => wallet.UpdatedDate, updatedDate));
+
+        return affectedRows == 1;
+    }
+
     public async Task<Wallet> GetWalletWithAssetsAsync(Guid walletId)
     {
         return await context.Wallets
